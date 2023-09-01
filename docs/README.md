@@ -1,21 +1,12 @@
 # Media Player Classic - Black Edition (MPC-BE)
 ---
 
-MPC-BE – универсальный проигрыватель аудио и видеофайлов для операционной системы Windows.
-Этот проект имеет свою независимую разработку на базе оригинального кода «Media Player Classic» (Gabest) и «Media Player Classic - Home Cinema» (Casimir666).
+MPC-BE는 윈도용 범용 미디어 플레이어입니다.
+이 프로젝트는 "미디어 플레이어 클래식"(Gabest) 및 "미디어 플레이어 클래식 - 홈 시네마"(Casimir666)의 소스 코드를 기반으로 독립적으로 개발되었습니다.
 
-## Системные требования:
-* Процессор с поддержкой SSE2
-* Windows 7, 8, 8.1, 10, 11 32-bit/64-bit
-
----
-
-MPC-BE is a free and open source audio and video player for Windows.
-MPC-BE is based on the original Guliverkli project and "Media Player Classic Home Cinema" project, contains additional features and bug fixes.
-
-## System requirements:
-* An SSE2 capable CPU
-* Windows 7, 8, 8.1, 10, 11 32-bit/64-bit
+## 시스템 요구 사항 :
+* SSE2를 지원하는 프로세서
+* 윈도 7, 8, 8.1, 10, 11 32비트/64비트
 
 ---
 
@@ -27,16 +18,16 @@ MPC-BE is based on the original Guliverkli project and "Media Player Classic Hom
 
 ---
  
-For the people involved in the development, see Authors.txt.
-MPC-BE's code is licensed under GPL v3 (see LICENSE).
+개발에 참여한 사람들에 대해서는 Authors.txt를 참조하세요.
+MPC-BE의 코드는 GPL v3에 따라 라이선스가 부여됩니다.(라이선스 참조)
 
-Translations are done by various translators (see Authors.txt).
+번역은 다양한 번역가들에 의해 수행됩니다.(Authors.txt 참조)
 
 ---
 
-MPC-BE makes use of the following 3rd party code:
+MPC-BE는 아래의 써드 파티 코드를 사용 :
 
-| Project           | License             | Website                                               |
+| 프로젝트           | 라이선스             | 웹사이트                                               |
 |-------------------|---------------------|-------------------------------------------------------|
 | Bento4            | GPLv2               | https://www.bento4.com/                               |
 | CFileVersionInfo  |                     |                                                       |
