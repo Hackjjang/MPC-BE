@@ -13,8 +13,7 @@ MPC-BE는 윈도용 다목적 미디어 플레이어입니다.
 ## Links
 - [Project Page  ](https://sourceforge.net/projects/mpcbe/)
 - [Get code      ](https://github.com/Aleksoid1978/MPC-BE.git)
-- [Nightly Builds](https://disk.yandex.ru/d/hlf1lfC8mKU58)
-- [Nightly Builds](https://disk.yandex.ru/d/AjAXDDHtHRIELg)
+- [Nightly Builds](https://github.com/Aleksoid1978/MPC-BE/wiki/Nightly-builds)
 
 ---
  
