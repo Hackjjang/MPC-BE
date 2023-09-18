@@ -32,6 +32,7 @@ extern "C" {
 }
 #pragma warning(pop)
 
+#include <wmcodecdsp.h>
 #include <moreuuids.h>
 #include "DSUtil/AudioParser.h"
 #include "DSUtil/DSUtil.h"
@@ -135,8 +136,10 @@ static const struct {
 	// Bink Audio
 	{ &MEDIASUBTYPE_BINKA_DCT,         AV_CODEC_ID_BINKAUDIO_DCT  },
 	{ &MEDIASUBTYPE_BINKA_RDFT,        AV_CODEC_ID_BINKAUDIO_RDFT },
+	// Intel Music Coder
+	{ &MEDIASUBTYPE_INTEL_MUSIC,       AV_CODEC_ID_IMC },
 	// Indeo Audio
-	{ &MEDIASUBTYPE_IAC,               AV_CODEC_ID_IAC },
+	{ &MEDIASUBTYPE_INDEO_AUDIO,       AV_CODEC_ID_IAC },
 	// Opus
 	{ &MEDIASUBTYPE_OPUS,              AV_CODEC_ID_OPUS },
 	// Speex

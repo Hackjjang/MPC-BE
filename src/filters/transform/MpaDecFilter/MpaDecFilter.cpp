@@ -20,10 +20,11 @@
  */
 
 #include "stdafx.h"
-#include <MMReg.h>
 #include <Ks.h>
 #include <KsMedia.h>
 #include <sys/timeb.h>
+#include <wmcodecdsp.h>
+#include <moreuuids.h>
 
 #include "MpaDecFilter.h"
 #include "AudioTools/AudioHelper.h"
@@ -31,7 +32,6 @@
 #include "DSUtil/AudioParser.h"
 #include "DSUtil/SysVersion.h"
 #include "Version.h"
-#include <moreuuids.h>
 #include <basestruct.h>
 
 #include <ExtLib/ffmpeg/libavcodec/avcodec.h>
@@ -185,8 +185,10 @@ const AMOVIESETUP_MEDIATYPE sudPinTypesIn[] = {
 	// Bink Audio
 	{&MEDIATYPE_Audio,				&MEDIASUBTYPE_BINKA_DCT},
 	{&MEDIATYPE_Audio,				&MEDIASUBTYPE_BINKA_RDFT},
+	// Intel Music Coder
+	{ &MEDIATYPE_Audio,				&MEDIASUBTYPE_INTEL_MUSIC},
 	// Indeo Audio
-	{&MEDIATYPE_Audio,				&MEDIASUBTYPE_IAC},
+	{&MEDIATYPE_Audio,				&MEDIASUBTYPE_INDEO_AUDIO},
 	// Opus Audio
 	{&MEDIATYPE_Audio,				&MEDIASUBTYPE_OPUS},
 	// Speex Audio

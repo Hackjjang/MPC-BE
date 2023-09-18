@@ -20,7 +20,10 @@
  */
 
 #include "stdafx.h"
-#include <MMReg.h>
+
+#include <wmcodecdsp.h>
+#include <moreuuids.h>
+
 #include "MatroskaSplitter.h"
 #include "../BaseSplitter/TimecodeAnalyzer.h"
 #include "DSUtil/AudioParser.h"
@@ -31,7 +34,6 @@
 #include "DSUtil/BitsWriter.h"
 #include <IMediaSideData.h>
 
-#include <moreuuids.h>
 #include <basestruct.h>
 #include <libavutil/pixfmt.h>
 #include <libavutil/intreadwrite.h>
@@ -1350,7 +1352,7 @@ HRESULT CMatroskaSplitterFilter::CreateOutputs(IAsyncReader* pAsyncReader)
 						mts.insert(mts.cbegin(), mt);
 					}
 				} else if (CodecID == "A_WAVPACK4") {
-					mt.subtype = FOURCCMap(wfe->wFormatTag = WAVE_FORMAT_WAVPACK4);
+					mt.subtype = FOURCCMap(wfe->wFormatTag = WAVE_FORMAT_WAVPACK_AUDIO);
 					wfe->cbSize = (WORD)pTE->CodecPrivate.size();
 					wfe = (WAVEFORMATEX*)mt.ReallocFormatBuffer(sizeof(WAVEFORMATEX) + pTE->CodecPrivate.size());
 					memcpy(wfe + 1, pTE->CodecPrivate.data(), pTE->CodecPrivate.size());
