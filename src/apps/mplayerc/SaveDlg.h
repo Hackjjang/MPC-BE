@@ -31,12 +31,15 @@ class CSaveDlg : public CTaskDialog
 	DECLARE_DYNAMIC(CSaveDlg)
 
 private:
-	CString m_in, m_out;
+	const CStringW m_name;
+	const std::vector<std::pair<CStringW, CStringW>> m_saveItems;
+	CStringW m_ffmpegpath;
+
 	HICON m_hIcon;
 
-	CComPtr<IGraphBuilder>   pGB;
-	CComQIPtr<IMediaControl> pMC;
-	CComQIPtr<IMediaSeeking> pMS;
+	CComPtr<IGraphBuilder>   m_pGB;
+	CComQIPtr<IMediaControl> m_pMC;
+	CComQIPtr<IMediaSeeking> m_pMS;
 
 	enum protocol {
 		PROTOCOL_NONE,
@@ -45,48 +48,59 @@ private:
 	};
 	protocol m_protocol = protocol::PROTOCOL_NONE;
 
-	CHTTPAsync m_HTTPAsync;
-	HANDLE  m_hFile     = INVALID_HANDLE_VALUE;
-	UINT64  m_len       = 0;
-	clock_t m_startTime = 0;
+	UINT64  m_len = 0;
 
 	struct {
 		struct {
-			long time;
 			UINT64 len;
-		} TimeLens[40] = {}; // about 8 seconds
-		unsigned pos = 0;
+			clock_t time;
+		} LenTimes[40] = {}; // about 8 seconds
+		unsigned idx = 0;
 
-		long AddValuesGetSpeed(const UINT64 len, const long time) {
-			pos++;
-			if (pos >= std::size(TimeLens)) {
-				pos = 0;
+		long AddValuesGetSpeed(const UINT64 len, const long time)
+		{
+			LenTimes[idx] = { len, time };
+
+			idx++;
+			if (idx >= std::size(LenTimes)) {
+				idx = 0;
 			}
 
-			long interval = time - TimeLens[pos].time;
-			long speed = interval > 0 ? (long)((len - TimeLens[pos].len) * 1000 / interval) : 0;
+			const auto start_idx = LenTimes[idx].time ? idx : 0;
 
-			TimeLens[pos].time = time;
-			TimeLens[pos].len = len;
+			long time_interval = time - LenTimes[start_idx].time;
+			UINT64 len_increment = len - LenTimes[start_idx].len;
+
+			long speed = time_interval ? (long)(len_increment * 1000 / time_interval) : 0;
 
 			return speed;
+		}
+
+		void Reset() {
+			ZeroMemory(LenTimes, sizeof(LenTimes));
+			idx = 0;
 		}
 	} m_SaveStats;
 
 	std::thread        m_SaveThread;
 	std::atomic_ullong m_pos       = 0;
-	std::atomic_int    m_iProgress = 0;
+	std::atomic_int    m_iProgress = -1;
 	std::atomic_bool   m_bAbort    = false;
 
-	void Save();
+	int m_iPrevState = -1;
 
-	SOCKET m_UdpSocket  = INVALID_SOCKET;
+	void SaveUDP();
+	void SaveHTTP();
+	HRESULT DownloadHTTP(const CStringW url, const CStringW filepath);
+
+	SOCKET m_UdpSocket = INVALID_SOCKET;
 	WSAEVENT m_WSAEvent = nullptr;
 	sockaddr_in m_addr = {};
 
 public:
-	CSaveDlg(LPCWSTR in, LPCWSTR name, LPCWSTR out, HRESULT& hr);
+	CSaveDlg(const CStringW& name, const std::list<std::pair<CStringW, CStringW>>& saveItems, HRESULT& hr);
 
+	void SetFFmpegPath(const CStringW& ffmpegpath);
 	bool IsCompleteOk();
 
 private:
