@@ -32,7 +32,7 @@
 #include "DSUtil/UrlParser.h"
 #include "DSUtil/NullRenderers.h"
 #include "OpenDlg.h"
-#include "SaveDlg.h"
+#include "SaveTaskDlg.h"
 #include "GoToDlg.h"
 #include "PnSPresetsDlg.h"
 #include "MediaTypesDlg.h"
@@ -6019,29 +6019,38 @@ void CMainFrame::OnFileSaveAs()
 		m_pMC->Pause();
 	}
 
-	std::list<std::pair<CStringW, CStringW>> saveItems;
-	saveItems.emplace_back(in, savedFileName);
-	CStringW name;
+	std::list<CSaveTaskDlg::SaveItem_t> saveItems;
 	CString ffmpegpath;
 
 	if (m_youtubeFields.fname.GetLength()) {
-		name = GetAltFileName();
+		saveItems.emplace_back('v', GetAltFileName(), in, savedFileName);
+
 		const auto pFileData = dynamic_cast<OpenFileData*>(m_lastOMD.get());
-		if (pFileData && pFileData->fns.size() == 2) {
-			ext = GetFileExt(savedFileName);
-			CStringW audiofile = RenameFileExt(savedFileName, (ext == L".mp4") ? L".audio.m4a" : L".audio.mka");
-			auto it = pFileData->fns.begin();
-			++it;
-			saveItems.emplace_back(it->GetName(), audiofile);
-			ffmpegpath = GetFullExePath(AfxGetAppSettings().strFFmpegExePath, true);
+		if (pFileData) {
+			if (pFileData->fns.size() == 2) {
+				ext = GetFileExt(savedFileName);
+				CStringW audiofile = RenameFileExt(savedFileName, (ext == L".mp4") ? L".audio.m4a" : L".audio.mka");
+				auto it = ++(pFileData->fns.begin());
+				saveItems.emplace_back('a', it->GetTitle(), it->GetName(), audiofile);
+				ffmpegpath = GetFullExePath(AfxGetAppSettings().strFFmpegExePath, true);
+			}
+
+			for (const auto& sub : pFileData->subs) {
+				if (sub.GetPath().Find(L"fmt=vtt") > 0) {
+					CStringW subext = L"." + sub.GetTitle() + L".vtt";
+					FixFilename(subext);
+					CStringW subfile = RenameFileExt(savedFileName, subext);
+					saveItems.emplace_back('s', sub.GetTitle(), sub.GetPath(), subfile);
+				}
+			}
 		}
 	}
 	else {
-		name = in;
+		saveItems.emplace_back(0, in, in, savedFileName);
 	}
 
 	HRESULT hr = S_OK;
-	CSaveDlg save_dlg(name, saveItems, hr);
+	CSaveTaskDlg save_dlg(saveItems, hr);
 
 	if (SUCCEEDED(hr)) {
 		save_dlg.SetFFmpegPath(ffmpegpath);

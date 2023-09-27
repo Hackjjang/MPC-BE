@@ -1,6 +1,5 @@
 /*
- * (C) 2003-2006 Gabest
- * (C) 2006-2023 see Authors.txt
+ * (C) 2023 see Authors.txt
  *
  * This file is part of MPC-BE.
  *
@@ -24,15 +23,23 @@
 #include <afxtaskdialog.h>
 #include "DSUtil/HTTPAsync.h"
 
-// CSaveDlg dialog
+// CSaveTaskDlg dialog
 
-class CSaveDlg : public CTaskDialog
+class CSaveTaskDlg : public CTaskDialog
 {
-	DECLARE_DYNAMIC(CSaveDlg)
+	DECLARE_DYNAMIC(CSaveTaskDlg)
+public:
+	struct SaveItem_t {
+		char type = 0;
+		CStringW title;
+		CStringW path; // file path or url
+		CStringW dstpath;
+		SaveItem_t(const char _type, const CStringW& _title, const CStringW& _path, const CStringW& _dstpath)
+			: type(_type), title(_title), path(_path), dstpath(_dstpath) {}
+	};
 
 private:
-	const CStringW m_name;
-	const std::vector<std::pair<CStringW, CStringW>> m_saveItems;
+	const std::vector<SaveItem_t> m_saveItems;
 	CStringW m_ffmpegpath;
 
 	HICON m_hIcon;
@@ -98,7 +105,7 @@ private:
 	sockaddr_in m_addr = {};
 
 public:
-	CSaveDlg(const CStringW& name, const std::list<std::pair<CStringW, CStringW>>& saveItems, HRESULT& hr);
+	CSaveTaskDlg(const std::list<SaveItem_t>& saveItems, HRESULT& hr);
 
 	void SetFFmpegPath(const CStringW& ffmpegpath);
 	bool IsCompleteOk();
