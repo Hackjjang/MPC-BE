@@ -64,7 +64,7 @@ CSaveTaskDlg::CSaveTaskDlg(const std::list<SaveItem_t>& saveItems, HRESULT& hr)
 		SetMainIcon(m_hIcon);
 	}
 
-	SetMainInstruction(m_saveItems.front().title + L"\n" + m_saveItems.front().dstpath);
+	SetMainInstruction(m_saveItems.front().dstpath);
 
 	SetProgressBarMarquee();
 	SetProgressBarRange(0, 1000);
@@ -318,7 +318,7 @@ void CSaveTaskDlg::SaveUDP()
 			break;
 		}
 
-		m_pos += dwSizeRead;
+		m_written += dwSizeRead;
 
 		attempts = 0;
 	}
@@ -398,8 +398,8 @@ HRESULT CSaveTaskDlg::DownloadHTTP(CStringW url, const CStringW filepath)
 	if (FAILED(hr)) {
 		return hr;
 	}
-	m_pos = 0;
-	m_len = httpAsync.GetLenght();
+	m_written = 0;
+	m_length  = httpAsync.GetLenght();
 
 	++m_iProgress;
 
@@ -413,9 +413,9 @@ HRESULT CSaveTaskDlg::DownloadHTTP(CStringW url, const CStringW filepath)
 		return E_FAIL;
 	}
 
-	if (m_len) {
+	if (m_length) {
 		ULARGE_INTEGER usize;
-		usize.QuadPart = m_len;
+		usize.QuadPart = m_length;
 		HANDLE hMapping = CreateFileMappingW(hFile, nullptr, PAGE_READWRITE, usize.HighPart, usize.LowPart, nullptr);
 		if (hMapping != INVALID_HANDLE_VALUE) {
 			CloseHandle(hMapping);
@@ -436,8 +436,8 @@ HRESULT CSaveTaskDlg::DownloadHTTP(CStringW url, const CStringW filepath)
 			break;
 		}
 
-		m_pos += dwSizeRead;
-		if (m_len && m_len == m_pos) {
+		m_written += dwSizeRead;
+		if (m_length && m_length == m_written) {
 			hr = S_OK;
 			break;
 		}
@@ -481,7 +481,7 @@ HRESULT CSaveTaskDlg::OnDestroy()
 
 HRESULT CSaveTaskDlg::OnTimer(_In_ long lTime)
 {
-	const int iProgress = m_iProgress;
+	const int iProgress = m_iProgress.load();
 
 	if (iProgress == PROGRESS_COMPLETED) {
 		ClickCommandControl(IDCANCEL);
@@ -491,32 +491,34 @@ HRESULT CSaveTaskDlg::OnTimer(_In_ long lTime)
 	if (iProgress != m_iPrevState) {
 		if (iProgress >= 0 && iProgress < (int)m_saveItems.size()) {
 			CStringW path = m_saveItems[iProgress].dstpath;
-			EllipsisPath(path, 50);
-			SetMainInstruction(m_saveItems.front().title + L"\n" + path);
+			EllipsisPath(path, 100);
+			SetMainInstruction(path);
 			m_SaveStats.Reset();
 		}
 		else if (iProgress == PROGRESS_MERGING) {
 			SetMainInstruction(m_saveItems.front().title);
-			SetContent(L"Merging files...");
+			SetContent(ResStr(IDS_MERGING_FILES));
 		}
 		m_iPrevState = iProgress;
 	}
 
-	static UINT sizeUnits[]  = { IDS_SIZE_UNIT_K,  IDS_SIZE_UNIT_M,  IDS_SIZE_UNIT_G  };
-	static UINT speedUnits[] = { IDS_SPEED_UNIT_K, IDS_SPEED_UNIT_M, IDS_SPEED_UNIT_G };
+	static UINT sizeUnits[]  = { IDS_UNIT_SIZE_KB,  IDS_UNIT_SIZE_MB,  IDS_UNIT_SIZE_GB };
+	static UINT speedUnits[] = { IDS_UNIT_SPEED_KB_S, IDS_UNIT_SPEED_MB_S, IDS_UNIT_SPEED_GB_S };
 
 	if (iProgress >= 0 && iProgress < (int)m_saveItems.size()) {
-		const UINT64 pos = m_pos.load(); // bytes
-		const long speed = m_SaveStats.AddValuesGetSpeed(pos, clock());
+		const UINT64 written = m_written.load();
+		const UINT64 length  = m_length.load();
 
-		double dPos = pos / 1024.0;
+		const long speed = m_SaveStats.AddValuesGetSpeed(written, clock());
+
+		double dPos = written / 1024.0;
 		const unsigned int unitPos = AdaptUnit(dPos, std::size(sizeUnits));
 		double dSpeed = speed / 1024.0;
 		const unsigned int unitSpeed = AdaptUnit(dSpeed, std::size(speedUnits));
 
 		CString str;
-		if (m_len) {
-			double dDur = m_len / 1024.0;
+		if (length) {
+			double dDur = length / 1024.0;
 			const unsigned int unitDur = AdaptUnit(dDur, std::size(sizeUnits));
 
 			str.Format(L"%.2lf %s / %.2lf %s , %.2lf %s",
@@ -525,7 +527,7 @@ HRESULT CSaveTaskDlg::OnTimer(_In_ long lTime)
 					   dSpeed, ResStr(speedUnits[unitSpeed]));
 
 			if (speed > 0) {
-				const REFERENCE_TIME sec = (m_len - pos) / speed;
+				const UINT64 sec = (length - written + (speed - 1)) / speed; // round up the remaining time
 				if (sec > 0 && sec < 921600) {
 					DVD_HMSF_TIMECODE tcDur = {
 						(BYTE)(sec / 3600),
@@ -537,13 +539,13 @@ HRESULT CSaveTaskDlg::OnTimer(_In_ long lTime)
 					str.AppendChar(L',');
 
 					if (tcDur.bHours > 0) {
-						str.AppendFormat(L" %0.2dh", tcDur.bHours);
+						str.AppendFormat(L" %2d %s", tcDur.bHours, ResStr(IDS_UNIT_TIME_H));
 					}
 					if (tcDur.bMinutes > 0) {
-						str.AppendFormat(L" %0.2dm", tcDur.bMinutes);
+						str.AppendFormat(L" %2d %s", tcDur.bMinutes, ResStr(IDS_UNIT_TIME_M));
 					}
 					if (tcDur.bSeconds > 0) {
-						str.AppendFormat(L" %0.2ds", tcDur.bSeconds);
+						str.AppendFormat(L" %2d %s", tcDur.bSeconds, ResStr(IDS_UNIT_TIME_S));
 					}
 				}
 			}
@@ -555,17 +557,19 @@ HRESULT CSaveTaskDlg::OnTimer(_In_ long lTime)
 
 		SetContent(str);
 
-		if (m_len) {
-			SetProgressBarPosition(static_cast<int>(1000 * pos / m_len));
+		if (length) {
+			SetProgressBarPosition(static_cast<int>(1000 * written / length));
 		}
 
 		if (m_bAbort) {
 			ClickCommandControl(IDCANCEL);
 			return S_FALSE;
 		}
-	} else if (m_pGB && m_pMS) {
+	}
+	else if (m_pGB && m_pMS) {
 		CString str;
-		REFERENCE_TIME pos = 0, dur = 0;
+		REFERENCE_TIME pos = 0;
+		REFERENCE_TIME dur = 0;
 		m_pMS->GetCurrentPosition(&pos);
 		m_pMS->GetDuration(&dur);
 		REFERENCE_TIME time = 0;
@@ -583,30 +587,6 @@ HRESULT CSaveTaskDlg::OnTimer(_In_ long lTime)
 				   dPos, ResStr(sizeUnits[unitPos]),
 				   dDur, ResStr(sizeUnits[unitDur]),
 				   dSpeed, ResStr(speedUnits[unitSpeed]));
-
-		if (speed > 0 && m_len) {
-			const REFERENCE_TIME sec = (dur - pos) / speed;
-			if (sec > 0) {
-				DVD_HMSF_TIMECODE tcDur = {
-					(BYTE)(sec / 3600),
-					(BYTE)(sec / 60 % 60),
-					(BYTE)(sec % 60),
-					0
-				};
-
-				str.AppendChar(L',');
-
-				if (tcDur.bHours > 0) {
-					str.AppendFormat(L" %0.2dh", tcDur.bHours);
-				}
-				if (tcDur.bMinutes > 0) {
-					str.AppendFormat(L" %0.2dm", tcDur.bMinutes);
-				}
-				if (tcDur.bSeconds > 0) {
-					str.AppendFormat(L" %0.2ds", tcDur.bSeconds);
-				}
-			}
-		}
 
 		SetContent(str);
 
