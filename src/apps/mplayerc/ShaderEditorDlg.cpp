@@ -188,8 +188,8 @@ BOOL CShaderEditorDlg::Create(CWnd* pParent)
 		return FALSE;
 	}
 
-	LOGFONT lf = {};
-	lf.lfHeight = -AfxGetMainFrame()->PointsToPixels(8);
+	LOGFONTW lf = {};
+	lf.lfHeight = -AfxGetMainFrame()->ScaleY(12);
 	lf.lfPitchAndFamily = FIXED_PITCH | FF_MODERN;
 
 	for (const auto &fontname : MonospaceFonts) {

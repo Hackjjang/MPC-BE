@@ -5957,7 +5957,10 @@ void CMainFrame::OnFileSaveAs()
 		return;
 	}
 
-	CString ext, ext_list, in = m_strPlaybackRenderedPath, out = in;
+	CStringW ext;
+	CStringW ext_list;
+	CStringW in = m_strPlaybackRenderedPath;
+	CStringW out = in;
 
 	if (!m_youtubeFields.fname.IsEmpty()) {
 		out = GetAltFileName();
@@ -5999,7 +6002,7 @@ void CMainFrame::OnFileSaveAs()
 	}
 	ext_list.Append(ResStr(IDS_MAINFRM_48));
 
-	CFileDialog fd(FALSE, 0, out,
+	CFileDialog fd(FALSE, ext.GetLength() ? ext.GetString() : nullptr, out,
 				   OFN_EXPLORER | OFN_ENABLESIZING | OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT | OFN_PATHMUSTEXIST | OFN_NOCHANGEDIR | OFN_DONTADDTORECENT,
 				   ext_list, GetModalParent(), 0);
 
@@ -6008,7 +6011,7 @@ void CMainFrame::OnFileSaveAs()
 	}
 
 	CStringW savedFileName(fd.GetPathName());
-	if (!ext.IsEmpty()) {
+	if (ext.GetLength()) {
 		savedFileName = AddExtension(savedFileName, ext);
 	}
 
@@ -6019,41 +6022,38 @@ void CMainFrame::OnFileSaveAs()
 		m_pMC->Pause();
 	}
 
+	const CAppSettings& s = AfxGetAppSettings();
 	std::list<CSaveTaskDlg::SaveItem_t> saveItems;
 	CString ffmpegpath;
 
 	if (m_youtubeFields.fname.GetLength()) {
-		saveItems.emplace_back('v', GetAltFileName(), in, savedFileName);
+		saveItems.emplace_back('v', in, GetAltFileName(), "");
 
 		const auto pFileData = dynamic_cast<OpenFileData*>(m_lastOMD.get());
 		if (pFileData) {
 			if (pFileData->fns.size() == 2) {
-				ext = GetFileExt(savedFileName);
-				CStringW audiofile = RenameFileExt(savedFileName, (ext == L".mp4") ? L".audio.m4a" : L".audio.mka");
 				auto it = ++(pFileData->fns.begin());
-				saveItems.emplace_back('a', it->GetTitle(), it->GetPath(), audiofile);
-				ffmpegpath = GetFullExePath(AfxGetAppSettings().strFFmpegExePath, true);
+				saveItems.emplace_back('a', it->GetPath(), it->GetTitle(), "");
+				ffmpegpath = GetFullExePath(s.strFFmpegExePath, true);
 			}
 
 			for (const auto& sub : pFileData->subs) {
 				if (sub.GetPath().Find(L"fmt=vtt") > 0) {
-					CStringW subext = L"." + sub.GetTitle() + L".vtt";
-					FixFilename(subext);
-					CStringW subfile = RenameFileExt(savedFileName, subext);
-					saveItems.emplace_back('s', sub.GetTitle(), sub.GetPath(), subfile);
+					saveItems.emplace_back('s', sub.GetPath(), sub.GetTitle(), sub.GetLang());
 				}
 			}
 		}
 	}
 	else {
-		saveItems.emplace_back(0, in, in, savedFileName);
+		saveItems.emplace_back(0, in, in, "");
 	}
 
 	HRESULT hr = S_OK;
-	CSaveTaskDlg save_dlg(saveItems, hr);
+	CSaveTaskDlg save_dlg(saveItems, savedFileName, hr);
 
 	if (SUCCEEDED(hr)) {
 		save_dlg.SetFFmpegPath(ffmpegpath);
+		save_dlg.SetLangDefault(CStringA(s.strYoutubeAudioLang));
 		save_dlg.DoModal();
 	}
 

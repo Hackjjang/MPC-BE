@@ -110,9 +110,9 @@ BOOL CPPageFileMediaInfo::OnInitDialog()
 {
 	__super::OnInitDialog();
 
-	LOGFONT lf = {};
+	LOGFONTW lf = {};
 	lf.lfPitchAndFamily = DEFAULT_PITCH | FF_MODERN;
-	lf.lfHeight = -m_pMainFrame->PointsToPixels(8);
+	lf.lfHeight = -m_pMainFrame->ScaleY(12);
 
 	UINT i = 0;
 	BOOL success;
