@@ -1217,6 +1217,8 @@ public:
 
 	afx_msg void OnAddToPlaylistFromClipboard();
 
+	afx_msg void OnChangeMouseEasyMove();
+
 	afx_msg void OnClose();
 
 	afx_msg void OnLanguage(UINT nID);
@@ -1430,8 +1432,8 @@ private:
 
 	void		AddRecent(const CString& pathName);
 
-	CString		GetVidPos();
-	CString		CreateSnapShotFileName();
+	CStringW	GetVidPos();
+	CStringW	CreateSnapShotFileName();
 
 	REFTIME		GetAvgTimePerFrame(BOOL bUsePCAP = TRUE) const;
 

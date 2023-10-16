@@ -119,3 +119,10 @@ struct PinType {
 	GUID major;
 	GUID sub;
 };
+
+struct TimeCode_t {
+	int32_t Hours;
+	int8_t  Minutes;
+	int8_t  Seconds;
+	int16_t Milliseconds;
+};

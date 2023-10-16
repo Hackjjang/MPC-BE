@@ -1003,6 +1003,79 @@ CString GetDriveLabel(WCHAR drive)
 	return label;
 }
 
+TimeCode_t ReftimeToTimecode(REFERENCE_TIME rt)
+{
+	TimeCode_t timecode;
+
+	lldiv_t d = { rt / 10000, 0 };
+
+	d = std::lldiv(d.quot, 1000);
+	timecode.Milliseconds = (int16_t)d.rem;
+
+	d = std::lldiv(d.quot, 60);
+	timecode.Seconds = (int8_t)d.rem;
+
+	d = std::lldiv(d.quot, 60);
+	timecode.Hours = (int32_t)d.quot;
+	timecode.Minutes = (int8_t)d.rem;
+
+	return timecode;
+}
+
+TimeCode_t ReftimeToHMS(REFERENCE_TIME rt)
+{
+	TimeCode_t timecode;
+
+	lldiv_t d = { (rt + 5000000) / 10000000, 0 };
+
+	d = std::lldiv(d.quot, 60);
+	timecode.Seconds = (int8_t)d.rem;
+	timecode.Milliseconds = 0;
+
+	d = std::lldiv(d.quot, 60);
+	timecode.Hours = (int32_t)d.quot;
+	timecode.Minutes = (int8_t)d.rem;
+
+	return timecode;
+}
+
+REFERENCE_TIME TimecodeToReftime(TimeCode_t tc)
+{
+	return ((((REFERENCE_TIME)tc.Hours * 60 + tc.Minutes) * 60 + tc.Seconds) * 1000 + tc.Milliseconds) * 10000;
+}
+
+// hh:mm::ss.millisec
+CStringW ReftimeToString(REFERENCE_TIME rt)
+{
+	if (rt == INVALID_TIME) {
+		return L"INVALID TIME";
+	}
+
+	TimeCode_t tc = ReftimeToTimecode(rt);
+	CStringW str;
+	str.Format(L"%02d:%02d:%02d.%03d", tc.Hours, tc.Minutes, tc.Seconds, tc.Milliseconds);
+
+	return str;
+}
+
+// hour, minute, second (round)
+CStringW ReftimeToString2(REFERENCE_TIME rt, bool showZeroHours /* = true*/)
+{
+	if (rt == INVALID_TIME) {
+		return L"INVALID TIME";
+	}
+
+	TimeCode_t tc = ReftimeToHMS(rt);
+	CStringW str;
+	if (tc.Hours || showZeroHours) {
+		str.Format(L"%02d:%02d:%02d", tc.Hours, tc.Minutes, tc.Seconds);
+	} else {
+		str.Format(L"%02d:%02d", tc.Minutes, tc.Seconds);
+	}
+
+	return str;
+}
+
 DVD_HMSF_TIMECODE RT2HMSF(REFERENCE_TIME rt, double fps) // use to remember the current position
 {
 	DVD_HMSF_TIMECODE hmsf = {
@@ -1783,50 +1856,15 @@ CString GetDXVAMode(const GUID& guidDecoder)
 	return CStringFromGUID(guidDecoder);
 }
 
-// hour, minute, second, millisec
-CString ReftimeToString(REFERENCE_TIME rt)
+CStringW DVDtimeToString(const DVD_HMSF_TIMECODE dvd_tc, bool showZeroHours)
 {
-	if (rt == INVALID_TIME) {
-		return L"INVALID TIME";
-	}
-
-	CString		strTemp;
-	LONGLONG	llTotalMs = ConvertToMilliseconds(rt);
-	int			lHour     = (int)(llTotalMs  / (1000 * 60 * 60));
-	int			lMinute   = (llTotalMs / (1000 * 60)) % 60;
-	int			lSecond   = (llTotalMs /  1000) % 60;
-	int			lMillisec = llTotalMs  %  1000;
-
-	strTemp.Format(L"%02d:%02d:%02d.%03d", lHour, lMinute, lSecond, lMillisec);
-	return strTemp;
-}
-
-// hour, minute, second (round)
-CString ReftimeToString2(REFERENCE_TIME rt)
-{
-	if (rt == INVALID_TIME) {
-		return L"INVALID TIME";
-	}
-
-	CString		strTemp;
-	LONGLONG	seconds = (rt + 5000000) / 10000000;
-	int			lHour   = (int)(seconds / 3600);
-	int			lMinute = (int)(seconds / 60 % 60);
-	int			lSecond = (int)(seconds % 60);
-
-	strTemp.Format(L"%02d:%02d:%02d", lHour, lMinute, lSecond);
-	return strTemp;
-}
-
-CString DVDtimeToString(const DVD_HMSF_TIMECODE& rtVal, bool bAlwaysShowHours)
-{
-	CString	strTemp;
-	if (rtVal.bHours > 0 || bAlwaysShowHours) {
-		strTemp.Format(L"%02d:%02d:%02d", rtVal.bHours, rtVal.bMinutes, rtVal.bSeconds);
+	CStringW str;
+	if (dvd_tc.bHours > 0 || showZeroHours) {
+		str.Format(L"%02d:%02d:%02d", dvd_tc.bHours, dvd_tc.bMinutes, dvd_tc.bSeconds);
 	} else {
-		strTemp.Format(L"%02d:%02d", rtVal.bMinutes, rtVal.bSeconds);
+		str.Format(L"%02d:%02d", dvd_tc.bMinutes, dvd_tc.bSeconds);
 	}
-	return strTemp;
+	return str;
 }
 
 REFERENCE_TIME StringToReftime(LPCWSTR strVal)
