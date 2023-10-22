@@ -34,20 +34,22 @@ public:
 	UINT m_id;
 	CString m_label;
 
-	CFileItemList m_fns;
+	CFileItem         m_fi;
+	CAudioItemList    m_auds;
 	CSubtitleItemList m_subs;
 
 	enum type_t {
 		file,
 		device
-	} m_type;
-	REFERENCE_TIME m_duration;
-	int m_vinput, m_vchannel;
-	int m_ainput;
-	long m_country;
+	} m_type = file;
+	REFERENCE_TIME m_duration = 0;
+	int m_vinput   = -1;
+	int m_vchannel = -1;
+	int m_ainput   = -1;
+	long m_country = 0;
 
-	bool m_bInvalid;
-	bool m_bDirectory;
+	bool m_bInvalid   = false;
+	bool m_bDirectory = false;
 
 public:
 	CPlaylistItem();

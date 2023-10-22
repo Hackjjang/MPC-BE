@@ -36,6 +36,7 @@
 #include "PlayerShaderEditorBar.h"
 #include "PPageSheet.h"
 #include "PPageFileInfoSheet.h"
+#include "OpenMediaData.h"
 #include "FileDropTarget.h"
 #include "KeyProvider.h"
 #include "PlayerYouTube.h"
@@ -101,80 +102,6 @@ interface __declspec(uuid("6E8D4A21-310C-11d0-B79A-00AA003767A7")) // IID_IAMLin
 IAMLine21Decoder_2 :
 public IAMLine21Decoder {};
 
-class OpenMediaData
-{
-public:
-	//OpenMediaData() {}
-	virtual ~OpenMediaData() {} // one virtual funct is needed to enable rtti
-	CString title;
-	CSubtitleItemList subs;
-
-	BOOL bAddRecent = TRUE;
-};
-
-class OpenFileData : public OpenMediaData
-{
-public:
-	//OpenFileData() {}
-	CFileItemList fns;
-	REFERENCE_TIME rtStart = INVALID_TIME;
-};
-
-class OpenDVDData : public OpenMediaData
-{
-public:
-	//OpenDVDData() {}
-	CString path;
-	CComPtr<IDvdState> pDvdState;
-};
-
-class OpenDeviceData : public OpenMediaData
-{
-public:
-	//OpenDeviceData() {}
-	CStringW DisplayName[2];
-	int vinput = -1;
-	int vchannel = -1;
-	int ainput = -1;
-};
-
-class CMainFrame;
-
-class CGraphThread : public CWinThread
-{
-	CMainFrame* m_pMainFrame;
-
-	DECLARE_DYNCREATE(CGraphThread);
-
-public:
-	CGraphThread() : m_pMainFrame(nullptr) {}
-
-	void SetMainFrame(CMainFrame* pMainFrame) {
-		m_pMainFrame = pMainFrame;
-	}
-
-	BOOL InitInstance();
-	int ExitInstance();
-
-	enum {
-		TM_EXIT = WM_APP,
-		TM_OPEN,
-		TM_CLOSE,
-		TM_RESIZE,
-		TM_RESET,
-		TM_TUNER_SCAN,
-		TM_DISPLAY_CHANGE
-	};
-	DECLARE_MESSAGE_MAP()
-	afx_msg void OnExit(WPARAM wParam, LPARAM lParam);
-	afx_msg void OnOpen(WPARAM wParam, LPARAM lParam);
-	afx_msg void OnClose(WPARAM wParam, LPARAM lParam);
-	afx_msg void OnResize(WPARAM wParam, LPARAM lParam);
-	afx_msg void OnReset(WPARAM wParam, LPARAM lParam);
-	afx_msg void OnTunerScan(WPARAM wParam, LPARAM lParam);
-	afx_msg void OnDisplayChange(WPARAM wParam, LPARAM lParam);
-};
-
 /*
 class CKeyFrameFinderThread : public CWinThread, public CCritSec
 {
@@ -201,7 +128,6 @@ class CMainFrame : public CFrameWnd, public CDropTarget, public CDPI
 {
 	friend class CPPageFileInfoSheet;
 	friend class CPPageLogo;
-	friend class CSubtitleDlDlg;
 	friend class CChildView;
 	friend class CThumbsTaskDlg;
 	friend class CShaderEditorDlg;

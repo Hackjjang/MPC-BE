@@ -31,13 +31,21 @@ namespace YoutubeDL
 {
 	std::vector<std::unique_ptr<Youtube::YoutubeProfile>> YoutubeProfiles;
 
-	bool Parse_URL(const CString& url, const CString& ydlExePath, const int maxHeightOptions, const bool bMaximumQuality,
-		std::list<CString>& urls, CSubtitleItemList& subs, Youtube::YoutubeFields& y_fields,
-		Youtube::YoutubeUrllist& youtubeUrllist, Youtube::YoutubeUrllist& youtubeAudioUrllist)
+	bool Parse_URL(
+		const CStringW& url,        // input parameter
+		const CStringW& ydlExePath, // input parameter
+		const int maxHeightOptions, // input parameter
+		const bool bMaximumQuality, // input parameter
+		const CStringA lang,        // input parameter
+		Youtube::YoutubeFields& y_fields,
+		Youtube::YoutubeUrllist& youtubeUrllist,
+		Youtube::YoutubeUrllist& youtubeAudioUrllist,
+		OpenFileData* pOFD
+	)
 	{
 		y_fields.Empty();
 		YoutubeProfiles.clear();
-		urls.clear();
+		pOFD->Clear();
 
 		CStringW ydl_path = GetFullExePath(ydlExePath, true);
 
@@ -146,7 +154,11 @@ namespace YoutubeDL
 
 					float aud_bitrate = 0.0f;
 					CStringA bestAudioUrl;
-					std::map<CStringA, CStringA> audioUrls;
+					struct audio_info_t {
+						float tbr = 0;
+						CStringA url;
+					};
+					std::map<CStringA, audio_info_t> audioUrls;
 
 					CStringA bestUrl;
 					getJsonValue(d, "url", bestUrl);
@@ -259,6 +271,10 @@ namespace YoutubeDL
 						if (!getJsonValue(format, "vcodec", vcodec) || vcodec != "none") {
 							continue;
 						}
+						CStringA acodec;
+						if (!getJsonValue(format, "acodec", acodec) || acodec == "none") {
+							continue;
+						}
 
 						float tbr = 0.0f;
 						if (getJsonValue(format, "tbr", tbr)) {
@@ -275,8 +291,9 @@ namespace YoutubeDL
 
 						CStringA language;
 						if (getJsonValue(format, "language", language)) {
-							if (const auto it = audioUrls.find(language); it == audioUrls.cend()) {
-								audioUrls[language] = url;
+							const auto it = audioUrls.find(language);
+							if (it == audioUrls.cend() || tbr > (*it).second.tbr) {
+								audioUrls[language] = { tbr, url };
 							}
 						}
 					}
@@ -353,18 +370,28 @@ namespace YoutubeDL
 							}
 						}
 
-						urls.emplace_back(CString(bestUrl));
+						pOFD->fi = CStringW(bestUrl);
 						if (bVideoOnly) {
 							if (audioUrls.size() > 1) {
-								for (const auto& [language, audioUrl] : audioUrls) {
-									urls.emplace_back(CString(audioUrl));
+								std::pair<CStringA, audio_info_t> item;
+								if (auto it = audioUrls.find(lang); it != audioUrls.end()) {
+									item = *it;
 								}
-							} else if (!bestAudioUrl.IsEmpty()) {
-								urls.emplace_back(CString(bestAudioUrl));
+								else if (auto it = audioUrls.find("en"); it != audioUrls.end()) {
+									item = *it;
+								}
+								else {
+									item = *audioUrls.begin();
+								}
+
+								pOFD->auds.emplace_back(CStringW(item.second.url), CStringW(item.first), item.first);
+							}
+							else if (bestAudioUrl.GetLength()) {
+								pOFD->auds.emplace_back(CStringW(bestAudioUrl));
 							}
 						}
 
-						if (!bestAudioUrl.IsEmpty()) {
+						if (bestAudioUrl.GetLength()) {
 							auto profilePtr = std::make_unique<Youtube::YoutubeProfile>();
 							auto profile = profilePtr.get();
 							YoutubeProfiles.emplace_back(std::move(profilePtr));
@@ -396,12 +423,14 @@ namespace YoutubeDL
 						// subtitles
 						if (auto requested_subtitles = GetJsonObject(d, "requested_subtitles")) {
 							for (const auto& subtitle : requested_subtitles->GetObj()) {
-								CString sub_url;
+								CStringW sub_url;
+								CStringW sub_name;
 								getJsonValue(subtitle.value, "url", sub_url);
-								CString sub_lang = UTF8ToWStr(subtitle.name.GetString());
+								getJsonValue(subtitle.value, "name", sub_name);
+								CStringA sub_lang = subtitle.name.GetString();
 
-								if (!sub_url.IsEmpty() && !sub_lang.IsEmpty()) {
-									subs.emplace_back(sub_url, sub_lang);
+								if (sub_url.GetLength() && sub_lang.GetLength()) {
+									pOFD->subs.emplace_back(sub_url, sub_name, sub_lang);
 								}
 							}
 						}
@@ -421,7 +450,7 @@ namespace YoutubeDL
 			}
 		}
 
-		return !urls.empty();
+		return pOFD->fi.Valid();
 	}
 
 	void Clear()
