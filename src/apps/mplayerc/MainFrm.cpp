@@ -4572,7 +4572,7 @@ void CMainFrame::OnFilePostOpenMedia(std::unique_ptr<OpenMediaData>& pOMD)
 	}
 
 	if (!m_bAudioOnly &&
-			((m_bFullScreen && !m_bAudioOnly && !s.fLaunchfullscreen && !s.ExclusiveFSAllowed() && s.fullScreenModes.bEnabled == 1) || m_bNeedAutoChangeMonitorMode)) {
+			((m_bFullScreen && !s.fLaunchfullscreen && !s.ExclusiveFSAllowed() && s.fullScreenModes.bEnabled == 1) || m_bNeedAutoChangeMonitorMode)) {
 		AutoChangeMonitorMode();
 	}
 
@@ -10627,7 +10627,7 @@ void CMainFrame::OnChangeMouseEasyMove()
 	CAppSettings& s = AfxGetAppSettings();
 	s.bMouseEasyMove = !s.bMouseEasyMove;
 
-	m_OSD.DisplayMessage(OSD_TOPLEFT, ResStr(s.bMouseEasyMove ? IDS_MOVEWINDOWBYVIDEO_ON : IDS_MOVEWINDOWBYVIDEO_0FF));
+	m_OSD.DisplayMessage(OSD_TOPLEFT, ResStr(s.bMouseEasyMove ? IDS_MOVEWINDOWBYVIDEO_ON : IDS_MOVEWINDOWBYVIDEO_OFF));
 }
 
 void CMainFrame::SetDefaultWindowRect(int iMonitor, const bool bLastCall)
