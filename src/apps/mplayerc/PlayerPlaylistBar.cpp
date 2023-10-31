@@ -1722,6 +1722,10 @@ bool CPlayerPlaylistBar::ParseM3UPlayList(CString fn)
 
 	std::vector<CPlaylistItem> playlist;
 
+	CStringW title;
+	CStringW album;
+	REFERENCE_TIME duration = 0;
+
 	INT_PTR c = curPlayList.GetCount();
 	CStringW str;
 	while (f.ReadString(str)) {
@@ -1730,10 +1734,6 @@ bool CPlayerPlaylistBar::ParseM3UPlayList(CString fn)
 		if (str.IsEmpty() || (StartsWith(str, L"#EXTM3U"))) {
 			continue;
 		}
-
-		CPlaylistItem pli;
-		CStringW title;
-		CStringW album;
 
 		if (str.GetAt(0) == L'#') {
 			auto DeleteLeft = [](const auto pos, auto& str) {
@@ -1753,7 +1753,7 @@ bool CPlayerPlaylistBar::ParseM3UPlayList(CString fn)
 						str = str.Mid(pos, str.GetLength() - pos);
 
 						if (dur > 0) {
-							pli.m_duration = UNITS * dur;
+							duration = UNITS * dur;
 						}
 					}
 				}
@@ -1804,6 +1804,8 @@ bool CPlayerPlaylistBar::ParseM3UPlayList(CString fn)
 				}
 			}
 
+			CPlaylistItem pli;
+
 			pli.m_fi = path;
 			if (!audioId.IsEmpty()) {
 				const auto it = audio_fns.find(audioId);
@@ -1824,7 +1826,13 @@ bool CPlayerPlaylistBar::ParseM3UPlayList(CString fn)
 				pli.m_label = album;
 			}
 
+			pli.m_duration = duration;
+
 			playlist.emplace_back(pli);
+
+			title.Empty();
+			album.Empty();
+			duration = 0;
 		}
 	}
 
@@ -3239,25 +3247,27 @@ void CPlayerPlaylistBar::DropItemOnList()
 		m_list.DeleteItem(m_DragIndexes[i]);
 	}
 
-	std::list<CPlaylistItem> tmp;
+	std::vector<CPlaylistItem> pli_tmp;
+	pli_tmp.reserve(m_list.GetItemCount());
+
 	UINT id = (UINT)-1;
 	for (int i = 0; i < m_list.GetItemCount(); i++) {
 		POSITION pos = (POSITION)m_list.GetItemData(i);
 		CPlaylistItem& pli = curPlayList.GetAt(pos);
-		tmp.emplace_back(pli);
+		pli_tmp.emplace_back(pli);
 		if (pos == curPlayList.GetPos()) {
 			id = pli.m_id;
 		}
 	}
 	curPlayList.RemoveAll();
-	auto it = tmp.begin();
-	for (int i = 0; it != tmp.end(); i++) {
-		CPlaylistItem& pli = *it++;
+
+	for (size_t i = 0; i < pli_tmp.size(); i++) {
+		CPlaylistItem& pli = pli_tmp[i];
 		curPlayList.AddTail(pli);
 		if (pli.m_id == id) {
 			curPlayList.SetPos(curPlayList.GetTailPosition());
 		}
-		m_list.SetItemData(i, (DWORD_PTR)curPlayList.GetTailPosition());
+		m_list.SetItemData((int)i, (DWORD_PTR)curPlayList.GetTailPosition());
 	}
 
 	ResizeListColumn();
