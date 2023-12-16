@@ -100,6 +100,27 @@ void CHistoryDlg::SetupList()
 	m_list.RedrawWindow();
 }
 
+void CHistoryDlg::CopySelectedPaths()
+{
+	CStringW paths;
+
+	POSITION pos = m_list.GetFirstSelectedItemPosition();
+
+	while (pos) {
+		int nItem = m_list.GetNextSelectedItem(pos);
+
+		size_t index = m_list.GetItemData(nItem);
+		if (index < m_recentSessions.size()) {
+			paths.Append(m_recentSessions[index].Path);
+			paths.Append(L"\n");
+		}
+	}
+
+	if (paths.GetLength()) {
+		CopyStringToClipboard(this->m_hWnd, paths);
+	}
+}
+
 void CHistoryDlg::RemoveFromJumpList(const std::list<SessionInfo>& sessions)
 {
 	CComPtr<IApplicationDestinations> pDests;
@@ -321,13 +342,15 @@ void CHistoryDlg::OnChangeFilterEdit()
 void CHistoryDlg::OnBnClickedMenu()
 {
 	enum {
-		M_REMOVE_SELECTED = 1,
+		M_COPY_SELECTED = 1,
+		M_REMOVE_SELECTED,
 		M_REMOVE_MISSING,
 		M_CLEAR,
 	};
 
 	CMenu menu;
 	menu.CreatePopupMenu();
+	menu.AppendMenuW(MF_STRING | MF_ENABLED, M_COPY_SELECTED, ResStr(IDS_COPY_TO_CLIPBOARD) + L"\tCtrl+C");
 	menu.AppendMenuW(MF_STRING | MF_ENABLED, M_REMOVE_SELECTED, ResStr(IDS_HISTORY_REMOVE_SELECTED)+L"\tDelete");
 	menu.AppendMenuW(MF_SEPARATOR);
 	menu.AppendMenuW(MF_STRING | MF_ENABLED, M_REMOVE_MISSING, ResStr(IDS_HISTORY_REMOVE_MISSING));
@@ -338,6 +361,9 @@ void CHistoryDlg::OnBnClickedMenu()
 
 	int id = menu.TrackPopupMenu(TPM_LEFTBUTTON|TPM_RETURNCMD, wrect.left, wrect.bottom, this);
 	switch (id) {
+	case M_COPY_SELECTED:
+		CopySelectedPaths();
+		break;
 	case M_REMOVE_SELECTED:
 		RemoveSelected();
 		break;
@@ -383,6 +409,9 @@ void CHistoryDlg::OnKeydownList(NMHDR* pNMHDR, LRESULT* pResult)
 		if (IDYES == AfxMessageBox(str, MB_ICONQUESTION | MB_YESNO)) {
 			RemoveSelected();
 		}
+	}
+	else if (pLVKeyDow->wVKey == 'C' && GetKeyState(VK_CONTROL) < 0) {
+		CopySelectedPaths();
 	}
 
 	*pResult = 0;

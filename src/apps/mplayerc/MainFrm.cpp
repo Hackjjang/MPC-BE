@@ -6327,30 +6327,7 @@ void CMainFrame::SaveImage(LPCWSTR fn, bool displayed)
 				m_OSD.DisplayMessage(OSD_TOPLEFT, ResStr(IDS_OSD_IMAGE_SAVED), 3000);
 			}
 		} else {
-			// Allocate a global memory object for the DIB
-			HGLOBAL hGlob = GlobalAlloc(GMEM_MOVEABLE, dib.Size());
-			if (hGlob) {
-				// Lock the handle and copy the DIB to the buffer
-				LPVOID pData = GlobalLock(hGlob);
-				if (pData) {
-					memcpy(pData, dib.Data(), dib.Size());
-					GlobalUnlock(hGlob);
-
-					if (OpenClipboard()) {
-						// Place the handle on the clipboard, if the call succeeds
-						// the system will take care of the allocated memory
-						if (::EmptyClipboard() && ::SetClipboardData(CF_DIB, hGlob)) {
-							hGlob = nullptr;
-						}
-
-						::CloseClipboard();
-					}
-				}
-
-				if (hGlob) {
-					GlobalFree(hGlob);
-				}
-			}
+			CopyDataToClipboard(this->m_hWnd, CF_DIB, dib.Data(), dib.Size());
 		}
 	}
 	else {
@@ -8789,30 +8766,7 @@ void CMainFrame::OnPlayFiltersCopyToClipboard()
 	}
 
 	// Allocate a global memory object for the text
-	int len = filtersList.GetLength() + 1;
-	HGLOBAL hGlob = GlobalAlloc(GMEM_MOVEABLE, len * sizeof(WCHAR));
-	if (hGlob) {
-		// Lock the handle and copy the text to the buffer
-		LPVOID pData = GlobalLock(hGlob);
-		if (pData) {
-			wcscpy_s((WCHAR*)pData, len, (LPCWSTR)filtersList);
-			GlobalUnlock(hGlob);
-
-			if (OpenClipboard()) {
-				// Place the handle on the clipboard, if the call succeeds
-				// the system will take care of the allocated memory
-				if (::EmptyClipboard() && ::SetClipboardData(CF_UNICODETEXT, hGlob)) {
-					hGlob = nullptr;
-				}
-
-				::CloseClipboard();
-			}
-		}
-
-		if (hGlob) {
-			GlobalFree(hGlob);
-		}
-	}
+	CopyStringToClipboard(this->m_hWnd, filtersList);
 }
 
 void CMainFrame::OnPlayFilters(UINT nID)
@@ -10556,25 +10510,7 @@ void CMainFrame::OnSubCopyClipboard()
 
 			CString text;
 			if (pRTS->GetText(rtNow, m_pCAP->GetFPS(), text)) {
-				const int len = text.GetLength() + 1;
-				if (HGLOBAL hGlob = GlobalAlloc(GMEM_MOVEABLE, len * sizeof(WCHAR))) {
-					if (WCHAR* sData = (WCHAR*)GlobalLock(hGlob)) {
-						wcscpy_s(sData, len, text);
-						GlobalUnlock(hGlob);
-
-						if (OpenClipboard()) {
-							if (EmptyClipboard() && SetClipboardData(CF_UNICODETEXT, hGlob)) {
-								hGlob = nullptr;
-							}
-
-							CloseClipboard();
-						}
-					}
-
-					if (hGlob) {
-						::GlobalFree(hGlob);
-					}
-				}
+				CopyStringToClipboard(this->m_hWnd, text);
 			}
 		}
 	}
@@ -16117,13 +16053,16 @@ void CMainFrame::SetAlwaysOnTop(int i)
 		} else if (i == 1) {
 			pInsertAfter = &wndTopMost;
 		} else if (i == 2) {
-			pInsertAfter = GetMediaState() == State_Running ? &wndTopMost : &wndNoTopMost;
+			pInsertAfter = (GetMediaState() == State_Running) ? &wndTopMost : &wndNoTopMost;
 		} else { // if (i == 3)
 			pInsertAfter = (GetMediaState() == State_Running && !m_bAudioOnly) ? &wndTopMost : &wndNoTopMost;
 		}
 
 		if (pInsertAfter) {
 			SetWindowPos(pInsertAfter, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+			if (pInsertAfter == &wndTopMost) {
+				SetForegroundWindow();
+			}
 		}
 	} else if (bD3DOnMain) {
 		SetWindowPos(&wndNoTopMost, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);

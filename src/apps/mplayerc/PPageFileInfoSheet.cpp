@@ -167,23 +167,13 @@ void CPPageFileInfoSheet::OnSaveAs()
 
 void CPPageFileInfoSheet::OnCopyToClipboard()
 {
-	size_t cbStr = (m_mi.MI_Text.GetLength() + 1) * sizeof(WCHAR);
-	HGLOBAL hGlob = GlobalAlloc(GMEM_MOVEABLE, cbStr);
-	if (hGlob) {
-		LPVOID pData = GlobalLock(hGlob);
-		if (pData) {
-			memcpy_s(GlobalLock(pData), cbStr, m_mi.MI_Text.LockBuffer(), cbStr);
-			GlobalUnlock(hGlob);
-			m_mi.MI_Text.UnlockBuffer();
-
-			if (OpenClipboard()) {
-				EmptyClipboard();
-				::SetClipboardData(CF_UNICODETEXT, hGlob);
-				CloseClipboard();
-			}
-		}
-
-		GlobalFree(hGlob);
+	if (m_mi.MI_Text.GetLength()) {
+		CopyDataToClipboard(
+			this->m_hWnd, CF_UNICODETEXT,
+			m_mi.MI_Text.LockBuffer(),
+			(m_mi.MI_Text.GetLength() + 1) * sizeof(WCHAR)
+		);
+		m_mi.MI_Text.UnlockBuffer();
 	}
 }
 
