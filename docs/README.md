@@ -8,12 +8,14 @@ MPC-BE는 윈도용 다목적 미디어 플레이어입니다.
 * SSE2를 지원하는 프로세서
 * 윈도 10, 11 (64비트)
 
----
+## Downloads
+- [Releases      ](https://github.com/Aleksoid1978/MPC-BE/releases)
+- [Nightly Builds](https://github.com/Aleksoid1978/MPC-BE/wiki/Nightly-builds)
 
 ## Links
 - [Project Page  ](https://sourceforge.net/projects/mpcbe/)
+- [Wiki          ](https://github.com/Aleksoid1978/MPC-BE/wiki)
 - [Get code      ](https://github.com/Aleksoid1978/MPC-BE.git)
-- [Nightly Builds](https://github.com/Aleksoid1978/MPC-BE/wiki/Nightly-builds)
 
 ---
  

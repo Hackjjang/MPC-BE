@@ -55,25 +55,20 @@
   #define bindir       = bin_dir + "\mpc-be_x86"
   #define mpcbe_exe    = "mpc-be.exe"
   #define mpcbe_ini    = "mpc-be.ini"
-  #define dxdir        = "DirectX\x86"
+  #define dxdir        = "MPC_components\DirectX\x86"
   #define BeveledLabel = app_name + " " + app_version
   #define Description  = app_name + " " + app_version
   #define VisualElementsManifest = "VisualElements\mpc-be.VisualElementsManifest.xml"
-  #define mpcvr_ax     = "MpcVideoRenderer.ax"
 #else
   #define bindir       = bin_dir + "\mpc-be_x64"
   #define mpcbe_exe    = "mpc-be64.exe"
   #define mpcbe_ini    = "mpc-be64.ini"
-  #define dxdir        = "DirectX\x64"
+  #define dxdir        = "MPC_components\DirectX\x64"
   #define BeveledLabel = app_name + " x64 " + app_version
   #define Description  = app_name + " x64 " + app_version
   #define VisualElementsManifest = "VisualElements\mpc-be64.VisualElementsManifest.xml"
-  #define mpcvr_ax     = "MpcVideoRenderer64.ax"
 #endif
 #define mpcvr_desc     = "MPC Video Renderer 0.6.9"
-#define mpcvr_zip      = "MpcVideoRenderer-0.6.9.2117.zip"
-#define mpcvr_zip_sha1 = "c5de2ed748ddadb74a81dcd05f45be2352fd4c8b"
-#define mpcvr_url      = "https://github.com/Aleksoid1978/VideoRenderer/releases/download/0.6.9/" + mpcvr_zip
 
 [Setup]
 #ifdef Win32Build
@@ -183,9 +178,9 @@ Name: "mpcresources";  Description: "{cm:comp_mpcresources}";   Types: default c
 Name: "mpcbeshellext"; Description: "{cm:comp_mpcbeshellext}";  Types: custom;         Flags: disablenouninstallwarning;
 Name: "intel_msdk";    Description: "{cm:comp_intel_msdk}";     Types: custom;         Flags: disablenouninstallwarning;
 #ifdef Win32Build
-Name: "mpcvr";         Description: "{#mpcvr_desc}";            Types: custom;         Flags: disablenouninstallwarning; ExtraDiskSpaceRequired: 816128; 
+Name: "mpcvr";         Description: "{#mpcvr_desc}";            Types: custom;         Flags: disablenouninstallwarning;
 #else
-Name: "mpcvr";         Description: "{#mpcvr_desc}";            Types: custom;         Flags: disablenouninstallwarning; ExtraDiskSpaceRequired: 902656; 
+Name: "mpcvr";         Description: "{#mpcvr_desc}";            Types: custom;         Flags: disablenouninstallwarning; 
 #endif
 
 [Tasks]
@@ -220,9 +215,11 @@ Source: "Shaders11\*.hlsl";                DestDir: "{app}\Shaders11";          
 Source: "VisualElements\*.png";            DestDir: "{app}";                             Flags: ignoreversion; Components: main
 Source: "{#VisualElementsManifest}";       DestDir: "{app}";                             Flags: ignoreversion; Components: main
 #ifdef Win32Build
-Source: "IntelMediaSDK\x86\libmfxsw32.dll"; DestDir: "{app}"; Flags: ignoreversion;  Components: intel_msdk;
+Source: "MPC_components\IntelMediaSDK\libmfxsw32.dll"; DestDir: "{app}"; Flags: ignoreversion; Components: intel_msdk;
+Source: "MPC_components\MpcVideoRenderer\MpcVideoRenderer.ax"; DestDir: "{app}\Filters"; Flags: regserver; Components: mpcvr;
 #else
-Source: "IntelMediaSDK\x64\libmfxsw64.dll"; DestDir: "{app}"; Flags: ignoreversion;  Components: intel_msdk;
+Source: "MPC_components\IntelMediaSDK\libmfxsw64.dll"; DestDir: "{app}"; Flags: ignoreversion; Components: intel_msdk;
+Source: "MPC_components\MpcVideoRenderer\MpcVideoRenderer64.ax"; DestDir: "{app}\Filters"; Flags: regserver; Components: mpcvr;
 #endif
 
 [Icons]
@@ -289,9 +286,6 @@ function SetFileAttributes(lpFileName: String; dwFileAttributes: Cardinal): Inte
 
 var
   TasksList: TNewCheckListBox;
-  DownloadPage: TDownloadWizardPage;
-
-  path_mpcvr: String;
 
 // thank for code to "El Sanchez" from forum.oszone.net
 procedure PinToTaskbar(Filename: String; IsPin: Boolean);
@@ -527,59 +521,7 @@ begin
         sRegParams := sRegParams + ' /regpl';
       Exec(ExpandConstant('{app}\{#mpcbe_exe}'), sRegParams, ExpandConstant('{app}'), SW_HIDE, ewWaitUntilTerminated, resCode);
     end;
-
-    if WizardIsComponentSelected('mpcvr') and (Length(path_mpcvr)>0) then
-    begin
-      checksum := GetSHA1OfFile(path_mpcvr);
-      if checksum = '{#mpcvr_zip_sha1}' then
-      begin
-        Unzip(path_mpcvr, '{#mpcvr_ax}', ExpandConstant('{app}\Filters'));
-        RegisterServer(Is64BitInstallMode, ExpandConstant('{app}\Filters\{#mpcvr_ax}'), False);
-      end
-      else
-        SuppressibleMsgBox('Non-original {#mpcvr_zip} !', mbError, MB_OK, IDOK);
-    end;
   end;
-end;
-
-function NextButtonClick(CurPageID: Integer): Boolean;
-var
-  need_dl_mpcvr: Boolean;
-  new_path: String;
-begin
-  if CurPageID = wpReady then
-  begin
-    need_dl_mpcvr := WizardIsComponentSelected('mpcvr') and (Length(path_mpcvr)=0);
-
-    DownloadPage.Clear;
-    //if need_dl_intel_msdk or need_dl_mpcvr then
-    begin
-      if need_dl_mpcvr then
-        DownloadPage.Add('{#mpcvr_url}', '{#mpcvr_zip}', '');
-      DownloadPage.Show;
-      try
-        try
-          DownloadPage.Download;
-          if need_dl_mpcvr then
-          begin
-            path_mpcvr := ExpandConstant('{tmp}\{#mpcvr_zip}');
-            new_path := ExpandConstant('{src}\{#mpcvr_zip}');
-            if RenameFile(path_mpcvr, new_path) then
-            begin
-              SetFileAttributes(new_path, FILE_ATTRIBUTE_READONLY);
-              path_mpcvr := new_path;
-            end;
-          end;
-        except
-          SuppressibleMsgBox(AddPeriod(GetExceptionMessage), mbError, MB_OK, IDOK);
-        end;
-      finally
-        DownloadPage.Hide;
-      end;
-    end;
-  end;
-
-  Result := True;
 end;
 
 procedure CurUninstallStepChanged(CurUninstallStep: TUninstallStep);
@@ -667,16 +609,6 @@ begin
 
   Idx := WizardForm.ComponentsList.Items.IndexOf('{#mpcvr_desc}');
   WizardForm.ComponentsList.Checked[Idx] := False;
-  Path := ExpandConstant('{src}\{#mpcvr_zip}');
-  if FileExists(Path) then
-  begin
-    WizardForm.ComponentsList.ItemCaption[Idx] := WizardForm.ComponentsList.ItemCaption[Idx] + ExpandConstant(' ({cm:ComponentAlreadyDownloaded})');
-    path_mpcvr := Path;
-  end
-  else
-  begin
-    WizardForm.ComponentsList.ItemCaption[Idx] := WizardForm.ComponentsList.ItemCaption[Idx] + ExpandConstant(' ({cm:ComponentWillBeDownloaded})');
-  end;
 
   CustomSelectTasksPage := CreateCustomPage(wpSelectTasks, SetupMessage(msgWizardSelectTasks), SetupMessage(msgSelectTasksDesc));
   TasksList := TNewCheckListBox.Create(WizardForm);
@@ -695,6 +627,4 @@ begin
   TasksList.AddCheckBox(ExpandConstant('{cm:AssociationVideo}'),    '', 0, False, True, False, True, nil);
   TasksList.AddCheckBox(ExpandConstant('{cm:AssociationAudio}'),    '', 0, False, True, False, True, nil);
   TasksList.AddCheckBox(ExpandConstant('{cm:AssociationPlaylist}'), '', 0, False, True, False, True, nil);
-
-  DownloadPage := CreateDownloadPage(SetupMessage(msgWizardPreparing), SetupMessage(msgPreparingDesc), nil);
 end;
