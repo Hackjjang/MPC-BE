@@ -68,7 +68,7 @@
   #define Description  = app_name + " x64 " + app_version
   #define VisualElementsManifest = "VisualElements\mpc-be64.VisualElementsManifest.xml"
 #endif
-#define mpcvr_desc     = "MPC Video Renderer 0.6.9"
+#define mpcvr_desc     = "MPC Video Renderer 0.7.1"
 
 [Setup]
 #ifdef Win32Build
@@ -604,11 +604,10 @@ begin
 
   WizardForm.ComponentsList.Height := WizardForm.ComponentsList.Height + DeltaY;
 
-  Idx := WizardForm.ComponentsList.Items.IndexOf(ExpandConstant('{cm:comp_intel_msdk}'));
-  WizardForm.ComponentsList.Checked[Idx] := False;
-
-  Idx := WizardForm.ComponentsList.Items.IndexOf('{#mpcvr_desc}');
-  WizardForm.ComponentsList.Checked[Idx] := False;
+  //Idx := WizardForm.ComponentsList.Items.IndexOf(ExpandConstant('{cm:comp_intel_msdk}'));
+  //WizardForm.ComponentsList.Checked[Idx] := False;
+  //Idx := WizardForm.ComponentsList.Items.IndexOf('{#mpcvr_desc}');
+  //WizardForm.ComponentsList.Checked[Idx] := False;
 
   CustomSelectTasksPage := CreateCustomPage(wpSelectTasks, SetupMessage(msgWizardSelectTasks), SetupMessage(msgSelectTasksDesc));
   TasksList := TNewCheckListBox.Create(WizardForm);

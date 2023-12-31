@@ -1,5 +1,5 @@
 /*
- * (C) 2006-2022 see Authors.txt
+ * (C) 2006-2023 see Authors.txt
  *
  * This file is part of MPC-BE.
  *
@@ -25,6 +25,9 @@
 #include "DXVAAllocator.h"
 #include "../FfmpegContext.h"
 #include "DSUtil/DSUtil.h"
+
+#define FF_DXVA2_WORKAROUND_SCALING_LIST_ZIGZAG 1 ///< Work around for DXVA2/Direct3D11 and old UVD/UVD+ ATI video cards
+#define FF_DXVA2_WORKAROUND_INTEL_CLEARVIDEO    2 ///< Work around for DXVA2/Direct3D11 and old Intel GPUs with ClearVideo interface
 
 extern "C" {
 	#include <ExtLib/ffmpeg/libavcodec/avcodec.h>
