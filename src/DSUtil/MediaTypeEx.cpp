@@ -1,6 +1,6 @@
 /*
  * (C) 2003-2006 Gabest
- * (C) 2006-2023 see Authors.txt
+ * (C) 2006-2024 see Authors.txt
  *
  * This file is part of MPC-BE.
  *
@@ -26,6 +26,7 @@
 
 #include <wmcodecdsp.h>
 #include <moreuuids.h>
+#include <dxva2_guids.h>
 #include <basestruct.h>
 #include <d3d9types.h>
 #include <dxva.h>
@@ -71,6 +72,7 @@ static const std::map<DWORD, LPCSTR> vfourcs = {
 	{FCC('HM12'), "HEVC(HM12)"},
 	{FCC('BIKB'), "Bink"},
 	{FCC('BIKI'), "Bink"},
+	{FCC('VVC1'), "H.266/VVC"},
 };
 
 static const std::map<WORD, LPCSTR> aformattags = {
@@ -243,12 +245,12 @@ static const std::map<GUID, LPCSTR> dxvaguids = {
 	ADDENTRY(DXVA2_ModeVP9_VLD_10bit_Profile2)
 	ADDENTRY(DXVA2_ModeVP8_VLD)
 	ADDENTRY(DXVA2_ModeAV1_VLD_Profile0)
-	ADDENTRY(DXVA2_HEVC_VLD_Main_12bit_Intel)
-	ADDENTRY(DXVA2_HEVC_VLD_Main422_10bit_Intel)
-	ADDENTRY(DXVA2_HEVC_VLD_Main422_12bit_Intel)
+	ADDENTRY(DXVA2_HEVC_VLD_Main12_Intel)
+	ADDENTRY(DXVA2_HEVC_VLD_Main422_10_Intel)
+	ADDENTRY(DXVA2_HEVC_VLD_Main422_12_Intel)
 	ADDENTRY(DXVA2_HEVC_VLD_Main444_Intel)
-	ADDENTRY(DXVA2_HEVC_VLD_Main444_10bit_Intel)
-	ADDENTRY(DXVA2_HEVC_VLD_Main444_12bit_Intel)
+	ADDENTRY(DXVA2_HEVC_VLD_Main444_10_Intel)
+	ADDENTRY(DXVA2_HEVC_VLD_Main444_12_Intel)
 };
 #undef ADDENTRY
 

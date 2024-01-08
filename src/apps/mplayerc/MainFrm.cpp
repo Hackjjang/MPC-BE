@@ -1,6 +1,6 @@
 /*
  * (C) 2003-2006 Gabest
- * (C) 2006-2023 see Authors.txt
+ * (C) 2006-2024 see Authors.txt
  *
  * This file is part of MPC-BE.
  *
@@ -481,6 +481,8 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_COMMAND(ID_ADDTOPLAYLISTROMCLIPBOARD, OnAddToPlaylistFromClipboard)
 
 	ON_COMMAND(ID_MOVEWINDOWBYVIDEO_ONOFF, OnChangeMouseEasyMove)
+
+	ON_COMMAND(ID_PLAYLIST_OPENFOLDER, OnPlaylistOpenFolder)
 
 	ON_WM_WTSSESSION_CHANGE()
 
@@ -1119,7 +1121,7 @@ BOOL CMainFrame::OnDrop(COleDataObject* pDataObject, DROPEFFECT dropEffect, CPoi
 			auto pAnsiText = reinterpret_cast<LPCSTR>(LockData);
 			bool bUnicode = cfFormat == CF_URLW || cfFormat == CF_UNICODETEXT;
 			if (bUnicode ? AfxIsValidString(pUnicodeText) : AfxIsValidString(pAnsiText)) {
-				CStringW text(bUnicode ? pUnicodeText : CStringW(pAnsiText));
+				CStringW text = bUnicode ? CStringW(pUnicodeText) : CStringW(pAnsiText);
 				if (!text.IsEmpty()) {
 					std::list<CString> slFiles;
 					if (cfFormat == CF_URLW || cfFormat == CF_URLA) {
@@ -1679,9 +1681,10 @@ void CMainFrame::OnGetMinMaxInfo(MINMAXINFO* lpMMI)
 
 	for (const auto& pDockingBar : m_dockingbars) {
 		if (IsWindow(pDockingBar->m_hWnd)) {
-			if (auto* playlistBar = dynamic_cast<CPlayerPlaylistBar*>(pDockingBar); playlistBar && playlistBar->IsPlaylistVisible()) {
-				if (!playlistBar->IsFloating()) {
-					lpMMI->ptMinTrackSize.y += playlistBar->GetMinSize().cy;
+			auto* pPlaylistBar = dynamic_cast<CPlayerPlaylistBar*>(pDockingBar);
+			if (pPlaylistBar) {
+				if (pPlaylistBar->IsPlaylistVisible() && !pPlaylistBar->IsFloating()) {
+					lpMMI->ptMinTrackSize.y += pPlaylistBar->GetMinSize().cy;
 				}
 				break;
 			}
@@ -10529,6 +10532,18 @@ void CMainFrame::OnChangeMouseEasyMove()
 	s.bMouseEasyMove = !s.bMouseEasyMove;
 
 	m_OSD.DisplayMessage(OSD_TOPLEFT, ResStr(s.bMouseEasyMove ? IDS_MOVEWINDOWBYVIDEO_ON : IDS_MOVEWINDOWBYVIDEO_OFF));
+}
+
+void CMainFrame::OnPlaylistOpenFolder()
+{
+	if (m_wndPlaylistBar.GetCount() == 0) {
+		return;
+	}
+
+	CPlaylistItem pli;
+	if (m_wndPlaylistBar.GetCur(pli) && pli.m_fi.Valid()) {
+		ShellExecuteW(nullptr, nullptr, L"explorer.exe", L"/select,\"" + pli.m_fi.GetPath() + L"\"", nullptr, SW_SHOWNORMAL);
+	}
 }
 
 void CMainFrame::SetDefaultWindowRect(int iMonitor, const bool bLastCall)

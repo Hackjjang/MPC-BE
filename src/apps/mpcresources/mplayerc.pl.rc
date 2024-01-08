@@ -207,7 +207,7 @@ FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     ICON            IDR_MAINFRAME,IDC_MAINFRAME_ICON,5,5,21,20
     LTEXT           "MPC-BE",IDC_STATIC1,30,5,195,8,SS_NOPREFIX
-    CONTROL         "Copyright © 2002-2023 szczegóły w pliku Authors.txt",IDC_AUTHORS_LINK,
+    CONTROL         "Copyright © 2002-2024 szczegóły w pliku Authors.txt",IDC_AUTHORS_LINK,
                     "SysLink",WS_TABSTOP,30,17,195,8
     LTEXT           "Wersja :",IDC_VERSION,30,34,90,8
     LTEXT           "Kompilator MPC-BE :",IDC_STATIC,30,66,90,8
@@ -2654,7 +2654,7 @@ BEGIN
     IDS_AG_PNS_ROTATE_CCW   "PnS Obróć przeciwnie do ruchu wskazówek zegara"
     IDS_AG_PNS_ROTATE_CW    "PnS Obróć zgodnie z ruchem wskazówek zegara"
     IDS_AG_TEARING_TEST     "Przetestuj szarpanie obrazu"
-    IDS_SCALE_16_9          "Przeskaluj do formatu 16:9 TV ,%.3f,%.3f,%.3f,%.3f"
+    IDS_SCALE_16_9          "Przeskaluj do formatu 16:9 TV,%.3f,%.3f,%.3f,%.3f"
     IDS_SCALE_WIDESCREEN    "Przeskaluj do formatu szerokoekranowego,%.3f,%.3f,%.3f,%.3f"
     IDS_SCALE_ULTRAWIDE     "Przeskaluj do formatu ultra-szerokoekranowego,%.3f,%.3f,%.3f,%.3f"
 END

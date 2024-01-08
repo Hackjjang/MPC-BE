@@ -1,6 +1,6 @@
 /*
  * (C) 2003-2006 Gabest
- * (C) 2006-2023 see Authors.txt
+ * (C) 2006-2024 see Authors.txt
  *
  * This file is part of MPC-BE.
  *
@@ -149,6 +149,7 @@ CAppSettings::CAppSettings()
 	VideoFiltersKeys[VDEC_AV1]				= L"vdec_av1";
 	VideoFiltersKeys[VDEC_SHQ]				= L"vdec_shq";
 	VideoFiltersKeys[VDEC_AVS3]				= L"vdec_avs3";
+	VideoFiltersKeys[VDEC_VVC]				= L"vdec_vvc";
 	VideoFiltersKeys[VDEC_UNCOMPRESSED]		= L"vdec_uncompressed";
 
 	// Internal audio decoders
@@ -403,6 +404,8 @@ void CAppSettings::CreateCommands()
 	addcmd(ID_ADDTOPLAYLISTROMCLIPBOARD, IDS_ADDTOPLAYLISTROMCLIPBOARD, 'V', FCONTROL);
 
 	addcmd(ID_MOVEWINDOWBYVIDEO_ONOFF, IDS_MOVEWINDOWBYVIDEO_ONOFF);
+
+	addcmd(ID_PLAYLIST_OPENFOLDER, IDS_PLAYLIST_OPENFOLDER);
 }
 
 CAppSettings::~CAppSettings()

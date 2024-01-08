@@ -61,6 +61,7 @@ endif
 OBJ_DIRS = $(OBJ_DIR) \
 	$(OBJ_DIR)compat \
 	$(OBJ_DIR)libavcodec \
+	$(OBJ_DIR)libavcodec/vvc \
 	$(OBJ_DIR)libavcodec/x86 \
 	$(OBJ_DIR)libavfilter \
 	$(OBJ_DIR)libavfilter/x86 \
@@ -158,6 +159,9 @@ SRCS_LC = \
 	libavcodec/cbrt_data.c \
 	libavcodec/cbs.c \
 	libavcodec/cbs_av1.c \
+	libavcodec/cbs_bsf.c \
+	libavcodec/cbs_h2645.c \
+	libavcodec/cbs_sei.c \
 	libavcodec/celp_filters.c \
 	libavcodec/celp_math.c \
 	libavcodec/cfhd.c \
@@ -171,6 +175,13 @@ SRCS_LC = \
 	libavcodec/cook.c \
 	libavcodec/cscd.c \
 	libavcodec/d3d11va.c \
+	libavcodec/d3d12va_av1.c \
+	libavcodec/d3d12va_decode.c \
+	libavcodec/d3d12va_h264.c \
+	libavcodec/d3d12va_hevc.c \
+	libavcodec/d3d12va_mpeg2.c \
+	libavcodec/d3d12va_vc1.c \
+	libavcodec/d3d12va_vp9.c \
 	libavcodec/dca.c \
 	libavcodec/dca_core.c \
 	libavcodec/dca_core_bsf.c \
@@ -269,6 +280,7 @@ SRCS_LC = \
 	libavcodec/h264idct.c \
 	libavcodec/h264pred.c \
 	libavcodec/h264qpel.c \
+	libavcodec/h266_metadata_bsf.c \
 	libavcodec/h2645_parse.c \
 	libavcodec/h2645_sei.c \
 	libavcodec/h2645_vui.c \
@@ -571,6 +583,22 @@ SRCS_LC_B = \
 	libavcodec/xvididct.c \
 	libavcodec/zlib_wrapper.c \
 	\
+	libavcodec/vvc_mp4toannexb_bsf.c \
+	libavcodec/vvc_parser.c \
+	libavcodec/vvc/vvcdec.c \
+	libavcodec/vvc/vvcdsp.c \
+	libavcodec/vvc/vvc_cabac.c \
+	libavcodec/vvc/vvc_ctu.c \
+	libavcodec/vvc/vvc_data.c \
+	libavcodec/vvc/vvc_filter.c \
+	libavcodec/vvc/vvc_inter.c \
+	libavcodec/vvc/vvc_intra.c \
+	libavcodec/vvc/vvc_itx_1d.c \
+	libavcodec/vvc/vvc_mvs.c \
+	libavcodec/vvc/vvc_ps.c \
+	libavcodec/vvc/vvc_refs.c \
+	libavcodec/vvc/vvc_thread.c \
+	\
 	libavcodec/x86/aacpsdsp_init.c \
 	libavcodec/x86/ac3dsp_init.c \
 	libavcodec/x86/alacdsp_init.c \
@@ -670,6 +698,7 @@ SRCS_LU = \
 	libavutil/downmix_info.c \
 	libavutil/error.c \
 	libavutil/eval.c \
+	libavutil/executor.c \
 	libavutil/fifo.c \
 	libavutil/file_open.c \
 	libavutil/film_grain_params.c \
@@ -683,6 +712,7 @@ SRCS_LU = \
 	libavutil/hwcontext.c \
 	libavutil/hwcontext_cuda.c \
 	libavutil/hwcontext_d3d11va.c \
+	libavutil/hwcontext_d3d12va.c \
 	libavutil/hwcontext_dxva2.c \
 	libavutil/imgutils.c \
 	libavutil/integer.c \

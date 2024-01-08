@@ -610,7 +610,7 @@ Note: when adding a new codec, you have to:
 #define CONFIG_DXVA2 1
 #define CONFIG_NVDEC 1
 #define CONFIG_D3D11VA 1
-#define CONFIG_D3D12VA 0
+#define CONFIG_D3D12VA 1
 
 #define CONFIG_DIRAC_PARSE 1
 
@@ -618,5 +618,6 @@ Note: when adding a new codec, you have to:
 
 #define CONFIG_CBS 1
 #define CONFIG_CBS_AV1 1
+#define CONFIG_CBS_H266 1
 
 #endif /* FFMPEG_CONFIG_H */

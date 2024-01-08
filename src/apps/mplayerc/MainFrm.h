@@ -1,6 +1,6 @@
 /*
  * (C) 2003-2006 Gabest
- * (C) 2006-2023 see Authors.txt
+ * (C) 2006-2024 see Authors.txt
  *
  * This file is part of MPC-BE.
  *
@@ -1138,6 +1138,8 @@ public:
 	afx_msg void OnAddToPlaylistFromClipboard();
 
 	afx_msg void OnChangeMouseEasyMove();
+
+	afx_msg void OnPlaylistOpenFolder();
 
 	afx_msg void OnClose();
 
