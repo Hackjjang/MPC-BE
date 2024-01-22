@@ -1,5 +1,5 @@
 /*
- * (C) 2006-2023 see Authors.txt
+ * (C) 2006-2024 see Authors.txt
  *
  * This file is part of MPC-BE.
  *
@@ -365,10 +365,10 @@ void COSD::DrawSeekbar()
 	DrawRect(rect, &m_brushBar);
 
 	if (m_SeekbarFont.GetSafeHandle()) {
-		CStringW text = ReftimeToString2(m_llSeekPos);
+		CStringW text = ReftimeToString2(m_llSeekPos, false);
 		if (m_llSeekStop > 0) {
 			text.Append(L" / ");
-			text.Append(ReftimeToString2(m_llSeekStop));
+			text.Append(ReftimeToString2(m_llSeekStop, false));
 		}
 
 		m_MemDC.SelectObject(m_SeekbarFont);

@@ -1,6 +1,6 @@
 /*
  * (C) 2003-2006 Gabest
- * (C) 2006-2023 see Authors.txt
+ * (C) 2006-2024 see Authors.txt
  *
  * This file is part of MPC-BE.
  *
@@ -54,6 +54,12 @@ class CMpegSplitterFile : public CBaseSplitterFileEx
 		std::vector<BYTE> pData;
 	};
 	std::map<DWORD, hevc_data> hevc_streams;
+
+	struct vvc_data {
+		vvchdr h;
+		std::vector<BYTE> pData;
+	};
+	std::map<DWORD, vvc_data> vvc_streams;
 
 	template<class T, BYTE validCount = 5>
 	class CValidStream {
@@ -204,7 +210,8 @@ public:
 		MPEG4Video,
 		AC4,
 		AES3,
-		AVS3
+		AVS3,
+		VVC
 	};
 
 	enum stream_type {

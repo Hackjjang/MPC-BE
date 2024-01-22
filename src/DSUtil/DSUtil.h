@@ -1,6 +1,6 @@
 /*
  * (C) 2003-2006 Gabest
- * (C) 2006-2023 see Authors.txt
+ * (C) 2006-2024 see Authors.txt
  *
  * This file is part of MPC-BE.
  *
@@ -100,10 +100,11 @@ enum cdrom_t {
 extern cdrom_t			GetCDROMType(WCHAR drive, std::list<CString>& files);
 extern CString			GetDriveLabel(WCHAR drive);
 
+inline bool				HourOrMore(const REFERENCE_TIME rt) { return (rt > UNITS * 3600); };
 TimeCode_t				ReftimeToTimecode(const REFERENCE_TIME rt);
 TimeCode_t				ReftimeToHMS(const REFERENCE_TIME rt); // seconds rounded to the nearest value
 REFERENCE_TIME			TimecodeToReftime(const TimeCode_t tc);
-CStringW				ReftimeToString(const REFERENCE_TIME rt);  // hh:mm::ss.millisec
+CStringW				ReftimeToString(const REFERENCE_TIME rt, bool showZeroHours = true);  // hh:mm::ss.millisec
 CStringW				ReftimeToString2(const REFERENCE_TIME rt, bool showZeroHours = true); // hh:mm::ss (round)
 
 extern DVD_HMSF_TIMECODE	RT2HMSF(REFERENCE_TIME rt, double fps = 0); // use to remember the current position
