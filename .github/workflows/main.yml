@@ -1,0 +1,77 @@
+name: Build MPC-BE
+
+on:
+  push:
+    paths-ignore:
+      - .github/workflows/main.yml
+      - docs/**
+      - LICENSE.txt
+      - src/apps/mpcresources/text/**
+      - '**.vcxproj.filters'
+  pull_request:
+    paths-ignore:
+      - .github/workflows/main.yml
+      - docs/**
+      - LICENSE.txt
+      - src/apps/mpcresources/text/**
+      - '**.vcxproj.filters'
+
+jobs:
+  build:
+    runs-on: windows-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: recursive
+
+      - name: Prepare MSYS
+        run: |
+          curl -sSL https://github.com/Aleksoid1978/MSYS/raw/main/MSYS_MinGW-w64_GCC_1320_x86-x64.7z -o MSYS.7z
+          7z x MSYS.7z -oC:\\MSYS
+          echo '@ECHO OFF' > environments.bat
+          echo 'SET "MPCBE_MSYS=C:\\MSYS"' >> environments.bat
+          echo 'SET "MPCBE_MINGW=C:\\MSYS\\mingw"' >> environments.bat
+          .\\update_gcc.bat
+        shell: pwsh
+
+      - name: Clean
+        run: |
+          .\\build.bat Clean All
+        shell: pwsh
+
+      - name: Build MPC-BE
+        run: |
+          .\\build.bat Build Packages
+        shell: pwsh
+
+      - name: Upload Installer x64
+        uses: actions/upload-artifact@v4
+        with:
+          name: "Installer x64" 
+          path: _bin/Packages/**/MPC-BE*.x64-installer.zip
+          compression-level: 0
+
+      - name: Upload Zip x64
+        uses: actions/upload-artifact@v4
+        with:
+          name: "Zip x64" 
+          path: _bin/Packages/**/MPC-BE*.x64.7z
+          compression-level: 0
+
+      - name: Upload Installer x86
+        uses: actions/upload-artifact@v4
+        with:
+          name: "Installer x86" 
+          path: _bin/Packages/**/MPC-BE*.x86-installer.zip
+          compression-level: 0
+
+      - name: Upload Zip x86
+        uses: actions/upload-artifact@v4
+        with:
+          name: "Zip x86" 
+          path: _bin/Packages/**/MPC-BE*.x86.7z
+          compression-level: 0

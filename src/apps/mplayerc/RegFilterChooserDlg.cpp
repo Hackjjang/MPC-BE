@@ -1,6 +1,6 @@
 /*
  * (C) 2003-2006 Gabest
- * (C) 2006-2023 see Authors.txt
+ * (C) 2006-2024 see Authors.txt
  *
  * This file is part of MPC-BE.
  *
@@ -25,19 +25,13 @@
 #include "FGFilter.h"
 #include "DSUtil/FileHandle.h"
 #include "DSUtil/std_helper.h"
+#include "PPageExternalFilters.h"
 
 // CRegFilterChooserDlg dialog
 
 CRegFilterChooserDlg::CRegFilterChooserDlg(CWnd* pParent)
 	: CResizableDialog(CRegFilterChooserDlg::IDD, pParent)
 {
-}
-
-CRegFilterChooserDlg::~CRegFilterChooserDlg()
-{
-	for (auto& filter : m_filters) {
-		delete filter;
-	}
 }
 
 void CRegFilterChooserDlg::DoDataExchange(CDataExchange* pDX)
@@ -50,9 +44,17 @@ void CRegFilterChooserDlg::DoDataExchange(CDataExchange* pDX)
 void CRegFilterChooserDlg::AddToList(IMoniker* pMoniker)
 {
 	CComPtr<IPropertyBag> pPB;
-	if (SUCCEEDED(pMoniker->BindToStorage(0, 0, IID_IPropertyBag, (void**)&pPB))) {
+	if (SUCCEEDED(pMoniker->BindToStorage(0, 0, IID_PPV_ARGS(&pPB)))) {
 		CComVariant var;
 		if (SUCCEEDED(pPB->Read(CComBSTR(L"FriendlyName"), &var, nullptr))) {
+			CComVariant var2;
+			if (SUCCEEDED(pPB->Read(_T("CLSID"), &var2, nullptr))) {
+				CStringW clsid(var2.bstrVal);
+				if (!clsid.IsEmpty() && IsSupportedExternalVideoRenderer(GUIDFromCString(clsid))) {
+					return;
+				}
+			}
+
 			m_monikers.emplace_back(pMoniker);
 			int iItem = m_list.InsertItem(m_list.GetItemCount(), CStringW(var.bstrVal));
 			m_list.SetItemData(iItem, (DWORD_PTR)pMoniker);
@@ -124,8 +126,7 @@ void CRegFilterChooserDlg::OnBnClickedOk()
 	}
 	if (pMoniker) {
 		CFGFilterRegistry fgf(pMoniker);
-		FilterOverride* f = DNew FilterOverride;
-		f->fDisabled = false;
+		auto& f = m_filters.emplace_back(DNew FilterOverride);
 		f->type      = FilterOverride::REGISTERED;
 		f->name      = fgf.GetName();
 		f->dispname  = fgf.GetDisplayName();
@@ -133,7 +134,6 @@ void CRegFilterChooserDlg::OnBnClickedOk()
 		f->guids     = fgf.GetTypes();
 		f->dwMerit   = fgf.GetMeritForDirectShow();
 		f->iLoadType = FilterOverride::MERIT;
-		m_filters.emplace_back(f);
 	}
 
 	__super::OnOK();

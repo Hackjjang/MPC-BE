@@ -436,10 +436,11 @@ BEGIN
     CONTROL         "タイム ツールヒントを使用する:",IDC_CHECK8,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,99,152,9
     COMBOBOX        IDC_COMBO3,170,97,115,64,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     CONTROL         "検索でプレビュー機能を使用する",IDC_CHECK_PRV,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,113,264,9
-    LTEXT           "画面横幅に対するサイズ:",IDC_STATIC6,24,127,130,8
-    EDITTEXT        IDC_EDIT1,159,125,25,13,ES_RIGHT | ES_AUTOHSCROLL | ES_NUMBER
-    LTEXT           "%",IDC_STATIC7,186,127,10,8
-    COMBOBOX        IDC_COMBO4,209,125,76,64,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "画面横幅に対するサイズ:",IDC_STATIC6,24,127,116,8
+    EDITTEXT        IDC_EDIT1,142,125,25,13,ES_RIGHT | ES_AUTOHSCROLL | ES_NUMBER
+    LTEXT           "%",IDC_STATIC7,170,127,10,8
+    COMBOBOX        IDC_COMBO4,183,126,42,64,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Online",IDC_CHECK6,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,230,127,58,8,WS_EX_TRANSPARENT
     CONTROL         "チャプター マーカーを使用する",IDC_CHECK_CHM,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,139,182,9
     CONTROL         "フライ バーを使用する",IDC_CHECK_FLYBAR,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,152,182,9
     LTEXT           "プレイリスト フォント サイズ:",IDC_STATIC,13,165,110,8
@@ -615,7 +616,7 @@ BEGIN
     CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,10,93,188,1
     PUSHBUTTON      "キャンセル(&C)",IDCANCEL,49,100,50,14
     PUSHBUTTON      "保存(&S)",IDOK,105,100,50,14
-    LTEXT           "位置: 0.1 → 0.9",IDC_STATIC,134,5,70,8
+    LTEXT           "位置: 0.0 → 1.0",IDC_STATIC,134,5,70,8
     LTEXT           "拡大率: 0.2 → 5.0",IDC_STATIC,134,32,70,8
 END
 
@@ -783,7 +784,7 @@ BEGIN
     LTEXT           "クリック",IDC_STATIC,10,18,60,8
     COMBOBOX        IDC_COMBO1,70,16,166,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     CONTROL         "何も読み込まれていない場合は、最近使ったファイルを開く",IDC_CHECK1,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,32,206,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,32,208,10
     LTEXT           "ダブル クリック",IDC_STATIC,10,49,60,8
     COMBOBOX        IDC_COMBO2,70,47,166,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     CONTROL         "映像領域でウィンドウを移動する",IDC_CHECK2,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,65,133,10
@@ -1071,7 +1072,7 @@ BEGIN
     CONTROL         "プレイリスト登録が 1 項目の時は「フォルダー内検索」の「前へ/次へ」を使用しない",IDC_CHECK7,
                     "Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,7,55,280,18
     CONTROL         "既定のモニター以外では全画面表示で 最小化 を禁止する",IDC_CHECK6,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,75,280,9
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,75,282,9
     CONTROL         "最小化時にビデオ再生を一時停止させる",IDC_CHECK4,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,87,280,9
     CONTROL         "ウィンドウ モードで再生中にポインターを自動で隠す",IDC_CHECK5,
@@ -1154,10 +1155,10 @@ BEGIN
     CONTROL         "内蔵の垂直同期",IDC_VSYNC_INTERNAL,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,26,121,10
     CONTROL         "フレーム時間補正を有効にする",IDC_CHECK8,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,51,170,10
     CONTROL         "垂直同期の前に GPU をフラッシュ",IDC_CHECK5,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,140,14,140,10
-    CONTROL         "表示後に GPU をフラッシュ",IDC_CHECK6,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,140,26,140,10
+    CONTROL         "表示後に GPU をフラッシュ",IDC_CHECK6,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,140,26,142,10
     CONTROL         "フラッシュを待機する",IDC_CHECK7,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,140,38,100,10
     GROUPBOX        "EVR 同期設定",IDC_STATIC2,5,67,286,117
-    CONTROL         "ビデオをディスプレイに同期させる",IDC_RADIO1,"Button",BS_AUTORADIOBUTTON | WS_GROUP,10,79,140,8
+    CONTROL         "ビデオをディスプレイに同期させる",IDC_RADIO1,"Button",BS_AUTORADIOBUTTON | WS_GROUP,10,79,142,8
     CONTROL         "最も近い垂直同期で表示する",IDC_RADIO2,"Button",BS_AUTORADIOBUTTON,10,109,170,8
     LTEXT           "周波数調整:",IDC_STATIC5,20,93,85,8
     EDITTEXT        IDC_CYCLEDELTA,109,91,40,13,ES_RIGHT | ES_AUTOHSCROLL,WS_EX_RIGHT
@@ -2513,7 +2514,7 @@ END
 STRINGTABLE
 BEGIN
     IDC_REGULARSURF         "映像の表面を通常のオフスクリーン サーフェスとして割り当てます。"
-    IDC_DX9RESIZER_COMBO    "ピクセル シェーダー 2.0 に対応していなければ自動的に単純な線形補間が使用されます。"
+    IDC_DX9RESIZER_COMBO    "ピクセル シェーダー 2.0 がサポートされていない場合は、単純な線形補間が自動的に使用されます。"
 END
 
 STRINGTABLE
@@ -3169,6 +3170,7 @@ END
 
 STRINGTABLE
 BEGIN
+    IDS_BLOCK_EXTERNAL_VR   "%s を外部フィルターとして追加することはできません。\n[映像] 設定ページで、お好みのビデオ レンダラーを選択する必要があります。"
     IDS_DESC_HAALI_VR       "VMR-9 とほぼ同じですが、真のバイキュービック リサイザーを使用します。"
 END
 
@@ -3176,10 +3178,11 @@ STRINGTABLE
 BEGIN
     IDS_DESC_NULLVR_ANY     "あらゆる動画の (ような) メディア タイプに接続して入力サンプルをどこにも出力しません。映像の表示を必要とせず、CPU を無駄な動作から節約したい場合に使用してください。"
     IDS_DESC_NULLVR_UNCOMP  "標準の Null レンダラーと同じですが、これは非圧縮タイプにのみ接続します。"
-    IDS_DESC_EVR            "ハードウェア デコーディングに対応したレンダラーです。"
-    IDS_DESC_EVR_CP         "EVR と同じですが、字幕と後処理のためにアロケーター プレゼンターを使用します。"
-    IDS_DESC_MADVR          "高品質なレンダラーで、D3D9 以降に対応した GPU が必要です。"
-    IDS_DESC_EVR_SYNC       "EVR (CP) と同じですが、ディスプレイのリフレッシュ レートと動画のフレーム レートを同期させて、ビデオ フレームのスキップや重複をなくすためのオプションがいくつかあります。"
+    IDS_DESC_EVR            "ハードウェア デコードをサポートするビデオ レンダラーです。"
+    IDS_DESC_EVR_CP         "EVR と同じですが、字幕作成と後処理のためにアロケーター プレゼンターを使用します。"
+    IDS_DESC_MADVR          "高品質のレンダラーであり、D3D9 以降をサポートする GPU が必要です。"
+    IDS_DESC_EVR_SYNC       "EVR (CP) と同じですが、動画のフレーム レートをディスプレイのリフレッシュ レートと同期させて、ビデオ フレームのスキップや重複をなくすためのオプションがいくつかあります。"
+    IDS_DESC_MPC_VR         "Direct3D 11 をサポートするビデオ レンダラーです。"
 END
 
 STRINGTABLE
@@ -3358,7 +3361,7 @@ BEGIN
     IDS_ARS_RELEASE_DEVICE_IDLE "アイドル状態時にデバイスを解放する"
     IDS_ARS_CROSSFEED       "ステレオ クロスフィードを有効にする (ヘッドホン用)"
     IDS_ARS_DEVICE_PERIOD   "デバイス バッファー:"
-    IDS_ARS_ALT_CHECK_FORMAT "対応している形式の代替確認"
+    IDS_ARS_ALT_CHECK_FORMAT "サポートされている形式の代替確認"
     IDS_ARS_STATUS          "ステータス"
     IDS_ARS_DEVICE          "デバイス:"
     IDS_ARS_MODE            "モード:"
@@ -3423,7 +3426,7 @@ END
 STRINGTABLE
 BEGIN
     IDS_NAVIGATE_TUNERSCAN  "チューナー調整"
-    IDS_SUBTITLES_ERROR     "字幕が読み込まれていないか、未対応のレンダラーです。"
+    IDS_SUBTITLES_ERROR     "字幕が読み込まれていないか、レンダラーがサポートされていません。"
 END
 
 STRINGTABLE
@@ -3664,7 +3667,7 @@ BEGIN
     IDS_GOTO_ERROR_PARSING_TEXT "入力されたテキストの解析エラーが発生しました!"
     IDS_GOTO_ERROR_PARSING_FPS "入力されたフレーム レートの解析エラーが発生しました!"
     IDS_FRAME_STEP_ERROR_RENDERER  "コマ送りできません。別のビデオ レンダラーを試してください。"
-    IDS_SCREENSHOT_ERROR_SHOCKWAVE  "「画像を保存」と「サムネイルを保存」機能は、Shockwave ファイルには対応していません。"
+    IDS_SCREENSHOT_ERROR_SHOCKWAVE  "「画像を保存」と「サムネイルを保存」機能は、Shockwave ファイルでは機能しません。"
     IDS_SCREENSHOT_ERROR_OVERLAY  "「画像を保存」と「サムネイルを保存」機能は、オーバーレイ ミキサー ビデオ レンダラーでは動作しません。\nMPC-BE の出力オプションでビデオ レンダラーを変更し、ファイルを開き直してください。"
     IDS_SUBDL_DLG_CONNECT_ERROR  "オンライン字幕データベースに接続できません。"
 END
@@ -3724,7 +3727,7 @@ BEGIN
     IDS_OSD_HUE             "色相: %s°"
     IDS_OSD_SATURATION      "彩度: %s"
     IDS_OSD_RESET_COLOR     "カラー設定を復元しました"
-    IDS_OSD_NO_COLORCONTROL "カラー コントロールには対応していません"
+    IDS_OSD_NO_COLORCONTROL "カラー コントロールはサポートされていません"
     IDS_BRIGHTNESS_INC      "明るさを上げる"
 END
 

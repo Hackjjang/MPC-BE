@@ -436,10 +436,11 @@ BEGIN
     CONTROL         "使用時間工具提示：",IDC_CHECK8,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,99,152,9
     COMBOBOX        IDC_COMBO3,170,97,115,64,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     CONTROL         "搜尋列顯示預覽縮圖",IDC_CHECK_PRV,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,113,264,9
-    LTEXT           "相對於螢幕寬度的縮圖大小：",IDC_STATIC6,24,127,130,8
-    EDITTEXT        IDC_EDIT1,159,125,25,13,ES_RIGHT | ES_AUTOHSCROLL | ES_NUMBER
-    LTEXT           "%",IDC_STATIC7,186,127,10,8
-    COMBOBOX        IDC_COMBO4,209,125,76,64,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "相對於螢幕寬度的縮圖大小：",IDC_STATIC6,24,127,116,8
+    EDITTEXT        IDC_EDIT1,142,125,25,13,ES_RIGHT | ES_AUTOHSCROLL | ES_NUMBER
+    LTEXT           "%",IDC_STATIC7,170,127,10,8
+    COMBOBOX        IDC_COMBO4,183,126,42,64,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Online",IDC_CHECK6,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,230,127,58,8,WS_EX_TRANSPARENT
     CONTROL         "搜尋列顯示章節標籤",IDC_CHECK_CHM,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,139,182,9
     CONTROL         "使用浮動工具列（flybar）",IDC_CHECK_FLYBAR,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,152,182,9
     LTEXT           "播放清單字型大小",IDC_STATIC,13,165,110,8
@@ -615,7 +616,7 @@ BEGIN
     CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,10,93,188,1
     PUSHBUTTON      "取消(&C)",IDCANCEL,49,100,50,14
     PUSHBUTTON      "儲存(&S)",IDOK,105,100,50,14
-    LTEXT           "位置：0.1 → 0.9",IDC_STATIC,134,5,70,8
+    LTEXT           "位置：0.0 → 1.0",IDC_STATIC,134,5,70,8
     LTEXT           "縮放：0.2 → 5.0",IDC_STATIC,134,32,70,8
 END
 
@@ -783,7 +784,7 @@ BEGIN
     LTEXT           "單按",IDC_STATIC,10,18,60,8
     COMBOBOX        IDC_COMBO1,70,16,166,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     CONTROL         "如未有載入內容，則開啟最近檔案",IDC_CHECK1,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,32,206,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,32,208,10
     LTEXT           "雙按",IDC_STATIC,10,49,60,8
     COMBOBOX        IDC_COMBO2,70,47,166,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     CONTROL         "拖曳影格時移動視窗",IDC_CHECK2,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,65,133,10
@@ -1071,7 +1072,7 @@ BEGIN
     CONTROL         "播放清單只有一個項目時，不要於「上一段/下一段」按鈕連結其他位於同一資料夾的檔案",IDC_CHECK7,
                     "Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,7,55,280,18
     CONTROL         "避免於非預設顯示器全螢幕時最小化",IDC_CHECK6,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,75,280,9
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,75,282,9
     CONTROL         "最小化時暫停播放",IDC_CHECK4,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,87,280,9
     CONTROL         "視窗模式播放時自動隱藏滑鼠游標",IDC_CHECK5,
@@ -1154,10 +1155,10 @@ BEGIN
     CONTROL         "內置垂直同步",IDC_VSYNC_INTERNAL,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,26,121,10
     CONTROL         "啟用影格時間校正",IDC_CHECK8,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,51,170,10
     CONTROL         "在垂直同步之前排空 GPU",IDC_CHECK5,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,140,14,140,10
-    CONTROL         "在呈現之後排空 GPU",IDC_CHECK6,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,140,26,140,10
+    CONTROL         "在呈現之後排空 GPU",IDC_CHECK6,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,140,26,142,10
     CONTROL         "等待排空",IDC_CHECK7,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,140,38,100,10
     GROUPBOX        "EVR 同步繪製 設定",IDC_STATIC2,5,67,286,117
-    CONTROL         "同步視訊至顯示",IDC_RADIO1,"Button",BS_AUTORADIOBUTTON | WS_GROUP,10,79,140,8
+    CONTROL         "同步視訊至顯示",IDC_RADIO1,"Button",BS_AUTORADIOBUTTON | WS_GROUP,10,79,142,8
     CONTROL         "於最近的垂直同步呈現",IDC_RADIO2,"Button",BS_AUTORADIOBUTTON,10,109,170,8
     LTEXT           "頻率調整：",IDC_STATIC5,20,93,85,8
     EDITTEXT        IDC_CYCLEDELTA,109,91,40,13,ES_RIGHT | ES_AUTOHSCROLL,WS_EX_RIGHT
@@ -3169,6 +3170,7 @@ END
 
 STRINGTABLE
 BEGIN
+    IDS_BLOCK_EXTERNAL_VR   "You can not add %s as external filter.\nYou should select your preferred video renderer on the Video settings page."
     IDS_DESC_HAALI_VR       "和 VMR-9 類同，但使用眞正的 bicubic 變更大小。"
 END
 
@@ -3180,6 +3182,7 @@ BEGIN
     IDS_DESC_EVR_CP         "和 EVR 相同，但藉助配置呈現器顯示字幕及進行後期處理。"
     IDS_DESC_MADVR          "高品質繪製器，需要支援 Direct3D 9 或更新版本的顯示卡。"
     IDS_DESC_EVR_SYNC       "與 EVR 自訂呈現 相同，但提供額外選項來同步化影格速率及顯示器更新頻率，以減少被丟棄或重複的影格。"
+    IDS_DESC_MPC_VR         "Video renderer with support for Direct3D 11."
 END
 
 STRINGTABLE

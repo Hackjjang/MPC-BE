@@ -436,10 +436,11 @@ BEGIN
     CONTROL         "Koristi vremenski tooltip:",IDC_CHECK8,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,99,152,9
     COMBOBOX        IDC_COMBO3,170,97,115,64,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     CONTROL         "Koristi pretpregled prilikom pretrage",IDC_CHECK_PRV,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,113,264,9
-    LTEXT           "Veličina relativna širini ekrana:",IDC_STATIC6,24,127,130,8
-    EDITTEXT        IDC_EDIT1,159,125,25,13,ES_RIGHT | ES_AUTOHSCROLL | ES_NUMBER
-    LTEXT           "%",IDC_STATIC7,186,127,10,8
-    COMBOBOX        IDC_COMBO4,209,125,76,64,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Veličina relativna širini ekrana:",IDC_STATIC6,24,127,116,8
+    EDITTEXT        IDC_EDIT1,142,125,25,13,ES_RIGHT | ES_AUTOHSCROLL | ES_NUMBER
+    LTEXT           "%",IDC_STATIC7,170,127,10,8
+    COMBOBOX        IDC_COMBO4,183,126,42,64,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Online",IDC_CHECK6,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,230,127,58,8,WS_EX_TRANSPARENT
     CONTROL         "Koristi marker poglavlja",IDC_CHECK_CHM,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,139,182,9
     CONTROL         "Koristi flybar",IDC_CHECK_FLYBAR,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,152,182,9
     LTEXT           "Veličina fonta playliste:",IDC_STATIC,13,165,110,8
@@ -783,7 +784,7 @@ BEGIN
     LTEXT           "Klik",IDC_STATIC,10,18,60,8
     COMBOBOX        IDC_COMBO1,70,16,166,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     CONTROL         "Ukoliko nema učitanja, otvori nedavnu datoteku",IDC_CHECK1,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,32,206,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,32,208,10
     LTEXT           "Dvoklik",IDC_STATIC,10,49,60,8
     COMBOBOX        IDC_COMBO2,70,47,166,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     CONTROL         "Pomakni prozor uz područje video zapisa",IDC_CHECK2,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,65,133,10
@@ -1071,7 +1072,7 @@ BEGIN
     CONTROL         "Ne koristi 'traženje u mapi' uz naredbe 'Preskoči natrag/naprijed' uz samo jedan predmet na playlisti",IDC_CHECK7,
                     "Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,7,55,280,18
     CONTROL         "Spriječi MINIMIZIRANJE kada je postavljen puni zaslon na nepodrazumijevanom monitoru",IDC_CHECK6,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,75,280,9
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,75,282,9
     CONTROL         "Zaustavi video pregled pri minimiziranju",IDC_CHECK4,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,87,280,9
     CONTROL         "Auto-skrivanje pokazivača tijekom pregleda u uokvirenom modu",IDC_CHECK5,
@@ -1154,10 +1155,10 @@ BEGIN
     CONTROL         "Interni VSync",IDC_VSYNC_INTERNAL,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,26,121,10
     CONTROL         "Omogući vremensku korekciju kadra",IDC_CHECK8,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,51,170,10
     CONTROL         "Čisti GPU prije VSynca",IDC_CHECK5,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,140,14,140,10
-    CONTROL         "Čisti GPU nakon Presenta",IDC_CHECK6,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,140,26,140,10
+    CONTROL         "Čisti GPU nakon Presenta",IDC_CHECK6,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,140,26,142,10
     CONTROL         "Čekaj za čišćenja",IDC_CHECK7,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,140,38,100,10
     GROUPBOX        "EVR Sync Postavke",IDC_STATIC2,5,67,286,117
-    CONTROL         "Sinkroniziraj video prema zaslonu",IDC_RADIO1,"Button",BS_AUTORADIOBUTTON | WS_GROUP,10,79,140,8
+    CONTROL         "Sinkroniziraj video prema zaslonu",IDC_RADIO1,"Button",BS_AUTORADIOBUTTON | WS_GROUP,10,79,142,8
     CONTROL         "Prisutan uz najbliži VSync",IDC_RADIO2,"Button",BS_AUTORADIOBUTTON,10,109,170,8
     LTEXT           "Podešenje frekvencije:",IDC_STATIC5,20,93,85,8
     EDITTEXT        IDC_CYCLEDELTA,109,91,40,13,ES_RIGHT | ES_AUTOHSCROLL,WS_EX_RIGHT
@@ -3167,6 +3168,7 @@ END
 
 STRINGTABLE
 BEGIN
+    IDS_BLOCK_EXTERNAL_VR   "You can not add %s as external filter.\nYou should select your preferred video renderer on the Video settings page."
     IDS_DESC_HAALI_VR       "Izgleda poput VMR-9, ali koristi stvaran dvokubični mijenjač veličine."
 END
 
@@ -3178,6 +3180,7 @@ BEGIN
     IDS_DESC_EVR_CP         "Jednako kao EVR, uz Allocator-Presenter za podnaslove i postprocesing."
     IDS_DESC_MADVR          "Visoko-kvalitetni render, zahtjeva GPU koji podržava D3D9 ili kasnije."
     IDS_DESC_EVR_SYNC       "Jednako kao EVR (CP), uz nekoliko mogućnosti za sinkronizaciju video sličica skladnu vrijednosti osvježenja na monitoru za poništenje preskočenih ili udvostručenih sličica."
+    IDS_DESC_MPC_VR         "Video renderer with support for Direct3D 11."
 END
 
 STRINGTABLE

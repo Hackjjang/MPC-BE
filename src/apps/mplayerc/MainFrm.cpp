@@ -177,6 +177,8 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_MESSAGE_VOID(WM_DISPLAYCHANGE, OnDisplayChange)
 	ON_WM_WINDOWPOSCHANGING()
 
+	ON_WM_QUERYENDSESSION()
+
 	ON_MESSAGE(WM_DPICHANGED, OnDpiChanged)
 	ON_MESSAGE(WM_DWMCOMPOSITIONCHANGED, OnDwmCompositionChanged)
 
@@ -952,6 +954,8 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 		m_CMediaControls.Init(this);
 	}
 
+	RegisterApplicationRestart(L"", RESTART_NO_CRASH | RESTART_NO_HANG);
+
 	cmdLineThread = std::thread([this] { cmdLineThreadFunction(); });
 
 	return 0;
@@ -1084,7 +1088,6 @@ DROPEFFECT CMainFrame::OnDragOver(COleDataObject* pDataObject, DWORD dwKeyState,
 BOOL CMainFrame::OnDrop(COleDataObject* pDataObject, DROPEFFECT dropEffect, CPoint point)
 {
 	BOOL bResult = FALSE;
-
 	CLIPFORMAT cfFormat = 0;
 
 	if (pDataObject->IsDataAvailable(CF_URLW)) {
@@ -1098,8 +1101,8 @@ BOOL CMainFrame::OnDrop(COleDataObject* pDataObject, DROPEFFECT dropEffect, CPoi
 				UINT nFiles = ::DragQueryFileW(hDrop, UINT_MAX, nullptr, 0);
 				for (UINT iFile = 0; iFile < nFiles; iFile++) {
 					CString fn;
-					fn.ReleaseBuffer(::DragQueryFileW(hDrop, iFile, fn.GetBuffer(MAX_PATH), MAX_PATH));
-					slFiles.emplace_back(fn);
+					fn.ReleaseBuffer(::DragQueryFileW(hDrop, iFile, fn.GetBuffer(2048), 2048));
+					slFiles.emplace_back(ParseFileName(fn));
 				}
 				::DragFinish(hDrop);
 				DropFiles(slFiles);
@@ -1130,8 +1133,9 @@ BOOL CMainFrame::OnDrop(COleDataObject* pDataObject, DROPEFFECT dropEffect, CPoi
 						std::list<CString> lines;
 						Explode(text, lines, L'\n');
 						for (const auto& line : lines) {
-							if (::PathIsURLW(line) || ::PathFileExistsW(line)) {
-								slFiles.emplace_back(line);
+							auto path = ParseFileName(line);
+							if (::PathIsURLW(path) || ::PathFileExistsW(path)) {
+								slFiles.emplace_back(path);
 							}
 						}
 					}
@@ -2174,6 +2178,13 @@ void CMainFrame::OnWindowPosChanging(WINDOWPOS* lpwndpos)
 	}
 
 	__super::OnWindowPosChanging(lpwndpos);
+}
+
+BOOL CMainFrame::OnQueryEndSession()
+{
+	CloseMedia();
+
+	return TRUE;
 }
 
 LRESULT CMainFrame::OnDpiChanged(WPARAM wParam, LPARAM lParam)
@@ -5448,26 +5459,19 @@ LRESULT CMainFrame::HandleCmdLine(WPARAM wParam, LPARAM lParam)
 				CFilterMapper2 fm2(false);
 				fm2.Register(path + fd.cFileName);
 
-				while (!fm2.m_filters.empty()) {
-					FilterOverride* f = fm2.m_filters.back();
-					fm2.m_filters.pop_back();
+				for (auto& f : fm2.m_filters) {
+					f->fTemporary = true;
+					bool bFound = false;
 
-					if (f) {
-						f->fTemporary = true;
-						bool bFound = false;
-
-						for (auto& f2 : s.m_ExternalFilters) {
-							if (f2->type == FilterOverride::EXTERNAL && !f2->path.CompareNoCase(f->path)) {
-								bFound = true;
-								delete f;
-								break;
-							}
+					for (auto& f2 : s.m_ExternalFilters) {
+						if (f2->type == FilterOverride::EXTERNAL && !f2->path.CompareNoCase(f->path)) {
+							bFound = true;
+							break;
 						}
+					}
 
-						if (!bFound) {
-							std::unique_ptr<FilterOverride> p(f);
-							s.m_ExternalFilters.emplace_front(std::move(p));
-						}
+					if (!bFound) {
+						s.m_ExternalFilters.emplace_front(std::move(f));
 					}
 				}
 			} while (FindNextFileW(hFind, &fd));
@@ -7704,7 +7708,7 @@ void CMainFrame::OnViewPanNScan(UINT nID)
 
 	if (dy) {
 		m_PosY = std::clamp(m_PosY + shift * dy, 0.0, 1.0);
-		
+
 		if (abs(m_PosY - 0.5) * 2 < shift) {
 			m_PosY = 0.5;
 		}
@@ -11923,11 +11927,15 @@ CString CMainFrame::OpenCreateGraphObject(OpenMediaData* pOMD)
 	ReleasePreviewGraph(); // Hmm, most likely it is no longer needed
 
 	bool bUseSmartSeek = s.fSmartSeek;
-
-	if (OpenFileData* pFileData = dynamic_cast<OpenFileData*>(pOMD)) {
-		CString fn = pFileData->fi;
-		if (!fn.IsEmpty() && (fn.Find(L"://") >= 0)) { // disable SmartSeek for streaming data.
-			bUseSmartSeek = false;
+	if (!s.bSmartSeekOnline) {
+		if (OpenFileData* pFileData = dynamic_cast<OpenFileData*>(pOMD)) {
+			auto& fn = pFileData->fi.GetPath();
+			if (!fn.IsEmpty()) {
+				CUrlParser urlParser(fn.GetString());
+				if (urlParser.IsValid()) {
+					bUseSmartSeek = false;
+				}
+			}
 		}
 	}
 
@@ -12020,7 +12028,7 @@ CString CMainFrame::OpenCreateGraphObject(OpenMediaData* pOMD)
 
 	m_pCB = DNew CDSMChapterBag(nullptr, nullptr);
 
-	return L"";
+	return {};
 }
 
 void CMainFrame::ReleasePreviewGraph()
@@ -12194,7 +12202,7 @@ CString CMainFrame::OpenFile(OpenFileData* pOFD)
 		m_wndPlaylistBar.SetCurLabel(m_youtubeFields.title);
 	}
 	else if (s.bYoutubePageParser && pOFD->auds.empty()) {
-		const CStringW url = pOFD->fi.GetPath();
+		auto url = pOFD->fi.GetPath();
 		bool ok = Youtube::CheckURL(url);
 		if (ok) {
 			ok = Youtube::Parse_URL(
@@ -12220,7 +12228,7 @@ CString CMainFrame::OpenFile(OpenFileData* pOFD)
 			&& pOFD->auds.empty()
 			&& ::PathIsURLW(pOFD->fi)) {
 
-		const CStringW url = pOFD->fi.GetPath();
+		auto& url = pOFD->fi.GetPath();
 		const auto ext = GetFileExt(url).MakeLower();
 
 		bool ok = (ext != L".m3u" && ext != L".m3u8");
@@ -12496,7 +12504,7 @@ CString CMainFrame::OpenFile(OpenFileData* pOFD)
 	}
 
 	if (pOFD->fi.Valid()) {
-		const CString fn = youtubeUrl.GetLength() ? youtubeUrl : pOFD->fi.GetPath();
+		auto& fn = youtubeUrl.GetLength() ? youtubeUrl : pOFD->fi.GetPath();
 
 		if (!StartsWith(fn, L"pipe:")) {
 			const bool diskImage = m_DiskImage.GetDriveLetter() && m_SessionInfo.Path.GetLength();
@@ -13493,7 +13501,7 @@ void CMainFrame::OpenSetupAudioStream()
 	CPlaylistItem pli;
 	if (m_wndPlaylistBar.GetCur(pli)) {
 		for (const auto& fi : pli.m_auds) {
-			CString str = fi.GetPath();
+			auto& str = fi.GetPath();
 			extAudioList.emplace_back(GetFileOnly(str));
 		}
 	}
@@ -13967,7 +13975,7 @@ bool CMainFrame::OpenMediaPrivate(std::unique_ptr<OpenMediaData>& pOMD)
 	m_bWasPausedOnMinimizedVideo = false;
 
 	if (pFileData) {
-		CString path = pFileData->fi.GetPath();
+		auto& path = pFileData->fi.GetPath();
 		if (::PathIsURLW(path) && path.Find(L"://") <= 0) {
 			pFileData->fi = L"http://" + path;
 		}
@@ -15691,9 +15699,17 @@ void CMainFrame::SetupAudioTracksSubMenu()
 				bool fExternal = false;
 				CPlaylistItem pli;
 				if (m_wndPlaylistBar.GetCur(pli)) {
+					auto mainFileDir = GetFolderOnly(pli.m_fi);
 					for (const auto& fi : pli.m_auds) {
-						CString str = fi.GetPath();
-						if (!str.IsEmpty() && name == GetFileOnly(str)) {
+						auto& audioFile = fi.GetPath();
+						if (!audioFile.IsEmpty() && name == audioFile) {
+							auto audioFileDir = GetFolderOnly(audioFile);
+							if (!mainFileDir.IsEmpty() && audioFileDir != mainFileDir && StartsWith(name, mainFileDir.GetString())) {
+								name.Delete(0, mainFileDir.GetLength());
+							} else {
+								name = GetFileOnly(name.GetString());
+							}
+
 							fExternal = true;
 							break;
 						}
@@ -16070,10 +16086,10 @@ void CMainFrame::SetAlwaysOnTop(int i)
 		}
 
 		if (pInsertAfter) {
-			SetWindowPos(pInsertAfter, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
-			if (pInsertAfter == &wndTopMost) {
-				SetForegroundWindow();
+			if (i >= 2 && pInsertAfter == &wndTopMost && !IsIconic()) {
+				ShowWindow(SW_SHOWNA);
 			}
+			SetWindowPos(pInsertAfter, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
 		}
 	} else if (bD3DOnMain) {
 		SetWindowPos(&wndNoTopMost, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
@@ -16165,7 +16181,7 @@ bool CMainFrame::LoadSubtitle(const CExtraFileItem& subItem, ISubStream **actual
 	}
 
 	CComPtr<ISubStream> pSubStream;
-	const CStringW fname = subItem.GetPath();
+	auto& fname = subItem.GetPath();
 	const CStringW ext = GetFileExt(fname).MakeLower();
 
 	if (ext == L".mks" && s.IsISRAutoLoadEnabled()) {
@@ -20571,8 +20587,9 @@ const bool CMainFrame::GetFromClipboard(std::list<CString>& sl) const
 					std::list<CString> lines;
 					Explode(text, lines, L'\n');
 					for (const auto& line : lines) {
-						if (::PathIsURLW(line) || ::PathFileExistsW(line)) {
-							sl.emplace_back(line);
+						auto path = ParseFileName(line);
+						if (::PathIsURLW(path) || ::PathFileExistsW(path)) {
+							sl.emplace_back(path);
 						}
 					}
 				}
@@ -20586,7 +20603,7 @@ const bool CMainFrame::GetFromClipboard(std::list<CString>& sl) const
 				UINT nFiles = ::DragQueryFileW(hDrop, UINT_MAX, nullptr, 0);
 				for (UINT iFile = 0; iFile < nFiles; iFile++) {
 					CString fn;
-					fn.ReleaseBuffer(::DragQueryFileW(hDrop, iFile, fn.GetBuffer(MAX_PATH), MAX_PATH));
+					fn.ReleaseBuffer(::DragQueryFileW(hDrop, iFile, fn.GetBuffer(2048), 2048));
 					sl.emplace_back(fn);
 				}
 				GlobalUnlock(hglb);

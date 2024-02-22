@@ -436,10 +436,11 @@ BEGIN
     CONTROL         "Показывать время",IDC_CHECK8,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,99,152,9
     COMBOBOX        IDC_COMBO3,170,97,115,64,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     CONTROL         "Использовать предпросмотр при поиске видеофрагмента",IDC_CHECK_PRV,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,113,264,9
-    LTEXT           "Размер относительно размера экрана:",IDC_STATIC6,24,127,130,8
-    EDITTEXT        IDC_EDIT1,159,125,25,13,ES_RIGHT | ES_AUTOHSCROLL | ES_NUMBER
-    LTEXT           "%",IDC_STATIC7,186,127,10,8
-    COMBOBOX        IDC_COMBO4,209,125,76,64,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Размер относительно размера экрана:",IDC_STATIC6,24,127,116,8
+    EDITTEXT        IDC_EDIT1,142,125,25,13,ES_RIGHT | ES_AUTOHSCROLL | ES_NUMBER
+    LTEXT           "%",IDC_STATIC7,170,127,10,8
+    COMBOBOX        IDC_COMBO4,183,126,42,64,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Онлайн",IDC_CHECK6,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,230,127,58,8,WS_EX_TRANSPARENT
     CONTROL         "Использовать маркер для чаптеров",IDC_CHECK_CHM,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,139,182,9
     CONTROL         "Показать панель управления поверх видео",IDC_CHECK_FLYBAR,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,152,182,9
     LTEXT           "Размер шрифта плейлиста:",IDC_STATIC,13,165,110,8
@@ -783,7 +784,7 @@ BEGIN
     LTEXT           "Щелчок",IDC_STATIC,10,18,60,8
     COMBOBOX        IDC_COMBO1,70,16,166,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     CONTROL         "Если ничего не загружено, то открыть последний файл",IDC_CHECK1,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,32,206,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,32,208,10
     LTEXT           "Двойной щелчок",IDC_STATIC,10,49,60,8
     COMBOBOX        IDC_COMBO2,70,47,166,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     CONTROL         "Переносить окно за видеообласть",IDC_CHECK2,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,65,133,10
@@ -1071,7 +1072,7 @@ BEGIN
     CONTROL         "Не использовать переход по файлам в директории по нажатию ""Шаг вперед/назад""",IDC_CHECK7,
                     "Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,7,55,280,18
     CONTROL         "Не сворачивать окно на дополнительном дисплее в полноэкранном режиме",IDC_CHECK6,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,75,280,9
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,75,282,9
     CONTROL         "Приостанавливать воспроизведение видео при сворачивании окна",IDC_CHECK4,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,87,280,9
     CONTROL         "Скрывать курсор при воспроизведении в окне",IDC_CHECK5,
@@ -1154,10 +1155,10 @@ BEGIN
     CONTROL         "Встроенный VSync",IDC_VSYNC_INTERNAL,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,26,121,10
     CONTROL         "Включить коррекцию времени кадра",IDC_CHECK8,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,51,170,10
     CONTROL         "Заполнить GPU перед VSync",IDC_CHECK5,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,140,14,140,10
-    CONTROL         "Заполнить GPU после представления",IDC_CHECK6,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,140,26,140,10
+    CONTROL         "Заполнить GPU после представления",IDC_CHECK6,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,140,26,142,10
     CONTROL         "Ожидать заполнения",IDC_CHECK7,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,140,38,100,10
     GROUPBOX        "Настройки EVR Sync",IDC_STATIC2,5,67,286,117
-    CONTROL         "Синхронизировать видео с дисплеем",IDC_RADIO1,"Button",BS_AUTORADIOBUTTON | WS_GROUP,10,79,140,8
+    CONTROL         "Синхронизировать видео с дисплеем",IDC_RADIO1,"Button",BS_AUTORADIOBUTTON | WS_GROUP,10,79,142,8
     CONTROL         "Представлять с ближайшим vsync",IDC_RADIO2,"Button",BS_AUTORADIOBUTTON,10,109,170,8
     LTEXT           "Коррекция частоты:",IDC_STATIC5,20,93,85,8
     EDITTEXT        IDC_CYCLEDELTA,109,91,40,13,ES_RIGHT | ES_AUTOHSCROLL,WS_EX_RIGHT
@@ -3169,6 +3170,7 @@ END
 
 STRINGTABLE
 BEGIN
+    IDS_BLOCK_EXTERNAL_VR   "Вы не можете добавить %s как внешний фильтр.\nВам необходимо выбрать прдепочтительный видеорендерерв в панели настроек Видео."
     IDS_DESC_HAALI_VR       "Похож на VMR-9, но использует корректное бикубическое изменения размера."
 END
 
@@ -3180,6 +3182,7 @@ BEGIN
     IDS_DESC_EVR_CP         "То же, что и EVR, но использует Allocator-Presenter для субтитров и обработки."
     IDS_DESC_MADVR          "Высококачественный рендерер, требуется видеокарта с поддержкой D3D9."
     IDS_DESC_EVR_SYNC       "То же, что EVR (CP), но имеет дополнительные средства для синхронизации частоты кадров с частотой обновления экрана."
+    IDS_DESC_MPC_VR         "Видеорендерер с поддержкой Direct3D 11."
 END
 
 STRINGTABLE

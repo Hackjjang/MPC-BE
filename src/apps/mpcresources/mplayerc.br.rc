@@ -436,10 +436,11 @@ BEGIN
     CONTROL         "Usar dica de tempo:",IDC_CHECK8,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,99,152,9
     COMBOBOX        IDC_COMBO3,170,97,115,64,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     CONTROL         "Usar prévia na busca",IDC_CHECK_PRV,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,113,264,9
-    LTEXT           "Tamanho relativo à largura da tela:",IDC_STATIC6,24,127,130,8
-    EDITTEXT        IDC_EDIT1,159,125,25,13,ES_RIGHT | ES_AUTOHSCROLL | ES_NUMBER
-    LTEXT           "%",IDC_STATIC7,186,127,10,8
-    COMBOBOX        IDC_COMBO4,209,125,76,64,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Tamanho relativo à largura da tela:",IDC_STATIC6,24,127,116,8
+    EDITTEXT        IDC_EDIT1,142,125,25,13,ES_RIGHT | ES_AUTOHSCROLL | ES_NUMBER
+    LTEXT           "%",IDC_STATIC7,170,127,10,8
+    COMBOBOX        IDC_COMBO4,183,126,42,64,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Online",IDC_CHECK6,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,230,127,58,8,WS_EX_TRANSPARENT
     CONTROL         "Usar marcador de capítulos",IDC_CHECK_CHM,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,139,182,9
     CONTROL         "Usar barra de voar",IDC_CHECK_FLYBAR,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,152,182,9
     LTEXT           "Tamanho da fonte da lista de reprodução:",IDC_STATIC,13,165,110,8
@@ -783,7 +784,7 @@ BEGIN
     LTEXT           "Clique",IDC_STATIC,10,18,60,8
     COMBOBOX        IDC_COMBO1,70,16,166,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     CONTROL         "Se nada for carregado, abrir arquivo recente",IDC_CHECK1,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,32,206,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,32,208,10
     LTEXT           "Duplo clique",IDC_STATIC,10,49,60,8
     COMBOBOX        IDC_COMBO2,70,47,166,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     CONTROL         "Mover janela pela área de vídeo",IDC_CHECK2,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,65,133,10
@@ -1071,7 +1072,7 @@ BEGIN
     CONTROL         "Não usar 'buscar na pasta' nos comandos 'Voltar/avançar' quando houver apenas um item na lista de reprodução",IDC_CHECK7,
                     "Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,7,55,280,18
     CONTROL         "Impedir de MINIMIZAR quando em tela cheia no monitor não padrão",IDC_CHECK6,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,75,280,9
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,75,282,9
     CONTROL         "Pausar reprodução do vídeo quando minimizado",IDC_CHECK4,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,87,280,9
     CONTROL         "Auto-ocultar o ponteiro durante a reprodução no modo em janela",IDC_CHECK5,
@@ -1154,10 +1155,10 @@ BEGIN
     CONTROL         "Sincronia vertical interna",IDC_VSYNC_INTERNAL,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,26,121,10
     CONTROL         "Ativar correção de tempo de quadro",IDC_CHECK8,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,51,170,10
     CONTROL         "Limpar GPU antes da sincronia vertical",IDC_CHECK5,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,140,14,140,10
-    CONTROL         "Limpar GPU após o presente",IDC_CHECK6,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,140,26,140,10
+    CONTROL         "Limpar GPU após o presente",IDC_CHECK6,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,140,26,142,10
     CONTROL         "Aguardar por flushes",IDC_CHECK7,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,140,38,100,10
     GROUPBOX        "Configurar sincronia EVR",IDC_STATIC2,5,67,286,117
-    CONTROL         "Sincronizar vídeo com exibição",IDC_RADIO1,"Button",BS_AUTORADIOBUTTON | WS_GROUP,10,79,140,8
+    CONTROL         "Sincronizar vídeo com exibição",IDC_RADIO1,"Button",BS_AUTORADIOBUTTON | WS_GROUP,10,79,142,8
     CONTROL         "Presente na sincronia vertical mais próxima",IDC_RADIO2,"Button",BS_AUTORADIOBUTTON,10,109,170,8
     LTEXT           "Ajuste de frequência:",IDC_STATIC5,20,93,85,8
     EDITTEXT        IDC_CYCLEDELTA,109,91,40,13,ES_RIGHT | ES_AUTOHSCROLL,WS_EX_RIGHT
@@ -3169,6 +3170,7 @@ END
 
 STRINGTABLE
 BEGIN
+    IDS_BLOCK_EXTERNAL_VR   "You can not add %s as external filter.\nYou should select your preferred video renderer on the Video settings page."
     IDS_DESC_HAALI_VR       "Parece VMR-9, mas usa um redimensionador bicúbico verdadeiro."
 END
 
@@ -3180,6 +3182,7 @@ BEGIN
     IDS_DESC_EVR_CP         "Igual ao EVR, mas com o Alocador-Apresentador para legendagem e pós-processamento."
     IDS_DESC_MADVR          "Renderizador de alta qualidade, requer uma GPU que suporte D3D9 ou posterior."
     IDS_DESC_EVR_SYNC       "Igual ao EVR (CP), mas oferece várias opções para sincronizar a taxa de quadros do vídeo com a taxa de atualização da tela para eliminar os quadros de vídeo ignorados ou duplicados."
+    IDS_DESC_MPC_VR         "Video renderer with support for Direct3D 11."
 END
 
 STRINGTABLE

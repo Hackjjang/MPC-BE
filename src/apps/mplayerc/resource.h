@@ -983,6 +983,7 @@
 #define IDS_FILE_SAVE_THUMBNAILS        24005
 #define IDC_MAINFRAME_ICON              24006
 #define IDS_OSD_TEST                    24007
+#define IDS_BLOCK_EXTERNAL_VR           31000
 #define IDS_DESC_HAALI_VR               31007
 #define IDS_DESC_NULLVR_ANY             31008
 #define IDS_DESC_NULLVR_UNCOMP          31009
@@ -990,6 +991,7 @@
 #define IDS_DESC_EVR_CP                 31011
 #define IDS_DESC_MADVR                  31012
 #define IDS_DESC_EVR_SYNC               31013
+#define IDS_DESC_MPC_VR                 31014
 #define IDS_CMD_USAGE                   32700
 #define IDS_CMD_HELP                    32701
 #define IDS_CMD_DUB                     32702

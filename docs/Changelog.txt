@@ -20,14 +20,24 @@ Player
 Added the ability to open the folder of the currently playing file using a hotkey.
 Do not show zero hours when displaying time.
 Changed the logic of frame offset relative to the center of the window.
+Improvements to opening long paths and paths starting with "\\?\".
+Fixed the operation of the "On Top" setting.
+The ability to add supported video renderers to the list of external filters has been removed. Supported video renderers are selected in the Video settings panel.
+Various interface fixes.
 
 Updated French translation (by rhahgleuhargh).
 Updated Italian translation (by mapi68).
 Updated Korean translation (by Hackjjang).
 
 Updated libraries:
-	ffmpeg git-n6.2-dev-848-gd2eb6f4d44;
-	nanosvg git-93ce879.
+	dav1d git-1.4.0-1-g97cc6ce;
+	ffmpeg git-n6.2-dev-1203-gcb9f1f59a1;
+	Little-CMS git-lcms2.16-26-gc2a5401;
+	MediaInfo git-v24.01-g51dbd896;
+	nanosvg git-93ce879;
+	rapidjson git-v1.1.0-748-g3f73edae;
+	ZenLib git-v0.4.41-12-g26b4aa1;
+	zlib 1.3.1.
 
 
 1.6.11 - 2023-12-27

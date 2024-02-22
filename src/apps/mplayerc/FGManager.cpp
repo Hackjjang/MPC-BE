@@ -1,6 +1,6 @@
 /*
  * (C) 2003-2006 Gabest
- * (C) 2006-2023 see Authors.txt
+ * (C) 2006-2024 see Authors.txt
  *
  * This file is part of MPC-BE.
  *
@@ -359,7 +359,7 @@ HRESULT CFGManager::EnumSourceFilters(LPCWSTR lpcwstrFileName, CFGFilterList& fl
 	HANDLE hFile = INVALID_HANDLE_VALUE;
 	std::vector<BYTE> httpbuf;
 
-	if ((protocol.GetLength() <= 1 || protocol == L"file") && (ext.Compare(L".cda") != 0)) {
+	if ((protocol.GetLength() <= 1 || protocol == L"file" || StartsWith(protocol, EXTENDED_PATH_PREFIX)) && (ext.Compare(L".cda") != 0)) {
 		hFile = CreateFileW(fn, GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
 
 		if (hFile == INVALID_HANDLE_VALUE) {
@@ -454,40 +454,40 @@ HRESULT CFGManager::EnumSourceFilters(LPCWSTR lpcwstrFileName, CFGFilterList& fl
 		}
 
 		if (type.GetLength()) {
-			if (const auto it = s.FiltersPriority.values.find(type); it != s.FiltersPriority.values.cend() && it->second != CLSID_NULL) {
-				const auto& clsid_value = it->second;
+			for (const auto& [_, clsid_value] : s.FiltersPriority.values) {
+				if (clsid_value != CLSID_NULL) {
+					for (const auto& pFGF : m_override) {
+						if (pFGF->GetCLSID() == clsid_value) {
+							const std::list<GUID>& types = pFGF->GetTypes();
+							if (types.size() && !httpbuf.size()) {
+								bool bIsSplitter = false;
+								auto it = types.cbegin();
+								while (it != types.cend() && std::next(it) != types.cend()) {
+									CLSID major = *it++;
+									CLSID sub = *it++;
 
-				for (const auto& pFGF : m_override) {
-					if (pFGF->GetCLSID() == clsid_value) {
-						const std::list<GUID>& types = pFGF->GetTypes();
-						if (types.size() && !httpbuf.size()) {
-							bool bIsSplitter = false;
-							auto it = types.cbegin();
-							while (it != types.cend() && std::next(it) != types.cend()) {
-								CLSID major = *it++;
-								CLSID sub   = *it++;
+									if (major == MEDIATYPE_Stream) {
+										bIsSplitter = true;
 
-								if (major == MEDIATYPE_Stream) {
-									bIsSplitter = true;
+										std::list<GUID> typesNew;
+										typesNew.emplace_back(major);
+										typesNew.emplace_back(sub);
+										pFGF->SetTypes(typesNew);
 
-									std::list<GUID> typesNew;
-									typesNew.emplace_back(major);
-									typesNew.emplace_back(sub);
-									pFGF->SetTypes(typesNew);
-
-									break;
+										break;
+									}
+								}
+								if (bIsSplitter) {
+									CFGFilter* pFGFAsync = LookupFilterRegistry(CLSID_AsyncReader, m_override, MERIT64_HIGH + 1);
+									fl.Insert(pFGFAsync, 0);
 								}
 							}
-							if (bIsSplitter) {
-								CFGFilter* pFGFAsync = LookupFilterRegistry(CLSID_AsyncReader, m_override, MERIT64_HIGH + 1);
-								fl.Insert(pFGFAsync, 0);
-							}
+
+							pFGF->SetMerit(MERIT64_HIGH);
+							fl.Insert(pFGF, 0, false, false);
+
+							break;
 						}
-
-						pFGF->SetMerit(MERIT64_HIGH);
-						fl.Insert(pFGF, 0, false, false);
-
-						break;
 					}
 				}
 			}

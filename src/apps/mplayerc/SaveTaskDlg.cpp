@@ -416,6 +416,9 @@ void CSaveTaskDlg::SaveHTTP(const int iSubLangDefault)
 		if (iSubLangDefault >= 0) {
 			strArgs.AppendFormat(L" -disposition:s:%d default", iSubLangDefault);
 		}
+		if (finalext == L"mp4") {
+			strArgs.Append(L" -movflags +faststart");
+		}
 		strArgs.AppendFormat(LR"( -f %s "%s")", finalext, tmpfile);
 
 		SHELLEXECUTEINFOW execinfo = { sizeof(execinfo) };
@@ -475,8 +478,7 @@ HRESULT CSaveTaskDlg::DownloadHTTP(CStringW url, const CStringW filepath)
 		}
 	}
 
-	int attempts = 0;
-	while (!m_bAbort && attempts <= 20) {
+	while (!m_bAbort) {
 		DWORD dwSizeRead = 0;
 		hr = httpAsync.Read(pBuffer.data(), bufLen, dwSizeRead);
 		if (hr != S_OK) {

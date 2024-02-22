@@ -436,10 +436,11 @@ BEGIN
     CONTROL         "Usar herramienta informativa de tiempo:",IDC_CHECK8,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,99,152,9
     COMBOBOX        IDC_COMBO3,170,97,115,64,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     CONTROL         "Usar vista previa en la búsqueda",IDC_CHECK_PRV,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,113,264,9
-    LTEXT           "Tamaño relativo al ancho de pantalla:",IDC_STATIC6,24,127,130,8
-    EDITTEXT        IDC_EDIT1,159,125,25,13,ES_RIGHT | ES_AUTOHSCROLL | ES_NUMBER
-    LTEXT           "%",IDC_STATIC7,186,127,10,8
-    COMBOBOX        IDC_COMBO4,209,125,76,64,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Tamaño relativo al ancho de pantalla:",IDC_STATIC6,24,127,116,8
+    EDITTEXT        IDC_EDIT1,142,125,25,13,ES_RIGHT | ES_AUTOHSCROLL | ES_NUMBER
+    LTEXT           "%",IDC_STATIC7,170,127,10,8
+    COMBOBOX        IDC_COMBO4,183,126,42,64,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "En línea",IDC_CHECK6,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,230,127,58,8,WS_EX_TRANSPARENT
     CONTROL         "Usar marcador de capítulos",IDC_CHECK_CHM,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,139,182,9
     CONTROL         "Usar barra flotante",IDC_CHECK_FLYBAR,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,152,182,9
     LTEXT           "Tamaño de fuente de Lista de Reproducción:",IDC_STATIC,13,165,110,8
@@ -766,12 +767,12 @@ BEGIN
     PUSHBUTTON      "SEC",IDC_COLORSEC,170,108,20,14
     CONTROL         "",IDC_SLIDER2,"msctls_trackbar32",TBS_BOTH | TBS_NOTICKS | WS_TABSTOP | 0x400,190,109,100,12
     LTEXT           "Contorno",IDC_STATIC,119,127,47,8
-    PUSHBUTTON      "OUTL",IDC_COLOROUTL,170,124,20,14
+    PUSHBUTTON      "CONT",IDC_COLOROUTL,170,124,20,14
     CONTROL         "",IDC_SLIDER3,"msctls_trackbar32",TBS_BOTH | TBS_NOTICKS | WS_TABSTOP | 0x400,190,125,100,12
     LTEXT           "Sombra",IDC_STATIC,119,143,47,8
-    PUSHBUTTON      "SHAD",IDC_COLORSHAD,170,140,20,14
+    PUSHBUTTON      "SOMB",IDC_COLORSHAD,170,140,20,14
     CONTROL         "",IDC_SLIDER4,"msctls_trackbar32",TBS_BOTH | TBS_NOTICKS | WS_TABSTOP | 0x400,190,141,100,12
-    CONTROL         "Vincular canales alpha",IDC_CHECK1,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,180,157,110,10
+    CONTROL         "Vincular canales alfa",IDC_CHECK1,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,180,157,110,10
     PUSHBUTTON      "Reiniciar",IDC_RESET,242,192,50,14
 END
 
@@ -783,7 +784,7 @@ BEGIN
     LTEXT           "Clic",IDC_STATIC,10,18,60,8
     COMBOBOX        IDC_COMBO1,70,16,166,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     CONTROL         "Si nada es cargado, abrir archivo reciente",IDC_CHECK1,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,32,206,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,32,208,10
     LTEXT           "Doble clic",IDC_STATIC,10,49,60,8
     COMBOBOX        IDC_COMBO2,70,47,166,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     CONTROL         "Mover ventana por el área de video",IDC_CHECK2,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,65,133,10
@@ -1071,7 +1072,7 @@ BEGIN
     CONTROL         "No usar 'buscar en carpeta' en comandos 'Saltar hacia atrás/adelante' cuando sólo hay un elemento en la lista de reproducción",IDC_CHECK7,
                     "Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,7,55,280,18
     CONTROL         "Evitar el MINIMIZADO en Pantalla Completa en un monitor no predeterminado",IDC_CHECK6,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,75,280,9
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,75,282,9
     CONTROL         "Pausar la reproducción de video cuando se minimiza",IDC_CHECK4,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,87,280,9
     CONTROL         "Ocultar automáticamente el puntero durante la reproducción en modo ventana",IDC_CHECK5,
@@ -1154,10 +1155,10 @@ BEGIN
     CONTROL         "VSync interno",IDC_VSYNC_INTERNAL,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,26,121,10
     CONTROL         "Habilita corrección de tiempo de fotograma",IDC_CHECK8,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,51,170,10
     CONTROL         "Descargar GPU antes de VSync",IDC_CHECK5,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,140,14,140,10
-    CONTROL         "Descargar GPU después del Presente",IDC_CHECK6,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,140,26,140,10
+    CONTROL         "Descargar GPU después del Presente",IDC_CHECK6,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,140,26,142,10
     CONTROL         "Esperar por descargas",IDC_CHECK7,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,140,38,100,10
     GROUPBOX        "Ajustes EVR Sync",IDC_STATIC2,5,67,286,117
-    CONTROL         "Sincronizar video a pantalla",IDC_RADIO1,"Button",BS_AUTORADIOBUTTON | WS_GROUP,10,79,140,8
+    CONTROL         "Sincronizar video a pantalla",IDC_RADIO1,"Button",BS_AUTORADIOBUTTON | WS_GROUP,10,79,142,8
     CONTROL         "Presentar al VSync más cercano",IDC_RADIO2,"Button",BS_AUTORADIOBUTTON,10,109,170,8
     LTEXT           "Ajuste de frecuencia:",IDC_STATIC5,20,93,85,8
     EDITTEXT        IDC_CYCLEDELTA,109,91,40,13,ES_RIGHT | ES_AUTOHSCROLL,WS_EX_RIGHT
@@ -2640,7 +2641,7 @@ BEGIN
     IDS_RECENT_FILES_CLEAR  "Lista Borrada"
     IDS_RECENT_FILES        "Archivos Recientes"
     IDS_RECENT_FILES_QUESTION  "¿Estas seguro de que deseas borrar la lista de archivos recientes?"
-    IDS_HISTORY_REDUCE_QUESTION  "Your history file contains %u entries. Are you sure you want to reduce the number of entries to %u?"
+    IDS_HISTORY_REDUCE_QUESTION  "Tu historial contiene %u entradas. Estás seguro de que quieres reducir el número de entradas a %u?"
 END
 
 STRINGTABLE
@@ -3169,6 +3170,7 @@ END
 
 STRINGTABLE
 BEGIN
+    IDS_BLOCK_EXTERNAL_VR   "No puedes agregar %s como filtro externo.\nDebes seleccionar tu renderizador de video preferido en la página de configuración de video."
     IDS_DESC_HAALI_VR       "Se parece al VMR-9, pero usa un verdadero redimensionador bicúbico."
 END
 
@@ -3180,6 +3182,7 @@ BEGIN
     IDS_DESC_EVR_CP         "Igual que el EVR, pero con el Asignador-Presentador para subtitulado y postprocesado."
     IDS_DESC_MADVR          "Renderizador de alta calidad, requiere una GPU que soporte D3D9 o posterior."
     IDS_DESC_EVR_SYNC       "Igual que el EVR (CP), pero ofrece varias opciones para sincronizar la frecuencia de fotogramas de video con la frecuencia de actualización de pantalla para eliminar fotogramas de video omitidos o duplicados."
+    IDS_DESC_MPC_VR         "Renderizador de video con soporte para Direct3D 11."
 END
 
 STRINGTABLE
@@ -3644,7 +3647,7 @@ BEGIN
     IDS_SATURATION_DEC      "Disminuir Saturación"
     IDS_RESET_COLOR         "Restablecer la configuración de color"
     IDS_AFTERPLAYBACK_CLOSE_FILE "Después de Reproducir: Siempre cerrar archivo"
-    IDS_UPDATE_ERROR_DATA   "The update server gives the wrong data.\n\nPlease try later."
+    IDS_UPDATE_ERROR_DATA   "El servidor de actualización proporciona datos incorrectos.\n\nPor favor inténtelo más tarde."
     IDS_USING_NEWER_VERSION "Ya estás usando la última versión %s."
     IDS_NEW_UPDATE_AVAILABLE  "Una nueva %s está disponible.\n\nDeseas visitar el sitio web de MPC-BE para descargarlo?"
     IDS_UPDATE_ERROR_CONNECT  "Servidor de actualización no encontrado.\n\nPor favor compruebe su conexión a internet o vuelva a intentarlo más tarde."

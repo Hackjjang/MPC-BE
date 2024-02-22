@@ -1,6 +1,6 @@
 /*
  * (C) 2003-2006 Gabest
- * (C) 2006-2023 see Authors.txt
+ * (C) 2006-2024 see Authors.txt
  *
  * This file is part of MPC-BE.
  *
@@ -341,10 +341,11 @@ static void StringToPaths(const CString& curentdir, const CString& str, std::vec
 		} else {
 			CPath parentdir(path + L"\\..");
 			parentdir.Canonicalize();
+			parentdir.AddBackslash();
 
 			do {
 				if ((fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) && wcscmp(fd.cFileName, L".") && wcscmp(fd.cFileName, L"..")) {
-					CString folder = parentdir + '\\' + fd.cFileName + '\\';
+					CString folder = parentdir + fd.cFileName + '\\';
 
 					size_t index = 0;
 					size_t count = paths.size();
@@ -369,22 +370,16 @@ void CPlaylistItem::AutoLoadFiles()
 		return;
 	}
 
-	CStringW fpath = m_fi;
+	auto& fpath = m_fi.GetPath();
 	if (fpath.Find(L"://") >= 0) { // skip URLs
 		return;
 	}
 
-	int n = fpath.ReverseFind('\\') + 1;
-	CStringW curdir = fpath.Left(n);
-	CStringW name   = fpath.Mid(n);
-	CStringW ext;
-	n = name.ReverseFind('.');
-	if (n >= 0) {
-		ext = name.Mid(n + 1).MakeLower();
-		name.Truncate(n);
-	}
+	auto curdir = GetFolderOnly(fpath);
+	auto name   = RemoveFileExt(GetFileOnly(fpath));
+	auto ext    = GetFileExt(fpath);
 
-	CString BDLabel, empty;
+	CStringW BDLabel, empty;
 	AfxGetMainFrame()->MakeBDLabel(fpath, empty, &BDLabel);
 	if (BDLabel.GetLength()) {
 		FixFilename(BDLabel);
@@ -393,7 +388,7 @@ void CPlaylistItem::AutoLoadFiles()
 	CAppSettings& s = AfxGetAppSettings();
 
 	if (s.fAutoloadAudio) {
-		std::vector<CString> paths;
+		std::vector<CStringW> paths;
 		StringToPaths(curdir, s.strAudioPaths, paths);
 
 		for (const auto& apa : s.slAudioPathsAddons) {
@@ -403,34 +398,34 @@ void CPlaylistItem::AutoLoadFiles()
 		CMediaFormats& mf = s.m_Formats;
 		if (!mf.FindAudioExt(ext)) {
 			for (const auto& path : paths) {
-				std::vector<CString> searchPattern;
+				std::vector<CStringW> searchPattern;
 				searchPattern.emplace_back(path + name + L".*"); // more general filename mask, clarification will follow
 				if (BDLabel.GetLength()) {
 					searchPattern.emplace_back(path + BDLabel + L".*");
 				}
 
-				WIN32_FIND_DATAW fd = {0};
+				WIN32_FIND_DATAW fd = {};
 				HANDLE hFind;
 
-				for (size_t j = 0; j < searchPattern.size(); j++) {
-					hFind = FindFirstFileW(searchPattern[j], &fd);
+				for (const auto& pattern : searchPattern) {
+					hFind = FindFirstFileW(pattern, &fd);
 
 					if (hFind != INVALID_HANDLE_VALUE) {
 						do {
 							if (fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
 								continue;
 							}
-							const CStringW fn = fd.cFileName;
+							CStringW fn(fd.cFileName);
 							if (fn[name.GetLength()] != L'.') {
 								continue;
 							}
-							const CStringW ext2 = fn.Mid(fn.ReverseFind('.') + 1).MakeLower();
-							if (ext == ext2 || !mf.FindAudioExt(ext2)) {
+							const CStringW ext2 = GetFileExt(fn);
+							if (ext.CompareNoCase(ext2) == 0 || !mf.FindAudioExt(ext2)) {
 								continue;
 							}
-							const CStringW fullpath = path + fn;
-							if (!FindFileInList(m_auds, fullpath)) {
-								m_auds.emplace_back(fullpath);
+							fn = path + fn;
+							if (!FindFileInList(m_auds, fn)) {
+								m_auds.emplace_back(fn);
 							}
 						} while (FindNextFileW(hFind, &fd));
 
@@ -442,14 +437,14 @@ void CPlaylistItem::AutoLoadFiles()
 	}
 
 	if (s.IsISRAutoLoadEnabled()) {
-		std::vector<CString> paths;
+		std::vector<CStringW> paths;
 		StringToPaths(curdir, s.strSubtitlePaths, paths);
 
 		for (const auto& spa : s.slSubtitlePathsAddons) {
 			paths.emplace_back(spa);
 		}
 
-		std::vector<CString> ret;
+		std::vector<CStringW> ret;
 		Subtitle::GetSubFileNames(fpath, paths, ret);
 
 		for (const auto& sub_fn : ret) {
@@ -471,21 +466,20 @@ void CPlaylistItem::AutoLoadFiles()
 	}
 
 	// cue-sheet file auto-load
-	CString cuefn(fpath);
-	cuefn.Replace(ext, L"cue");
+	const CString cuefn = RenameFileExt(fpath, L".cue");
 	if (::PathFileExistsW(cuefn)) {
-		CString filter;
-		std::vector<CString> mask;
-		AfxGetAppSettings().m_Formats.GetAudioFilter(filter, mask);
-		std::list<CString> sl;
+		CStringW filter;
+		std::vector<CStringW> mask;
+		s.m_Formats.GetAudioFilter(filter, mask);
+		std::list<CStringW> sl;
 		Explode(mask[0], sl, L';');
 
-		BOOL bExists = false;
-		for (CString _mask : sl) {
+		bool bExists = false;
+		for (auto _mask : sl) {
 			_mask.Delete(0, 2);
 			_mask.MakeLower();
 			if (_mask == ext) {
-				bExists = TRUE;
+				bExists = true;
 				break;
 			}
 		}
@@ -494,7 +488,7 @@ void CPlaylistItem::AutoLoadFiles()
 			CFileItem* fi = &m_fi;
 			if (!fi->GetChapterCount()) {
 
-				CString Title, Performer;
+				CStringW Title, Performer;
 				std::list<CUETrack> CUETrackList;
 				if (ParseCUESheetFile(cuefn, CUETrackList, Title, Performer)) {
 					std::list<CStringW> fileNames;
@@ -510,18 +504,18 @@ void CPlaylistItem::AutoLoadFiles()
 						MakeCUETitle(m_label, Title, Performer);
 
 						for (const auto& cueTrack : CUETrackList) {
-							CString cueTrackTitle;
+							CStringW cueTrackTitle;
 							MakeCUETitle(cueTrackTitle, cueTrack.m_Title, cueTrack.m_Performer, cueTrack.m_trackNum);
-							fi->AddChapter(Chapters{cueTrackTitle, cueTrack.m_rt});
+							fi->AddChapter(cueTrackTitle, cueTrack.m_rt);
 						}
 						fi->SetTitle(m_label);
 
 						ChaptersList chaplist;
 						fi->GetChapters(chaplist);
-						BOOL bTrustedChap = FALSE;
+						bool bTrustedChap = false;
 						for (size_t i = 0; i < chaplist.size(); i++) {
 							if (chaplist[i].rt > 0) {
-								bTrustedChap = TRUE;
+								bTrustedChap = true;
 								break;
 							}
 						}
@@ -1923,7 +1917,7 @@ bool CPlayerPlaylistBar::ParseCUEPlayList(CString fn)
 				if (cueTrack.m_fn == fName) {
 					CString cueTrackTitle;
 					MakeCUETitle(cueTrackTitle, cueTrack.m_Title, cueTrack.m_Performer, cueTrack.m_trackNum);
-					fi.AddChapter(Chapters{cueTrackTitle, cueTrack.m_rt});
+					fi.AddChapter(cueTrackTitle, cueTrack.m_rt);
 
 					if (bFirst && fileNames.size() > 1) {
 						MakeCUETitle(pli.m_label, cueTrack.m_Title, cueTrack.m_Performer);
@@ -2515,7 +2509,8 @@ OpenMediaData* CPlayerPlaylistBar::GetCurOMD(REFERENCE_TIME rtStart)
 
 	pli->AutoLoadFiles();
 
-	CString fn = pli->m_fi.GetPath().MakeLower();
+	CStringW fn = pli->m_fi.GetPath();
+	fn.MakeLower();
 
 	if (TGetPathType(fn) != IT_FILE) {
 		return nullptr;

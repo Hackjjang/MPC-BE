@@ -33,6 +33,8 @@
 #include "AppSettings.h"
 #include "DSUtil/HTTPAsync.h"
 
+#include "PPageExternalFilters.h"
+
 const LPCWSTR channel_mode_sets[] = {
 	//         ID          Name
 	L"1.0", // SPK_MONO   "Mono"
@@ -760,6 +762,7 @@ void CAppSettings::ResetSettings()
 	fLCDSupport = false;
 	bWinMediaControls = false;
 	fSmartSeek = false;
+	bSmartSeekOnline = false;
 	iSmartSeekSize = 15;
 	iSmartSeekVR = 0;
 	fChapterMarker = false;
@@ -1050,24 +1053,36 @@ void CAppSettings::LoadSettings(bool bForce/* = false*/)
 
 	{
 		m_ExternalFilters.clear();
-		for (unsigned int i = 0; ; i++) {
-			CString key;
-			key.Format(L"%s\\%03u", IDS_R_EXTERNAL_FILTERS, i);
+
+		std::vector<CStringW> sectionnames;
+		profile.EnumSectionNames(IDS_R_EXTERNAL_FILTERS, sectionnames);
+
+		for (const auto& section : sectionnames) {
+			const CStringW key = IDS_R_EXTERNAL_FILTERS L"\\" + section;
+
 			auto f = std::make_unique<FilterOverride>();
+
+			profile.ReadString(key, L"Name", f->name);
+			int sourceType = -1;
+			profile.ReadInt(key, L"SourceType", sourceType, FilterOverride::REGISTERED, FilterOverride::EXTERNAL);
+			f->iLoadType = -1;
+			profile.ReadInt(key, L"LoadType", f->iLoadType, FilterOverride::PREFERRED, FilterOverride::MERIT);
+
+			if (f->name.IsEmpty() || sourceType < 0 || f->iLoadType < 0) {
+				continue;
+			}
+
+			if (profile.ReadString(key, L"CLSID", str)) {
+				f->clsid = GUIDFromCString(str);
+			}
 
 			bool enabled = false;
 			profile.ReadBool(key, L"Enabled", enabled);
 			f->fDisabled = !enabled;
 
-			int j = -1;
-			profile.ReadInt(key, L"SourceType", j);
-			if (j == 0) {
+			if (sourceType == 0) {
 				f->type = FilterOverride::REGISTERED;
 				profile.ReadString(key, L"DisplayName", f->dispname);
-				profile.ReadString(key, L"Name", f->name);
-				if (profile.ReadString(key, L"CLSID", str)) {
-					f->clsid = GUIDFromCString(str);
-				}
 				if (f->clsid == CLSID_NULL) {
 					CComPtr<IBaseFilter> pBF;
 					CStringW FriendlyName;
@@ -1076,16 +1091,14 @@ void CAppSettings::LoadSettings(bool bForce/* = false*/)
 						profile.WriteString(key, L"CLSID", CStringFromGUID(f->clsid));
 					}
 				}
-			} else if (j == 1) {
+			} else if (sourceType == 1) {
 				f->type = FilterOverride::EXTERNAL;
 				profile.ReadString(key, L"Path", f->path);
-				profile.ReadString(key, L"Name", f->name);
-				if (profile.ReadString(key, L"CLSID", str)) {
-					f->clsid = GUIDFromCString(str);
-				}
-			} else {
-				profile.DeleteSection(key);
-				break;
+			}
+
+			if (f->clsid == CLSID_NULL || IsSupportedExternalVideoRenderer(f->clsid)) {
+				// supported external video renderers that must be selected in the "Video" settings
+				continue;
 			}
 
 			f->guids.clear();
@@ -1108,12 +1121,6 @@ void CAppSettings::LoadSettings(bool bForce/* = false*/)
 			}
 			if (f->guids.size() & 1) {
 				f->guids.pop_back();
-			}
-
-			f->iLoadType = -1;
-			profile.ReadInt(key, L"LoadType", f->iLoadType);
-			if (f->iLoadType < 0) {
-				break;
 			}
 
 			f->dwMerit = MERIT_DO_NOT_USE + 1;
@@ -1428,6 +1435,7 @@ void CAppSettings::LoadSettings(bool bForce/* = false*/)
 	profile.ReadBool(IDS_R_SETTINGS, IDS_RS_LCD_SUPPORT, fLCDSupport);
 	profile.ReadBool(IDS_R_SETTINGS, IDS_RS_WINMEDIACONTROLS, bWinMediaControls);
 	profile.ReadBool(IDS_R_SETTINGS, IDS_RS_SMARTSEEK, fSmartSeek);
+	profile.ReadBool(IDS_R_SETTINGS, IDS_RS_SMARTSEEK_ONLINE, bSmartSeekOnline);
 	profile.ReadInt(IDS_R_SETTINGS, IDS_RS_SMARTSEEK_SIZE, iSmartSeekSize, 5, 30);
 	profile.ReadInt(IDS_R_SETTINGS, IDS_RS_SMARTSEEK_VIDEORENDERER, iSmartSeekVR, 0, 1);
 	profile.ReadBool(IDS_R_SETTINGS, IDS_RS_CHAPTER_MARKER, fChapterMarker);
@@ -1770,6 +1778,7 @@ void CAppSettings::SaveSettings()
 	profile.WriteBool(IDS_R_SETTINGS, IDS_RS_LCD_SUPPORT, fLCDSupport);
 	profile.WriteBool(IDS_R_SETTINGS, IDS_RS_WINMEDIACONTROLS, bWinMediaControls);
 	profile.WriteBool(IDS_R_SETTINGS, IDS_RS_SMARTSEEK, fSmartSeek);
+	profile.WriteBool(IDS_R_SETTINGS, IDS_RS_SMARTSEEK_ONLINE, bSmartSeekOnline);
 	profile.WriteInt(IDS_R_SETTINGS, IDS_RS_SMARTSEEK_SIZE, iSmartSeekSize);
 	profile.WriteInt(IDS_R_SETTINGS, IDS_RS_SMARTSEEK_VIDEORENDERER, iSmartSeekVR);
 	profile.WriteBool(IDS_R_SETTINGS, IDS_RS_CHAPTER_MARKER, fChapterMarker);
@@ -2053,16 +2062,7 @@ void CAppSettings::SaveExternalFilters()
 	// External Filter settings are saved for a long time. Use only when really necessary.
 	CProfile& profile = AfxGetProfile();
 
-	for (unsigned int i = 0; ; i++) {
-		CString key;
-		key.Format(L"%s\\%03u", IDS_R_EXTERNAL_FILTERS, i);
-		int j = -1;
-		profile.ReadInt(key, L"Enabled", j);
-		profile.DeleteSection(key);
-		if (j < 0) {
-			break;
-		}
-	}
+	profile.DeleteSection(IDS_R_EXTERNAL_FILTERS);
 
 	unsigned int k = 0;
 	for (const auto& f : m_ExternalFilters) {
@@ -2187,35 +2187,6 @@ void CAppSettings::ExtractDVDStartPos(CString& strParam)
 				break;
 		}
 	}
-}
-
-CStringW CAppSettings::ParseFileName(const CStringW& param)
-{
-	if (param.Find(L':') < 0) {
-		// try to convert relative path to full path
-		CStringW fullPathName;
-		fullPathName.ReleaseBuffer(GetFullPathNameW(param, MAX_PATH, fullPathName.GetBuffer(MAX_PATH), nullptr));
-
-		CFileStatus fs;
-		if (!fullPathName.IsEmpty() && CFileGetStatus(fullPathName, fs)) {
-			return fullPathName;
-		}
-	}
-	else if (param.GetLength() > MAX_PATH && !::PathIsURLW(param) && !::PathIsUNCW(param)) {
-		// trying to shorten a long local path
-		CStringW longpath = StartsWith(param, L"\\\\?\\") ? param : L"\\\\?\\" + param;
-		auto length = GetShortPathNameW(longpath, nullptr, 0);
-		if (length > 0) {
-			CStringW shortPathName;
-			length = GetShortPathNameW(longpath, shortPathName.GetBuffer(length), length);
-			if (length > 0) {
-				shortPathName.ReleaseBuffer(length);
-				return shortPathName;
-			}
-		}
-	}
-
-	return param;
 }
 
 void CAppSettings::ParseCommandLine(cmdLine& cmdln)
@@ -2482,3 +2453,32 @@ void CAppSettings::SaveFormats()
 
 extern BOOL AFXAPI AfxFullPath(LPTSTR lpszPathOut, LPCTSTR lpszFileIn);
 extern BOOL AFXAPI AfxComparePath(LPCTSTR lpszPath1, LPCTSTR lpszPath2);
+
+CStringW ParseFileName(const CStringW& param)
+{
+	if (param.Find(L':') < 0) {
+		// try to convert relative path to full path
+		CStringW fullPathName;
+		fullPathName.ReleaseBuffer(GetFullPathNameW(param, MAX_PATH, fullPathName.GetBuffer(MAX_PATH), nullptr));
+
+		CFileStatus fs;
+		if (!fullPathName.IsEmpty() && CFileGetStatus(fullPathName, fs)) {
+			return fullPathName;
+		}
+	} else if (param.GetLength() > MAX_PATH && !::PathIsURLW(param) && !::PathIsUNCW(param)) {
+		// trying to shorten a long local path
+		CStringW longpath = StartsWith(param, EXTENDED_PATH_PREFIX) ? param : EXTENDED_PATH_PREFIX + param;
+		auto length = GetShortPathNameW(longpath, nullptr, 0);
+		if (length > 0) {
+			CStringW shortPathName;
+			length = GetShortPathNameW(longpath, shortPathName.GetBuffer(length), length);
+			if (length > 0) {
+				shortPathName.ReleaseBuffer(length);
+				shortPathName.Delete(0, 4); // remove "\\?\" prefix
+				return shortPathName;
+			}
+		}
+	}
+
+	return param;
+}

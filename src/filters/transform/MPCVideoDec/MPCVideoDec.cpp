@@ -165,6 +165,7 @@ struct {
 	{ AV_CODEC_ID_H264, DXVA2_H264_VLD_Intel, false },
 	// HEVC Intel
 	{ AV_CODEC_ID_HEVC, DXVA2_HEVC_VLD_Main12_Intel,     false, AV_PIX_FMT_YUV420P12 },
+	{ AV_CODEC_ID_HEVC, DXVA2_HEVC_VLD_Main422_10_Intel, false, AV_PIX_FMT_YUV422P   },
 	{ AV_CODEC_ID_HEVC, DXVA2_HEVC_VLD_Main422_10_Intel, false, AV_PIX_FMT_YUV422P10 },
 	{ AV_CODEC_ID_HEVC, DXVA2_HEVC_VLD_Main422_12_Intel, false, AV_PIX_FMT_YUV422P12 },
 	{ AV_CODEC_ID_HEVC, DXVA2_HEVC_VLD_Main444_Intel,    false, AV_PIX_FMT_YUV444P   },
@@ -2252,7 +2253,8 @@ redo:
 						 || m_CodecId == AV_CODEC_ID_RV40
 						 || m_CodecId == AV_CODEC_ID_VP3
 						 || m_CodecId == AV_CODEC_ID_THEORA
-						 || m_CodecId == AV_CODEC_ID_MPEG4;
+						 || m_CodecId == AV_CODEC_ID_MPEG4
+						 || m_CodecId == AV_CODEC_ID_VVC;
 	}
 
 	m_pAVCtx->codec_id              = m_CodecId;
@@ -3564,8 +3566,29 @@ HRESULT CMPCVideoDecFilter::DecodeInternal(AVPacket *avpkt, REFERENCE_TIME rtSta
 					case AV_CODEC_ID_VP9:        codec = L"VP9";    break;
 				}
 
+				auto frames_ctx = (AVHWFramesContext*)hw_frame->hw_frames_ctx->data;
+
 				CString description = m_bUseD3D11cb ? L"D3D11 Copy-back" : (m_bUseD3D12cb ? L"D3D12 Copy-back" : L"NVDEC");
 				if (!codec.IsEmpty()) {
+					if (m_bUseNVDEC) {
+						if (frames_ctx->sw_format == AV_PIX_FMT_YUV444P || frames_ctx->sw_format == AV_PIX_FMT_YUV444P16) {
+							codec.Append(L" 444");
+						}
+					} else if (m_bUseD3D11cb) {
+						switch (frames_ctx->sw_format) {
+							case AV_PIX_FMT_YUYV422:
+							case AV_PIX_FMT_Y210:
+							case AV_PIX_FMT_Y212:
+								codec.Append(L" 422");
+								break;
+							case AV_PIX_FMT_VUYX:
+							case AV_PIX_FMT_XV30:
+							case AV_PIX_FMT_XV36:
+								codec.Append(L" 444");
+								break;
+						}
+					}
+
 					const int depth = GetLumaBits(m_pAVCtx->sw_pix_fmt);
 					if (depth > 8) {
 						codec.AppendFormat(L" %d-bit", depth);
@@ -3576,7 +3599,6 @@ HRESULT CMPCVideoDecFilter::DecodeInternal(AVPacket *avpkt, REFERENCE_TIME rtSta
 
 				DXVAState::SetActiveState(GUID_NULL, description);
 
-				auto frames_ctx = (AVHWFramesContext*)hw_frame->hw_frames_ctx->data;
 				if (frames_ctx->format == AV_PIX_FMT_CUDA) {
 					auto device_hwctx = reinterpret_cast<AVHWDeviceContext*>(frames_ctx->device_ctx);
 					auto cuda_hwctx = reinterpret_cast<AVCUDADeviceContext*>(device_hwctx->hwctx);
@@ -3651,27 +3673,25 @@ HRESULT CMPCVideoDecFilter::DecodeInternal(AVPacket *avpkt, REFERENCE_TIME rtSta
 			auto frames_ctx = (AVHWFramesContext*)hw_frame->hw_frames_ctx->data;
 
 			if (frames_ctx->format == AV_PIX_FMT_D3D11) {
-				const auto dxgi_format =
-					(frames_ctx->sw_format == AV_PIX_FMT_P010) ? DXGI_FORMAT_P010 :
-					(frames_ctx->sw_format == AV_PIX_FMT_NV12) ? DXGI_FORMAT_NV12 :
-					DXGI_FORMAT_UNKNOWN; // formal assignment
-
 				auto device_hwctx = reinterpret_cast<AVD3D11VADeviceContext*>(frames_ctx->device_ctx->hwctx);
 				auto texture = reinterpret_cast<ID3D11Texture2D*>(hw_frame->data[0]);
 				auto index = reinterpret_cast<intptr_t>(hw_frame->data[1]);
 
+				D3D11_TEXTURE2D_DESC inputTexDesc = {};
+				texture->GetDesc(&inputTexDesc);
+
 				D3D11_TEXTURE2D_DESC texDesc = {};
 				if (m_pStagingD3D11Texture2D) {
 					m_pStagingD3D11Texture2D->GetDesc(&texDesc);
-					if (texDesc.Format != dxgi_format || texDesc.Width != frames_ctx->width || texDesc.Height != frames_ctx->height) {
+					if (texDesc.Format != inputTexDesc.Format || texDesc.Width != inputTexDesc.Width || texDesc.Height != inputTexDesc.Height) {
 						m_pStagingD3D11Texture2D.Release();
 					}
 				}
 				if (!m_pStagingD3D11Texture2D) {
-					texDesc.Width          = frames_ctx->width;
-					texDesc.Height         = frames_ctx->height;
+					texDesc.Width          = inputTexDesc.Width;
+					texDesc.Height         = inputTexDesc.Height;
 					texDesc.MipLevels      = 1;
-					texDesc.Format         = dxgi_format;
+					texDesc.Format         = inputTexDesc.Format;
 					texDesc.SampleDesc     = { 1, 0 };
 					texDesc.ArraySize      = 1;
 					texDesc.Usage          = D3D11_USAGE_STAGING;
@@ -3693,17 +3713,35 @@ HRESULT CMPCVideoDecFilter::DecodeInternal(AVPacket *avpkt, REFERENCE_TIME rtSta
 					DLog(L"CMPCVideoDecFilter::DecodeInternal() : ID3D11DeviceContext::Map() failed : %s", HR2Str(hr));
 					CLEAR_AND_CONTINUE;
 				}
-				m_pFrame->data[0]     = (BYTE*)mappedResource.pData;
-				m_pFrame->data[1]     = m_pFrame->data[0] + texDesc.Height * mappedResource.RowPitch;
-				m_pFrame->linesize[0] = mappedResource.RowPitch;
-				m_pFrame->linesize[1] = mappedResource.RowPitch;
-				m_pFrame->format      = frames_ctx->sw_format;
-				m_pFrame->width       = hw_frame->width;
-				m_pFrame->height      = hw_frame->height;
+
+				int codedbytes = 1;
+				switch (frames_ctx->sw_format) {
+					case AV_PIX_FMT_P010:
+					case AV_PIX_FMT_P016:
+					case AV_PIX_FMT_YUYV422:
+						codedbytes = 2;
+						break;
+					case AV_PIX_FMT_Y210:
+					case AV_PIX_FMT_Y212:
+					case AV_PIX_FMT_VUYX:
+					case AV_PIX_FMT_XV30:
+						codedbytes = 4;
+						break;
+					case AV_PIX_FMT_XV36:
+						codedbytes = 8;
+						break;
+				}
+
+				auto width = mappedResource.RowPitch / codedbytes;
+
+				av_image_fill_linesizes(m_pFrame->linesize, frames_ctx->sw_format, width);
+				av_image_fill_pointers(m_pFrame->data, frames_ctx->sw_format, texDesc.Height, reinterpret_cast<uint8_t*>(mappedResource.pData), m_pFrame->linesize);
+
+				m_pFrame->format = frames_ctx->sw_format;
+				m_pFrame->width  = hw_frame->width;
+				m_pFrame->height = hw_frame->height;
 
 				m_FormatConverter.Converting(pDataOut, m_pFrame);
-
-				m_pFrame->data[0] = m_pFrame->data[1] = nullptr;
 
 				device_hwctx->device_context->Unmap(m_pStagingD3D11Texture2D, 0);
 

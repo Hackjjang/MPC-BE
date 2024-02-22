@@ -85,7 +85,7 @@
 /**
  * Value of the luma sample at position (x, y) in the 2D array tab.
  */
-#define SAMPLE(tab, x, y) ((tab)[(y) * s->sps->width + (x)])
+#define SAMPLE(tab, x, y) ((tab)[(y) * s->pps->width + (x)])
 #define SAMPLE_CTB(tab, x, y) ((tab)[(y) * min_cb_width + (x)])
 #define CTB(tab, x, y) ((tab)[(y) * fc->ps.pps->ctb_width + (x)])
 
@@ -193,7 +193,7 @@ typedef struct Mv {
 } Mv;
 
 typedef struct MvField {
-    DECLARE_ALIGNED(4, Mv, mv)[2];  ///< mvL0, vvL1
+    DECLARE_ALIGNED(8, Mv, mv)[2];  ///< mvL0, vvL1
     int8_t  ref_idx[2];             ///< refIdxL0, refIdxL1
     uint8_t hpel_if_idx;            ///< hpelIfIdx
     uint8_t bcw_idx;                ///< bcwIdx
@@ -202,7 +202,7 @@ typedef struct MvField {
 } MvField;
 
 typedef struct DMVRInfo {
-    DECLARE_ALIGNED(4, Mv, mv)[2];  ///< mvL0, vvL1
+    DECLARE_ALIGNED(8, Mv, mv)[2];  ///< mvL0, vvL1
     uint8_t dmvr_enabled;
 } DMVRInfo;
 
