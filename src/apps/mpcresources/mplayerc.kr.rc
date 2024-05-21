@@ -120,12 +120,21 @@ BEGIN
     PUSHBUTTON      "속성",IDC_BUTTON1,226,14,60,14
     COMBOBOX        IDC_COMBO1,10,33,212,46,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     CONTROL         "이중 출력",IDC_CHECK1,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,226,35,60,10
-    GROUPBOX        "오디오 열기 설정",IDC_STATIC,5,54,285,51
-    CONTROL         "오디오 파일을 자동으로 열기",IDC_CHECK2,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,65,276,9
-    EDITTEXT        IDC_EDIT4,10,76,222,13,ES_AUTOHSCROLL
-    PUSHBUTTON      "초기화",IDC_BUTTON2,235,76,50,13
+    GROUPBOX        "오디오",IDC_STATIC,5,53,285,46
+    CTEXT           "음량",IDC_STATIC,42,60,55,8
+    RTEXT           "최소",IDC_STATIC,7,80,20,8
+    CONTROL         "",IDC_SLIDER1,"msctls_trackbar32",TBS_AUTOTICKS | TBS_BOTH | TBS_TOOLTIPS | WS_TABSTOP | 0x400,28,72,85,19
+    LTEXT           "최대",IDC_STATIC,116,80,27,8
+    CTEXT           "균형",IDC_STATIC_BALANCE,191,60,55,8,SS_NOTIFY
+    RTEXT           "좌",IDC_STATIC,144,80,30,8
+    CONTROL         "",IDC_SLIDER2,"msctls_trackbar32",TBS_AUTOTICKS | TBS_TOOLTIPS | WS_TABSTOP | 0x400,176,79,85,19
+    LTEXT           "우",IDC_STATIC,262,80,27,8
+    GROUPBOX        "오디오 열기 설정",IDC_STATIC,5,102,285,51
+    CONTROL         "오디오 파일을 자동으로 열기",IDC_CHECK2,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,113,276,9
+    EDITTEXT        IDC_EDIT4,10,124,222,13,ES_AUTOHSCROLL
+    PUSHBUTTON      "초기화",IDC_BUTTON2,235,124,50,13
     CONTROL         "외부 오디오 파일 우선",IDC_CHECK3,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,92,273,9
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,140,273,9
 END
 
 IDD_PPAGESOUNDPROCESSING DIALOGEX 0, 0, 296, 264
@@ -155,7 +164,7 @@ BEGIN
     PUSHBUTTON      "사전 설정",IDC_BUTTON1,9,166,59,14
     COMBOBOX        IDC_COMBO1,10,184,58,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     EDITTEXT        IDC_EDIT1,72,184,214,14,ES_AUTOHSCROLL
-    GROUPBOX        "출력 샘플 형식 :",IDC_STATIC,5,206,286,29
+    GROUPBOX        "출력 포본화 형식 :",IDC_STATIC,5,206,286,29
     CONTROL         "Int16",IDC_CHECK9,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,218,32,9
     CONTROL         "Int24",IDC_CHECK10,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,52,218,32,9
     CONTROL         "Int32",IDC_CHECK11,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,94,218,32,9
@@ -314,43 +323,39 @@ IDD_PPAGEPLAYBACK DIALOGEX 0, 0, 296, 264
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    GROUPBOX        "오디오",IDC_STATIC,5,5,286,46
-    CTEXT           "음량",IDC_STATIC,42,12,55,8
-    RTEXT           "최소",IDC_STATIC,7,32,20,8
-    CONTROL         "",IDC_SLIDER1,"msctls_trackbar32",TBS_AUTOTICKS | TBS_BOTH | TBS_TOOLTIPS | WS_TABSTOP | 0x400,28,24,85,19
-    LTEXT           "최대",IDC_STATIC,116,32,27,8
-    CTEXT           "균형",IDC_STATIC_BALANCE,191,12,55,8,SS_NOTIFY
-    RTEXT           "좌",IDC_STATIC,144,32,30,8
-    CONTROL         "",IDC_SLIDER2,"msctls_trackbar32",TBS_AUTOTICKS | TBS_TOOLTIPS | WS_TABSTOP | 0x400,176,31,85,19
-    LTEXT           "우",IDC_STATIC,262,32,27,8
-    GROUPBOX        "재생",IDC_STATIC,5,53,129,60
-    CONTROL         "파일을",IDC_RADIO1,"Button",BS_AUTORADIOBUTTON | WS_GROUP,10,65,55,10
-    CONTROL         "계속 반복",IDC_RADIO2,"Button",BS_AUTORADIOBUTTON,10,80,116,8
-    EDITTEXT        IDC_EDIT1,65,63,20,13,ES_AUTOHSCROLL | ES_NUMBER | WS_GROUP
-    LTEXT           "번 재생",IDC_STATIC1,90,65,40,8
-    CONTROL         "재생이 끝나면 처음으로 되감기",IDC_CHECK1,"Button",BS_AUTOCHECKBOX | BS_TOP | BS_MULTILINE | WS_TABSTOP,10,93,116,18
-    GROUPBOX        "제어",IDC_STATIC,5,115,286,54
-    LTEXT           "음량 :",IDC_STATIC,10,127,108,8
-    COMBOBOX        IDC_COMBOVOLUME,120,124,60,47,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "속도 :",IDC_STATIC,10,143,108,8
-    COMBOBOX        IDC_COMBOSPEEDSTEP,120,140,60,47,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    CONTROL         "세션 속도를 다시 설정 안 함",IDC_CHECK9,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,157,175,9
-    GROUPBOX        "",IDC_STATIC,137,57,154,56
-    CONTROL         "기본 선호 트랙",IDC_CHECK4,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,142,56,100,9
-    LTEXT           "자막 언어",IDC_STATIC,142,71,44,8
-    EDITTEXT        IDC_EDIT2,190,69,94,13,ES_AUTOHSCROLL
-    LTEXT           "오디오 언어",IDC_STATIC,142,87,44,8
-    EDITTEXT        IDC_EDIT3,190,85,94,13,ES_AUTOHSCROLL
-    LTEXT           "(예 : eng kor jap)",IDC_STATIC,147,101,132,8
-    GROUPBOX        "열기 설정",IDC_STATIC,5,172,286,79
-    LTEXT           "오디오 파일을 열 때,",IDC_STATIC,10,185,99,8
-    COMBOBOX        IDC_COMBO4,113,182,172,47,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "재생 목록에 추가 :",IDC_STATIC,10,201,139,8
-    COMBOBOX        IDC_COMBO5,150,198,135,47,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    GROUPBOX        "재생",IDC_STATIC,5,5,129,60
+    CONTROL         "파일을",IDC_RADIO1,"Button",BS_AUTORADIOBUTTON | WS_GROUP,10,17,55,10
+    CONTROL         "계속 반복",IDC_RADIO2,"Button",BS_AUTORADIOBUTTON,10,32,116,8
+    EDITTEXT        IDC_EDIT1,65,15,20,13,ES_AUTOHSCROLL | ES_NUMBER | WS_GROUP
+    LTEXT           "번 재생",IDC_STATIC1,90,17,40,8
+    CONTROL         "재생이 끝나면 처음으로 되감기",IDC_CHECK1,"Button",BS_AUTOCHECKBOX | BS_TOP | BS_MULTILINE | WS_TABSTOP,10,45,116,18
+    GROUPBOX        "제어",IDC_STATIC,5,67,286,54
+    LTEXT           "음량 :",IDC_STATIC,10,79,108,8
+    COMBOBOX        IDC_COMBOVOLUME,120,76,60,47,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "%",IDC_STATIC2,183,79,8,8
+    LTEXT           "속도 :",IDC_STATIC,10,95,108,8
+    COMBOBOX        IDC_COMBOSPEEDSTEP,120,92,60,47,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "%",IDC_STATIC3,183,95,8,8
+    CONTROL         "세션 속도를 다시 설정 안 함",IDC_CHECK9,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,109,175,9
+    GROUPBOX        "",IDC_STATIC,137,9,154,56
+    CONTROL         "기본 선호 트랙",IDC_CHECK4,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,142,8,100,9
+    LTEXT           "자막 언어",IDC_STATIC,142,23,44,8
+    EDITTEXT        IDC_EDIT2,190,21,94,13,ES_AUTOHSCROLL
+    LTEXT           "오디오 언어",IDC_STATIC,142,39,44,8
+    EDITTEXT        IDC_EDIT3,190,37,94,13,ES_AUTOHSCROLL
+    LTEXT           "(예 : eng kor jap)",IDC_STATIC,147,53,132,8
+    GROUPBOX        "열기 설정",IDC_STATIC,5,124,286,79
+    LTEXT           "오디오 파일을 열 때,",IDC_STATIC,10,137,99,8
+    COMBOBOX        IDC_COMBO4,113,134,172,47,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "재생 목록에 추가 :",IDC_STATIC,10,153,139,8
+    COMBOBOX        IDC_COMBO5,150,150,135,47,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     CONTROL         "필터 그래프를 생성하는 작업자 스레드 사용",IDC_CHECK7,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,215,276,9
-    CONTROL         "렌더링에 실패하면 핀 보고",IDC_CHECK6,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,227,276,9
-    CONTROL         "재생 목록에서 선택한 트랙 기억",IDC_CHECK8,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,239,276,9
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,167,276,9
+    CONTROL         "렌더링에 실패하면 핀 보고",IDC_CHECK6,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,179,276,9
+    CONTROL         "재생 목록에서 선택한 트랙 기억",IDC_CHECK8,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,191,276,9
+    CONTROL         "빠른 탐색(키 프레임)",IDC_CHECK3,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,209,264,9
+    CONTROL         "최소화 시, 영상 재생 일시 정지",IDC_CHECK5,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,221,280,9
 END
 
 IDD_PPAGESUBRENDERING DIALOGEX 0, 0, 296, 264
@@ -367,7 +372,7 @@ BEGIN
     EDITTEXT        IDC_EDIT3,160,17,32,12,ES_CENTER | ES_AUTOHSCROLL
     CONTROL         "",IDC_SPIN3,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS | UDS_HOTTRACK,180,17,12,12
     LTEXT           "%",IDC_STATIC4,196,19,8,8
-    GROUPBOX        "딜레이 설정",IDC_STATIC,212,5,79,28
+    GROUPBOX        "지연 설정",IDC_STATIC,212,5,79,28
     EDITTEXT        IDC_EDIT4,217,17,40,13,ES_RIGHT | ES_AUTOHSCROLL | ES_NUMBER
     LTEXT           "밀리초",IDC_STATIC,261,19,25,11
     GROUPBOX        "텍스쳐 설정(파일을 다시 열어야 함)",IDC_STATIC,5,37,286,68
@@ -644,7 +649,7 @@ EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "경고"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    LTEXT           "MPC-BE가 파일 렌더링에 실패했습니다. 추가적인 코덱이나 필터 설치가 필요할 수 있습니다.",IDC_STATIC1,5,5,286,18
+    LTEXT           "MPC-BE가 파일 생성에 실패했습니다. 추가적인 코덱이나 필터 설치가 필요할 수 있습니다.",IDC_STATIC1,5,5,286,18
     LTEXT           "다음 핀이 연결 가능한 필터를 찾는 데 실패 :",IDC_STATIC2,5,27,286,8
     COMBOBOX        IDC_COMBO1,5,39,286,87,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     EDITTEXT        IDC_EDIT1,5,56,286,140,ES_MULTILINE | ES_AUTOHSCROLL | ES_READONLY | WS_VSCROLL | WS_HSCROLL
@@ -766,7 +771,7 @@ BEGIN
     LTEXT           "서브 자막",IDC_STATIC,119,111,47,8
     PUSHBUTTON      "초",IDC_COLORSEC,170,108,20,14
     CONTROL         "",IDC_SLIDER2,"msctls_trackbar32",TBS_BOTH | TBS_NOTICKS | WS_TABSTOP | 0x400,190,109,100,12
-    LTEXT           "테두리",IDC_STATIC,119,127,47,8
+    LTEXT           "외곽선",IDC_STATIC,119,127,47,8
     PUSHBUTTON      "OUTL",IDC_COLOROUTL,170,124,20,14
     CONTROL         "",IDC_SLIDER3,"msctls_trackbar32",TBS_BOTH | TBS_NOTICKS | WS_TABSTOP | 0x400,190,125,100,12
     LTEXT           "그림자",IDC_STATIC,119,143,47,8
@@ -1068,33 +1073,32 @@ BEGIN
     EDITTEXT        IDC_EDIT2,64,17,40,14,ES_RIGHT | ES_AUTOHSCROLL | ES_NUMBER
     EDITTEXT        IDC_EDIT3,110,17,40,14,ES_RIGHT | ES_AUTOHSCROLL | ES_NUMBER
     PUSHBUTTON      "기본값",IDC_BUTTON1,158,17,56,14
-    CONTROL         "빠른 탐색(키 프레임)",IDC_CHECK1,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,45,264,9
     CONTROL         "재생 목록에 파일 하나만 있다면 '앞/뒤 탐색' 시에 '폴더 내에서 찾기' 사용 안 함",IDC_CHECK7,
-                    "Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,7,55,280,18
+                    "Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,7,41,280,18
     CONTROL         "전체 화면 시, 최소화 방지",IDC_CHECK6,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,75,282,9
-    CONTROL         "최소화 시, 영상 재생 일시 정지",IDC_CHECK4,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,87,280,9
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,61,282,9
     CONTROL         "창 모드에서 재생하는 동안 포인터 자동 숨기기",IDC_CHECK5,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,99,280,9
-    LTEXT           "다음 시간보다 짧은 000xx.mpls를 표시하지 않음",IDC_STATIC,7,112,150,8
-    EDITTEXT        IDC_EDIT5,161,110,30,13,ES_CENTER | ES_AUTOHSCROLL | ES_NUMBER
-    CONTROL         "",IDC_SPIN2,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS | UDS_HOTTRACK,181,110,11,14
-    LTEXT           "분",IDC_STATIC,197,112,30,8
-    CONTROL         "로지텍 LCD 지원 활성화(실험적)",IDC_CHECK_LCD,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,126,264,9
-    CONTROL         "윈도 미디어 제어 사용",IDC_CHECK9,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,138,220,9
-    CONTROL         "미니 덤프 활성화",IDC_CHECK2,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,150,184,9
-    LTEXT           "FFmpeg 실행 파일 :",IDC_STATIC,7,165,104,8
-    COMBOBOX        IDC_COMBO1,113,163,170,30,CBS_DROPDOWN | CBS_AUTOHSCROLL | WS_VSCROLL | WS_TABSTOP
-    GROUPBOX        "업데이트 확인",IDC_STATIC,5,180,286,40
-    CONTROL         "자동 업데이트 확인 활성화",IDC_CHECK3,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,192,250,9
-    LTEXT           "확인할 간격 :",IDC_STATIC5,10,205,110,8
-    EDITTEXT        IDC_EDIT4,120,203,30,13,ES_CENTER | ES_AUTOHSCROLL | ES_NUMBER
-    CONTROL         "",IDC_SPIN1,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS | UDS_HOTTRACK,140,203,13,14
-    LTEXT           "일",IDC_STATIC6,155,205,50,8
-    GROUPBOX        "설정 관리",IDC_STATIC,5,222,286,28
-    PUSHBUTTON      "초기화",IDC_RESET_SETTINGS,10,233,55,14
-    PUSHBUTTON      "내보내기",IDC_EXPORT_SETTINGS,73,233,55,14
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,73,280,9
+    CONTROL         "Show zero hours in status bar and OSD",IDC_CHECK8,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,85,280,9
+    LTEXT           "다음 시간보다 짧은 000xx.mpls를 표시하지 않음",IDC_STATIC,7,99,150,8
+    EDITTEXT        IDC_EDIT5,161,97,30,13,ES_CENTER | ES_AUTOHSCROLL | ES_NUMBER
+    CONTROL         "",IDC_SPIN2,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS | UDS_HOTTRACK,181,97,11,14
+    LTEXT           "분",IDC_STATIC,197,99,30,8
+    CONTROL         "로지텍 LCD 지원 활성화(실험적)",IDC_CHECK_LCD,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,113,264,9
+    CONTROL         "윈도 미디어 제어 사용",IDC_CHECK9,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,125,220,9
+    CONTROL         "미니 덤프 활성화",IDC_CHECK2,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,137,184,9
+    LTEXT           "FFmpeg 실행 파일 :",IDC_STATIC,7,152,104,8
+    COMBOBOX        IDC_COMBO1,113,150,170,30,CBS_DROPDOWN | CBS_AUTOHSCROLL | WS_VSCROLL | WS_TABSTOP
+    GROUPBOX        "업데이트 확인",IDC_STATIC,5,167,286,40
+    CONTROL         "자동 업데이트 확인 활성화",IDC_CHECK3,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,179,250,9
+    LTEXT           "확인할 간격 :",IDC_STATIC5,10,192,110,8
+    EDITTEXT        IDC_EDIT4,120,190,30,13,ES_CENTER | ES_AUTOHSCROLL | ES_NUMBER
+    CONTROL         "",IDC_SPIN1,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS | UDS_HOTTRACK,140,190,13,14
+    LTEXT           "일",IDC_STATIC6,155,192,50,8
+    GROUPBOX        "설정 관리",IDC_STATIC,5,209,286,28
+    PUSHBUTTON      "초기화",IDC_RESET_SETTINGS,10,220,55,14
+    PUSHBUTTON      "내보내기",IDC_EXPORT_SETTINGS,73,220,55,14
 END
 
 IDD_TUNER_SCAN DIALOGEX 0, 0, 407, 246
@@ -1119,7 +1123,7 @@ BEGIN
     DEFPUSHBUTTON   "저장",ID_SAVE,298,227,50,14
     LTEXT           "F",IDC_STATIC,375,37,8,8
     LTEXT           "Q",IDC_STATIC,389,37,8,8
-    CONTROL         "오프셋 사용",IDC_CHECK_OFFSET,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,132,21,75,9
+    CONTROL         "편차 사용",IDC_CHECK_OFFSET,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,132,21,75,9
     EDITTEXT        IDC_OFFSET,211,20,40,12,ES_AUTOHSCROLL
 END
 
@@ -1163,7 +1167,7 @@ BEGIN
     LTEXT           "주사율 조정 :",IDC_STATIC5,20,93,85,8
     EDITTEXT        IDC_CYCLEDELTA,109,91,40,13,ES_RIGHT | ES_AUTOHSCROLL,WS_EX_RIGHT
     CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,10,123,278,1
-    LTEXT           "목표 싱크 오프셋 :",IDC_STATIC3,10,129,100,8
+    LTEXT           "목표 싱크 편차 :",IDC_STATIC3,10,129,100,8
     EDITTEXT        IDC_TARGETSYNCOFFSET,114,127,40,13,ES_RIGHT | ES_AUTOHSCROLL,WS_EX_RIGHT
     LTEXT           "밀리초",IDC_STATIC4,158,129,24,8
     LTEXT           "한계 :",IDC_STATIC9,10,143,86,8
@@ -1189,7 +1193,7 @@ BEGIN
     LTEXT           "전체 화면 모니터",IDC_STATIC,13,66,238,8
     COMBOBOX        IDC_COMBO1,13,75,273,64,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     GROUPBOX        "",IDC_STATIC,5,92,287,158
-    CONTROL         "전체 화면 모니터 모드 자동전환 사용",IDC_CHECK2,
+    CONTROL         "전체 화면 모니터 모드 자동 전환 사용",IDC_CHECK2,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,92,267,9
     CONTROL         "",IDC_LIST1,"SysListView32",LVS_REPORT | LVS_SINGLESEL | LVS_ALIGNLEFT | LVS_NOSORTHEADER | WS_BORDER | WS_TABSTOP,10,103,226,112
     PUSHBUTTON      "추가",IDC_BUTTON1,240,103,48,16
@@ -1234,11 +1238,6 @@ BEGIN
     CONTROL         "수정 감지 후 자막 자동 다시 불러오기",IDC_CHECK3,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,5,79,285,9
     CONTROL         "하위 동기화 사용",IDC_CHECK_SUBRESYNC,"Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,5,91,285,9
-    GROUPBOX        "온라인 DB",IDC_STATIC1,5,105,286,45
-    LTEXT           "온라인 자막 DB URL :",IDC_STATIC2,10,116,222,8
-    LTEXT           "http://",IDC_STATIC3,10,130,22,8
-    COMBOBOX        IDC_COMBO1,35,128,199,30,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
-    PUSHBUTTON      "시험",IDC_BUTTON2,237,127,50,14
 END
 
 IDD_UPDATE_DIALOG DIALOGEX 0, 0, 238, 60
@@ -1335,7 +1334,9 @@ BEGIN
 
     IDD_PPAGEAUDIO, DIALOG
     BEGIN
-        VERTGUIDE, 124
+        VERTGUIDE, 5
+        VERTGUIDE, 10
+        VERTGUIDE, 290
     END
 
     IDD_PPAGESOUNDPROCESSING, DIALOG
@@ -2279,7 +2280,7 @@ END
 
 STRINGTABLE
 BEGIN
-    IDS_STATSBAR_SYNC_OFFSET "동기화 오프셋"
+    IDS_STATSBAR_SYNC_OFFSET "동기화 편차"
     IDS_STATSBAR_SYNC_OFFSET_FORMAT "avg : %d ms, dev : %d ms"
     IDS_STATSBAR_JITTER     "지터"
     IDS_STATSBAR_BITRATE    "비트레이트"
@@ -2395,7 +2396,7 @@ BEGIN
     IDS_SUBRESYNC_CLN_CELL_ID "셀 ID"
     IDS_SUBRESYNC_CLN_FORCED "강제"
     IDS_SUBRESYNC_CLN_TEXT  "텍스트"
-    IDS_SUBRESYNC_CLN_STYLE "스타일"
+    IDS_SUBRESYNC_CLN_STYLE "형태"
     IDS_SUBRESYNC_CLN_FONT  "글꼴"
 END
 
@@ -2453,45 +2454,41 @@ END
 
 STRINGTABLE
 BEGIN
-    IDD_PPAGEPLAYBACK       "재생"
     IDD_PPAGEPLAYER         "재생기"
-    IDD_PPAGEDVD            "재생::DVD 비디오"
-    IDD_PPAGESUBTITLES      "자막"
     IDD_PPAGEFORMATS        "재생기::형식"
-    IDD_PPAGECOLOR          "비디오::색 보정"
-    IDD_PPAGEAUDIO          "오디오"
-    IDD_PPAGEEXTERNALFILTERS "외부 필터"
-    IDD_PPAGESOUNDPROCESSING "오디오::음향 처리"
+    IDD_PPAGEACCELTBL       "재생기::단축키"
+    IDD_PPAGEMOUSE          "재생기::마우스"
+    IDD_PPAGELOGO           "재생기::로고"
+    IDD_PPAGEINTERFACE      "재생기::인터페이스"
+    IDD_PPAGEWINDOWSIZE     "재생기::창 크기"
+    IDD_PPAGEWEBSERVER      "재생기::웹 인터페이스"
+    IDD_PPAGEPLAYBACK       "재생"
+    IDD_PPAGEDVD            "재생::DVD 비디오"
 END
 
 STRINGTABLE
 BEGIN
-    IDD_PPAGEACCELTBL       "재생기::단축키"
-    IDD_PPAGESUBSTYLE       "자막::스타일"
-    IDD_PPAGEMOUSE          "재생기::마우스"
-    IDD_PPAGEINTERNALFILTERS "내장 필터"
-    IDD_PPAGELOGO           "재생기::로고"
+    IDD_PPAGECAPTURE        "재생::캡처 장치"
+    IDD_PPAGEYOUTUBE        "재생::온라인 미디어 서비스"
     IDD_PPAGEVIDEO          "비디오"
-    IDD_PPAGEWEBSERVER      "재생기::웹 인터페이스"
+    IDD_PPAGECOLOR          "비디오::색 보정"
+    IDD_PPAGESYNC           "비디오::프레임 동기화"
+    IDD_PPAGEFULLSCREEN     "비디오::전체 화면"
+    IDD_PPAGEAUDIO          "오디오"
+    IDD_PPAGESOUNDPROCESSING "오디오::음향 처리"
+    IDD_PPAGESUBTITLES      "자막"
+    IDD_PPAGESUBRENDERING   "자막::생성"
+    IDD_PPAGESUBSTYLE       "자막::형태"
+    IDD_PPAGEINTERNALFILTERS "내장 필터"
+    IDD_PPAGEEXTERNALFILTERS "외부 필터"
+    IDD_PPAGEFILTERSPRIORITY "외부 필터::우선순위"
+    IDD_PPAGEMISC           "기타"
 END
 
 STRINGTABLE
 BEGIN
     IDD_FILEPROPRES         "리소스"
-    IDD_PPAGEMISC           "기타"
     IDD_FILEMEDIAINFO       "미디어 정보"
-    IDD_PPAGECAPTURE        "재생::캡처 장치"
-    IDD_PPAGESYNC           "비디오::프레임 동기화"
-    IDD_PPAGEFULLSCREEN     "비디오::전체 화면"
-    IDD_PPAGEINTERFACE      "재생기::인터페이스"
-    IDD_PPAGEYOUTUBE        "재생::온라인 미디어 서비스"
-    IDD_PPAGEWINDOWSIZE     "재생기::창 크기"
-    IDD_PPAGEFILTERSPRIORITY "외부 필터::우선순위"
-END
-
-STRINGTABLE
-BEGIN
-    IDD_PPAGESUBRENDERING   "자막::렌더링"
 END
 
 STRINGTABLE
@@ -2551,7 +2548,7 @@ END
 
 STRINGTABLE
 BEGIN
-    IDC_D3D9DEVICE_CHECK    "렌더링을 위한 그래픽 어댑터를 지정합니다. 경고 : 디스플레이에서 가능한 잘못된 작업이 다른 어댑터에 연결되어 있습니다."
+    IDC_D3D9DEVICE_CHECK    "생성을 위한 그래픽 어댑터를 지정합니다. 경고 : 디스플레이에서 가능한 잘못된 작업이 다른 어댑터에 연결되어 있습니다."
 END
 
 STRINGTABLE
@@ -2700,12 +2697,18 @@ END
 
 STRINGTABLE
 BEGIN
+    IDS_AG_MEDIAFILES       "미디어 파일(모든 형식)"
+    IDS_AG_VIDEOFILES       "비디오 파일(모든 형식)"
+    IDS_AG_AUDIOFILES       "오디오 파일(모든 형식)"
+    IDS_AG_ALLFILES         "모든 파일"
+END
+
+STRINGTABLE
+BEGIN
+    IDS_AG_SUBTITLEFILES    "Subtitle files"
     IDS_AG_AUDIO_FILE       "오디오 파일"
     IDS_AG_PLAYLIST_FILE    "재생 목록"
     IDS_AG_OTHER            "기타"
-    IDS_AG_MEDIAFILES       "미디어 파일(모든 형식)|"
-    IDS_AG_ALLFILES         "모든 파일(*.*)|*.*|"
-    IDS_AG_AUDIOFILES       "오디오 파일(모든 형식)|"
     IDS_PIXELSHADERCOMPILER_0  "D3DX9_xx.DLL을 불러올 수 없습니다, 픽셀셰이더를 사용할 수 없습니다."
     IDS_PIXELSHADERCOMPILER_1  "D3DX9_xx.DLL의 필수 시작 지점을 찾을 수 없습니다, 픽셀셰이더를 사용할 수 없습니다."
     IDS_AG_NOT_KNOWN        "알려지지 않음"
@@ -2724,7 +2727,6 @@ BEGIN
     IDS_CANCEL              "취소"
     IDS_TEXTFILE_ENC        "인코딩 :"
     IDS_SAVE_FILE           "파일 저장"
-    IDS_AG_VIDEOFILES       "비디오 파일(모든 형식)|"
     IDS_VOLUME_OSD_MUTE     "음량 : %d%% [음 소거]"
     IDS_COPY_TO_CLIPBOARD   "클립보드에 복사"
     IDS_AUDIO_LEVEL         "레벨(%d) :"
@@ -2773,8 +2775,8 @@ STRINGTABLE
 BEGIN
     IDS_OSD_RS_FT_CORRECTION_ON "프레임 시간 수정 : 켬"
     IDS_OSD_RS_FT_CORRECTION_OFF "프레임 시간 수정 : 끔"
-    IDS_OSD_RS_TARGET_VSYNC_OFFSET "목표 수직 동기화 오프셋 : %.1f"
-    IDS_OSD_RS_VSYNC_OFFSET "수직 동기화 오프셋 : %d"
+    IDS_OSD_RS_TARGET_VSYNC_OFFSET "목표 수직 동기화 편차 : %.1f"
+    IDS_OSD_RS_VSYNC_OFFSET "수직 동기화 편차 : %d"
     IDS_OSD_SPEED           "속도 : %sx"
     IDS_OSD_THUMBS_SAVED    "썸네일이 성공적으로 저장되었습니다."
     IDS_MENU_VIDEO_STREAM   "비디오 스트림(&T)"
@@ -3061,7 +3063,6 @@ END
 STRINGTABLE
 BEGIN
     IDS_MAINFRM_47          " 성공적으로 불러옴"
-    IDS_MAINFRM_48          "모든 파일(*.*)|*.*||"
     IDS_MAINFRM_49          "DIB 얻기 실패, hr = %08x"
     IDS_MAINFRM_51          "현재 이미지 얻기 실패, hr = %08x"
     IDS_MAINFRM_53          "파일을 만들 수 없음"
@@ -3147,13 +3148,13 @@ BEGIN
     IDS_MAINFRM_122         "(음성 해설 2)"
     IDS_AG_ENABLED          "사용"
     IDS_AG_ANGLE            "기울기 %d"
-    IDS_AG_VSYNCOFFSET_INCREASE "수직 동기화 오프셋 증가"
+    IDS_AG_VSYNCOFFSET_INCREASE "수직 동기화 편차 증가"
 END
 
 STRINGTABLE
 BEGIN
     IDS_AG_DISABLED         "사용하지 않음"
-    IDS_AG_VSYNCOFFSET_DECREASE "수직 동기화 오프셋 감소"
+    IDS_AG_VSYNCOFFSET_DECREASE "수직 동기화 편차 감소"
     IDS_MAINFRM_132         "경고(CMainFrame::SeekTo) : 캡처모드에서 탐색"
     IDS_AG_REMOVING         "제거 : "
     IDS_MAINFRM_134         "경고 : CMainFrame::CloseMedia() 두 번 이상 호출됨\n"
@@ -3190,12 +3191,12 @@ BEGIN
     IDS_CMD_USAGE           "사용법 : mpc-be.exe ""경로명"" [스위치]\n\n""경로명""\t불러올 파일이나 디렉터리.(와일드 카드\n\t\t사용 가능)"
     IDS_CMD_HELP            "/help /h /?\t명령입력 스위치 옵션을 출력"
     IDS_CMD_DUB             "/dub ""더빙파일""\t추가적인 오디오 파일"
-    IDS_CMD_DUBDELAY        "/dubdelay ""파일""\tXXms 딜레이된 추가적인 오디오 파일(\n\t\t파일이 다음을 포함 ""...DELAY XXms..."")"
+    IDS_CMD_DUBDELAY        "/dubdelay ""파일""\tXXms 지연된 추가적인 오디오 파일(\n\t\t파일이 다음을 포함 ""...DELAY XXms..."")"
 END
 
 STRINGTABLE
 BEGIN
-    IDS_CMD_D3DFS           "/d3dfs\t\tD3D 전체 화면 모드에서 렌더링"
+    IDS_CMD_D3DFS           "/d3dfs\t\tD3D 전체 화면 모드에서 생성"
     IDS_CMD_SUB             "/sub ""자막 파일""\t추가적인 자막 파일"
     IDS_CMD_FILTER          "/filter ""필터 파일""\tDLL파일에서 다이렉트쇼 필터를 불러옴(와일드카드사용 가능)"
     IDS_CMD_DVD             "/dvd\t\tdvd재생모드, ""경로 이름"" 을 지정했을 때, DVD 폴더를 의미함(옵션)"
@@ -3225,7 +3226,9 @@ BEGIN
     IDS_CMD_FIXEDSIZE       "/fixedsize w,h\t지정한 가로(w), 세로(h) 크기로 고정"
     IDS_CMD_MONITOR         "/monitor N\tN번 모니터에서 시작(N은 1이상이어야함)"
     IDS_CMD_AUDIORENDERER   "/audiorenderer N\t오디오 렌더러 N번(1부터 시작)을 사용해서 시작\n\t\t(""출력"" 설정을 참고하세요)"
+    IDS_CMD_VOLUME          "/volume N\tSet Volume, where N is a range from 0 to 100"
     IDS_CMD_CLIPBOARD       "/clipboard\t\tOpen 클립보드에서 경로/링크 열기"
+    IDS_CMD_DEVICE          "/device\t\tOpen the default video device"
     IDS_CMD_RESET           "/reset\t\t기본값으로 복구"
 END
 

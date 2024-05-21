@@ -75,6 +75,12 @@ AP4_AtomSampleTable::AP4_AtomSampleTable(AP4_ContainerAtom* stbl,
             item = item->GetNext()) {
             AP4_Atom* atom = item->GetData();
 
+            if (atom->GetType() == AP4_ATOM_TYPE_MP4A) {
+                // ignore corrupted Vorbis (I don't know why the 'mp4a' type is here)
+                AP4_ASSERT(0);
+                break;
+            }
+
             if (AP4_AudioSampleEntry* ase = dynamic_cast<AP4_AudioSampleEntry*>(atom)) {
                 AP4_UI32 SamplesPerPacket = ase->GetSamplesPerPacket();
                 AP4_UI32 BytesPerFrame = ase->GetBytesPerFrame();
@@ -272,13 +278,15 @@ AP4_AtomSampleTable::GetSampleIndexForTimeStamp(AP4_TimeStamp ts,
                                                 AP4_Ordinal& index)
 {
     AP4_Result result = m_SttsAtom ? m_SttsAtom->GetSampleIndexForTimeStamp(ts, m_tsDelay, index) : AP4_FAILURE;
-    if AP4_SUCCEEDED(result) {
+    if (AP4_SUCCEEDED(result)) {
         auto GetCts = [&](AP4_Ordinal i, AP4_SI64& cts) {
             AP4_TimeStamp dts;
             AP4_Duration duration;
             const AP4_Ordinal index = i + 1;
             result = m_SttsAtom->GetDts(index, dts, duration);
-            if (AP4_FAILED(result)) return result;
+            if (AP4_FAILED(result)) {
+                return result;
+            }
             AP4_SI32 cts_offset = 0;
             if (m_CttsAtom) {
                 m_CttsAtom->GetCtsOffset(index, cts_offset);
@@ -290,27 +298,61 @@ AP4_AtomSampleTable::GetSampleIndexForTimeStamp(AP4_TimeStamp ts,
 
         AP4_SI64 cts;
         result = GetCts(index, cts);
-        if (AP4_FAILED(result)) return result;
+        if (AP4_FAILED(result)) {
+            return result;
+        }
 
-        if (index > 0 && cts > (AP4_SI64)ts) {
-            for (AP4_Ordinal i = index - 1; i > 0; i--) {
-                result = GetCts(i, cts);
-                if (AP4_FAILED(result)) return result;
+        const bool validStssAtom = m_StssAtom && m_StssAtom->GetEntries().ItemCount();
+        const auto searched_ts = static_cast<AP4_SI64>(ts);
 
-                if (cts <= (AP4_SI64)ts) {
-                    index = i;
-                    break;
+        if (cts == searched_ts
+                && (!validStssAtom || m_StssAtom->IsSampleSync(index + 1))) {
+            return AP4_SUCCESS;
+        }
+
+        for (;;) {
+            if (index > 0 && cts >= searched_ts) {
+                for (AP4_Ordinal i = index - 1; i > 0; i--) {
+                    if (validStssAtom && !m_StssAtom->IsSampleSync(i + 1)) {
+                        continue;
+                    }
+
+                    result = GetCts(i, cts);
+                    if (AP4_FAILED(result)) {
+                        return result;
+                    }
+
+                    if (cts <= searched_ts) {
+                        index = i;
+                        return AP4_SUCCESS;
+                    }
+                }
+
+                break;
+            } else if (index < GetSampleCount() && cts < searched_ts) {
+                for (AP4_Ordinal i = index + 1; i < GetSampleCount(); i++) {
+                    if (validStssAtom && !m_StssAtom->IsSampleSync(i + 1)) {
+                        continue;
+                    }
+
+                    result = GetCts(i, cts);
+                    if (AP4_FAILED(result)) {
+                        return result;
+                    }
+
+                    if (cts > searched_ts) {
+                        if (!validStssAtom) {
+                            index = i > 0 ? i - 1 : 0;
+                            return AP4_SUCCESS;
+                        }
+                        index = i;
+                        break;
+                    }
                 }
             }
-        } else if (index < GetSampleCount() && cts < (AP4_SI64)ts) {
-            for (AP4_Ordinal i = index + 1; i < GetSampleCount(); i++) {
-                result = GetCts(i, cts);
-                if (AP4_FAILED(result)) return result;
 
-                if (cts > (AP4_SI64)ts) {
-                    index = i > 0 ? i - 1 : 0;
-                    break;
-                }
+            if (!validStssAtom) {
+                break;
             }
         }
 

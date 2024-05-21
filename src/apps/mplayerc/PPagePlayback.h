@@ -1,6 +1,6 @@
 /*
  * (C) 2003-2006 Gabest
- * (C) 2006-2023 see Authors.txt
+ * (C) 2006-2024 see Authors.txt
  *
  * This file is part of MPC-BE.
  *
@@ -30,17 +30,9 @@ class CPPagePlayback : public CPPageBase
 {
 	DECLARE_DYNAMIC(CPPagePlayback)
 
-	// private:
-	int m_oldVolume = 0; //not very nice solution
-
 public:
 	CPPagePlayback();
 	virtual ~CPPagePlayback();
-
-	int			m_nVolume      = 0;
-	CSliderCtrl	m_volumectrl;
-	int			m_nBalance     = 0;
-	CSliderCtrl	m_balancectrl;
 
 	int			m_iLoopForever = 0;
 	CEdit		m_loopnumctrl;
@@ -63,6 +55,9 @@ public:
 	BOOL		m_fEnableWorkerThreadForOpening = FALSE;
 	BOOL		m_fReportFailedPins = FALSE;
 
+	BOOL		m_bFastSeek = FALSE;
+	BOOL		m_bPauseMinimizedVideo = FALSE;
+
 	enum { IDD = IDD_PPAGEPLAYBACK };
 
 protected:
@@ -73,11 +68,7 @@ protected:
 	DECLARE_MESSAGE_MAP()
 
 public:
-	afx_msg void OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
 	afx_msg void OnBnClickedRadio12(UINT nID);
 	afx_msg void OnUpdateLoopNum(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateTrackOrder(CCmdUI* pCmdUI);
-	afx_msg void OnBalanceTextDblClk();
-	afx_msg BOOL OnToolTipNotify(UINT id, NMHDR * pNMHDR, LRESULT * pResult);
-	virtual void OnCancel();
 };

@@ -1033,9 +1033,9 @@ void CMainFrame::OnClose()
 		SaveControlBars();
 	}
 
-	CloseMedia();
-
 	ShowWindow(SW_HIDE);
+
+	CloseMedia();
 
 	s.WinLircClient.DisConnect();
 	s.UIceClient.DisConnect();
@@ -1660,7 +1660,15 @@ void CMainFrame::OnGetMinMaxInfo(MINMAXINFO* lpMMI)
 {
 	const BOOL bMenuVisible = IsMainMenuVisible();
 
-	lpMMI->ptMinTrackSize = { 32, 32 }; // minimum video area size
+	// minimum video area size 32 x 32
+	lpMMI->ptMinTrackSize.x = 32;
+	if (m_eMediaLoadState == MLS_LOADED && (!m_bAudioOnly || AfxGetAppSettings().nAudioWindowMode == 1)) {
+		// always show a video and album cover if its display is set in the settings
+		lpMMI->ptMinTrackSize.y = 32;
+	} else {
+		lpMMI->ptMinTrackSize.y = 0;
+	}
+
 	CSize cSize;
 	CalcControlsSize(cSize);
 	lpMMI->ptMinTrackSize.x += cSize.cx;
@@ -2073,6 +2081,10 @@ void CMainFrame::OnSize(UINT nType, int cx, int cy)
 		}
 		m_bWasPausedOnMinimizedVideo = false;
 	}
+
+	if (nType == SIZE_RESTORED || nType == SIZE_MINIMIZED || nType == SIZE_MAXIMIZED) {
+		m_bLeftMouseDown = FALSE;
+	}
 }
 
 void CMainFrame::OnSizing(UINT nSide, LPRECT pRect)
@@ -2466,7 +2478,7 @@ LRESULT CMainFrame::OnHotKey(WPARAM wParam, LPARAM lParam)
 	const CAppSettings& s = AfxGetAppSettings();
 	BOOL fRet = FALSE;
 
-	if (GetActiveWindow() == this || s.bGlobalMedia == TRUE) {
+	if (GetActiveWindow() == this || s.bGlobalMedia == true) {
 		for (const auto& wc : s.wmcmds) {
 			if (wc.appcmd == wParam && TRUE == SendMessageW(WM_COMMAND, wc.cmd)) {
 				fRet = TRUE;
@@ -4412,7 +4424,7 @@ void CMainFrame::OnFilePostOpenMedia(std::unique_ptr<OpenMediaData>& pOMD)
 
 	BOOL bMvcActive = FALSE;
 	if (CComQIPtr<IExFilterConfig> pEFC = FindFilter(__uuidof(CMPCVideoDecFilter), m_pGB)) {
-		pEFC->GetInt("decode_mode_mvc", &bMvcActive);
+		pEFC->Flt_GetInt("decode_mode_mvc", &bMvcActive);
 	}
 
 	if (s.iStereo3DMode == STEREO3D_ROWINTERLEAVED || s.iStereo3DMode == STEREO3D_ROWINTERLEAVED_2X
@@ -4615,6 +4627,10 @@ void CMainFrame::OnFilePostOpenMedia(std::unique_ptr<OpenMediaData>& pOMD)
 
 		ClampWindowRect(r);
 		MoveWindow(r);
+	}
+
+	if (!m_wndSeekBar.HasDuration()) {
+		ReleasePreviewGraph();
 	}
 
 	if (CanPreviewUse() && m_wndSeekBar.IsVisible()) {
@@ -5552,6 +5568,8 @@ LRESULT CMainFrame::HandleCmdLine(WPARAM wParam, LPARAM lParam)
 				}
 			}
 		}
+	} else if (s.nCLSwitches & CLSW_DEVICE) {
+		SendMessageW(WM_COMMAND, ID_FILE_OPENDEVICE);
 	} else if (!s.slFiles.empty()) {
 		if (s.slFiles.size() == 1 && OpenYoutubePlaylist(s.slFiles.front())) {
 		} else if (s.slFiles.size() == 1 && CheckDVD(s.slFiles.front())) {
@@ -5613,6 +5631,11 @@ LRESULT CMainFrame::HandleCmdLine(WPARAM wParam, LPARAM lParam)
 
 		// leave only CLSW_OPEN, if present
 		s.nCLSwitches = (s.nCLSwitches & CLSW_OPEN) ? CLSW_OPEN : CLSW_NONE;
+	}
+
+	if (s.nCLSwitches & CLSW_VOLUME) {
+		m_wndToolBar.SetVolume(s.nCmdVolume);
+		s.nCLSwitches &= ~CLSW_VOLUME;
 	}
 
 	if (fSetForegroundWindow && !(s.nCLSwitches & CLSW_NOFOCUS)) {
@@ -6004,7 +6027,7 @@ void CMainFrame::OnFileSaveAs()
 			ext_list.Format(L"Media (*%s)|*%s|", ext, ext);
 		}
 	}
-	ext_list.Append(ResStr(IDS_MAINFRM_48));
+	ext_list.Append(ResStr(IDS_AG_ALLFILES) + L" (*.*)|*.*||");
 
 	CFileDialog fd(FALSE, ext.GetLength() ? ext.GetString() : nullptr, out,
 				   OFN_EXPLORER | OFN_ENABLESIZING | OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT | OFN_PATHMUSTEXIST | OFN_NOCHANGEDIR | OFN_DONTADDTORECENT,
@@ -6667,18 +6690,16 @@ void CMainFrame::OnFileLoadSubtitle()
 		return;
 	}
 
-	CString filter;
-	for (size_t idx = 0; idx < std::size(Subtitle::s_SubFileExts); idx++) {
-		filter += (idx == 0 ? L"." : L" .") + CString(Subtitle::s_SubFileExts[idx]);
+	CStringW exts;
+	for (const auto& subext : Subtitle::s_SubFileExts) {
+		exts.AppendFormat(L"*.%s;", subext);
 	}
-	filter += L"|";
+	exts.TrimRight(';');
 
-	for (size_t idx = 0; idx < std::size(Subtitle::s_SubFileExts); idx++) {
-		filter += (idx == 0 ? L"*." : L";*.") + CString(Subtitle::s_SubFileExts[idx]);
-	}
-	filter += L"||";
+	CStringW filter;
+	filter.Format(L"%s (%s)|%s||", ResStr(IDS_AG_SUBTITLEFILES), exts, exts);
 
-	std::vector<CString> mask;
+	std::vector<CStringW> mask;
 	for (const auto& subExt : Subtitle::s_SubFileExts) {
 		mask.emplace_back(L"*." + CString(subExt));
 	}
@@ -6690,7 +6711,7 @@ void CMainFrame::OnFileLoadSubtitle()
 		return;
 	}
 
-	std::list<CString> fns;
+	std::list<CStringW> fns;
 	POSITION pos = fd.GetStartPosition();
 	while (pos) {
 		fns.emplace_back(fd.GetNextPathName(pos));
@@ -6947,7 +6968,7 @@ void CMainFrame::OnUpdateViewDisplayStats(CCmdUI* pCmdUI)
 		CComQIPtr<IExFilterConfig> pIExFilterConfig = m_pCAP.p;
 		if (pIExFilterConfig) {
 			bool statsEnable = 0;
-			if (S_OK == pIExFilterConfig->GetBool("statsEnable", &statsEnable)) {
+			if (S_OK == pIExFilterConfig->Flt_GetBool("statsEnable", &statsEnable)) {
 				pCmdUI->Enable(TRUE);
 				pCmdUI->SetCheck(statsEnable);
 
@@ -6990,9 +7011,9 @@ void CMainFrame::OnViewDisplayStatsSC()
 		CComQIPtr<IExFilterConfig> pIExFilterConfig = m_pCAP.p;
 		if (pIExFilterConfig) {
 			bool statsEnable = 0;
-			if (S_OK == pIExFilterConfig->GetBool("statsEnable", &statsEnable)) {
+			if (S_OK == pIExFilterConfig->Flt_GetBool("statsEnable", &statsEnable)) {
 				statsEnable = !statsEnable;
-				pIExFilterConfig->SetBool("statsEnable", statsEnable);
+				pIExFilterConfig->Flt_SetBool("statsEnable", statsEnable);
 			}
 		}
 	}
@@ -7909,8 +7930,8 @@ void CMainFrame::OnViewStereo3DMode(UINT nID)
 		}
 		const int mvc_mode_value = (iMvcOutputMode << 16) | (s.bStereo3DSwapLR ? 1 : 0);
 
-		pEFC->SetInt("mvc_mode", mvc_mode_value);
-		pEFC->GetInt("decode_mode_mvc", &bMvcActive);
+		pEFC->Flt_SetInt("mvc_mode", mvc_mode_value);
+		pEFC->Flt_GetInt("decode_mode_mvc", &bMvcActive);
 	}
 
 	if (s.iStereo3DMode == STEREO3D_ROWINTERLEAVED || s.iStereo3DMode == STEREO3D_ROWINTERLEAVED_2X
@@ -7952,7 +7973,7 @@ void CMainFrame::OnViewSwapLeftRight()
 			}
 			const int mvc_mode_value = (iMvcOutputMode << 16) | (s.bStereo3DSwapLR ? 1 : 0);
 
-			pEFC->SetInt("mvc_mode", mvc_mode_value);
+			pEFC->Flt_SetInt("mvc_mode", mvc_mode_value);
 		}
 	}
 
@@ -11144,7 +11165,7 @@ void CMainFrame::AutoChangeMonitorMode()
 				if (m_clsidCAP == CLSID_MPCVRAllocatorPresenter) {
 					if (CComQIPtr<IExFilterConfig> pIExFilterConfig = m_pCAP.p) {
 						bool bDoubleRate = false;
-						if (S_OK == pIExFilterConfig->GetBool("doubleRate", &bDoubleRate) && bDoubleRate) {
+						if (S_OK == pIExFilterConfig->Flt_GetBool("doubleRate", &bDoubleRate) && bDoubleRate) {
 							dFPS *= 2.0;
 						}
 					}
@@ -13501,8 +13522,7 @@ void CMainFrame::OpenSetupAudioStream()
 	CPlaylistItem pli;
 	if (m_wndPlaylistBar.GetCur(pli)) {
 		for (const auto& fi : pli.m_auds) {
-			auto& str = fi.GetPath();
-			extAudioList.emplace_back(GetFileOnly(str));
+			extAudioList.emplace_back(fi.GetPath());
 		}
 	}
 
@@ -14256,7 +14276,7 @@ bool CMainFrame::OpenMediaPrivate(std::unique_ptr<OpenMediaData>& pOMD)
 			CComQIPtr<IExFilterConfig> pIExFilterConfig;
 			BeginEnumFilters(m_pGB, pEF, pBF) {
 				if (pIExFilterConfig = pBF) {
-					pIExFilterConfig->SetInt("queueDuration", s.iBufferDuration);
+					pIExFilterConfig->Flt_SetInt("queueDuration", s.iBufferDuration);
 					//pIExFilterConfig->SetInt("networkTimeout", s.iNetworkTimeout);
 				}
 			}
@@ -15699,20 +15719,24 @@ void CMainFrame::SetupAudioTracksSubMenu()
 				bool fExternal = false;
 				CPlaylistItem pli;
 				if (m_wndPlaylistBar.GetCur(pli)) {
-					auto mainFileDir = GetFolderOnly(pli.m_fi);
-					for (const auto& fi : pli.m_auds) {
-						auto& audioFile = fi.GetPath();
-						if (!audioFile.IsEmpty() && name == audioFile) {
-							auto audioFileDir = GetFolderOnly(audioFile);
-							if (!mainFileDir.IsEmpty() && audioFileDir != mainFileDir && StartsWith(name, mainFileDir.GetString())) {
-								name.Delete(0, mainFileDir.GetLength());
-							} else {
-								name = GetFileOnly(name.GetString());
-							}
+					if (!pli.m_auds.empty()) {
+						auto mainFileDir = GetFolderOnly(pli.m_fi);
+						for (const auto& fi : pli.m_auds) {
+							auto& audioFile = fi.GetPath();
+							if (!audioFile.IsEmpty() && name == audioFile) {
+								auto audioFileDir = GetFolderOnly(audioFile);
+								if (!mainFileDir.IsEmpty() && audioFileDir != mainFileDir && StartsWith(name, mainFileDir.GetString())) {
+									name.Delete(0, mainFileDir.GetLength());
+								} else {
+									name = GetFileOnly(name.GetString());
+								}
 
-							fExternal = true;
-							break;
+								fExternal = true;
+								break;
+							}
 						}
+					} else if (name == pli.m_fi.GetPath()) {
+						name = GetFileOnly(name.GetString());
 					}
 				}
 

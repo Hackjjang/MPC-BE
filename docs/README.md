@@ -36,10 +36,11 @@ MPC-BE는 아래의 써드 파티 코드를 사용 :
 | coolsb            |                     | https://www.codeproject.com/KB/dialog/coolscroll.aspx |
 | CSizingControlBar | GPLv2               | http://datamekanix.com/sizecbar/                      |
 | Detours           | MIT License         | https://github.com/microsoft/detours/                 |
+| fdk-aac           |                     | https://github.com/mstorsjo/fdk-aac/                  |
 | FFmpeg            | GPLv3               | http://ffmpeg.org/                                    |
 | dav1d             | BSD License         | https://code.videolan.org/videolan/dav1d/             |
-| libflac           | GPLv2/BSD License   | https://github.com/glennrp/libpng/                    |
-| libpng            | zlib/libpng License | https://github.com/uclouvain/openjpeg/                |
+| libflac           | GPLv2/BSD License   | https://github.com/xiph/flac                          |
+| libpng            | zlib/libpng License | https://github.com/glennrp/libpng/                    |
 | libspeex          | BSD License         | https://speex.org/                                    |
 | Little CMS        | MIT License         | https://littlecms.com/                                |
 | Logitech SDK      |                     |                                                       |
@@ -54,3 +55,4 @@ MPC-BE는 아래의 써드 파티 코드를 사용 :
 | ZenLib            | zlib License        | https://github.com/MediaArea/ZenLib                   |
 | zlib              | zlib License        | https://zlib.net/                                     |
 | bs2b              | MIT License         | https://bs2b.sourceforge.net/                         |
+| VVdeC             | BSD License         | https://github.com/fraunhoferhhi/vvdec/               |

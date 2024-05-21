@@ -488,7 +488,7 @@ void CAppSettings::ResetSettings()
 	nSpeedStep = 0; // auto
 	bSpeedNotReset = false;
 
-	strAudioRendererDisplayName.Empty();
+	strAudioRendererDisplayName = L"MPC Audio Renderer";
 	strAudioRendererDisplayName2.Empty();
 	fDualAudioOutput = false;
 
@@ -652,7 +652,7 @@ void CAppSettings::ResetSettings()
 	bWinLirc = false;
 	strUIceAddr = L"127.0.0.1:1234";
 	bUIce = false;
-	bGlobalMedia = true;
+	bGlobalMedia = false;
 	ZeroMemory(AccelTblColWidths, sizeof(AccelTblColWidths));
 
 	// Mouse
@@ -795,7 +795,8 @@ void CAppSettings::ResetSettings()
 	bStartMainTitle = false;
 	bNormalStartDVD = true;
 
-	fRemainingTime = false;
+	bRemainingTime = false;
+	bShowZeroHours = false;
 
 	strLastOpenFilterDir.Empty();
 
@@ -833,6 +834,8 @@ void CAppSettings::ResetSettings()
 	youtubeSignatureCache.clear();
 
 	ZeroMemory(HistoryColWidths, sizeof(HistoryColWidths));
+
+	nCmdVolume = 0;
 
 	strTabs.Empty();
 }
@@ -1478,7 +1481,8 @@ void CAppSettings::LoadSettings(bool bForce/* = false*/)
 	profile.ReadBool(IDS_R_SETTINGS, IDS_RS_DVDPOS, bRememberDVDPos);
 	profile.ReadBool(IDS_R_SETTINGS, IDS_RS_FILEPOS, bRememberFilePos);
 
-	profile.ReadBool(IDS_R_SETTINGS, IDS_RS_REMAINING_TIME, fRemainingTime);
+	profile.ReadBool(IDS_R_SETTINGS, IDS_RS_REMAINING_TIME, bRemainingTime);
+	profile.ReadBool(IDS_R_SETTINGS, IDS_RS_SHOW_ZERO_HOURS, bShowZeroHours);
 
 	profile.ReadString(IDS_R_SETTINGS, IDS_RS_LAST_OPEN_FILTER_DIR, strLastOpenFilterDir);
 
@@ -2001,7 +2005,8 @@ void CAppSettings::SaveSettings()
 	profile.WriteString(IDS_R_SETTINGS, IDS_RS_USER_AGENT, strUserAgent);
 	http::userAgent = strUserAgent;
 
-	profile.WriteBool(IDS_R_SETTINGS, IDS_RS_REMAINING_TIME, fRemainingTime);
+	profile.WriteBool(IDS_R_SETTINGS, IDS_RS_REMAINING_TIME, bRemainingTime);
+	profile.WriteBool(IDS_R_SETTINGS, IDS_RS_SHOW_ZERO_HOURS, bShowZeroHours);
 
 	profile.WriteUInt(IDS_R_SETTINGS, IDS_RS_LASTFILEINFOPAGE, nLastFileInfoPage);
 
@@ -2263,6 +2268,9 @@ void CAppSettings::ParseCommandLine(cmdLine& cmdln)
 			else if (sw == L"cd") {
 				nCLSwitches |= CLSW_CD;
 			}
+			else if (sw == L"device") {
+				nCLSwitches |= CLSW_DEVICE;
+			}
 			else if (sw == L"add") {
 				nCLSwitches |= CLSW_ADD;
 			}
@@ -2367,6 +2375,15 @@ void CAppSettings::ParseCommandLine(cmdLine& cmdln)
 			}
 			else if (sw == L"clipboard") {
 				nCLSwitches |= CLSW_CLIPBOARD;
+			}
+			else if (sw == L"volume" && next_available) {
+				auto volumeValue = _wtoi(*it++);
+				if (volumeValue >= 0 && volumeValue <= 100) {
+					nCmdVolume = volumeValue;
+					nCLSwitches |= CLSW_VOLUME;
+				} else {
+					nCLSwitches |= CLSW_UNRECOGNIZEDSWITCH;
+				}
 			}
 			else {
 				nCLSwitches |= CLSW_HELP|CLSW_UNRECOGNIZEDSWITCH;

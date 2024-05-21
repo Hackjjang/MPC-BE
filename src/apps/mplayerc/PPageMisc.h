@@ -1,5 +1,5 @@
 /*
- * (C) 2006-2022 see Authors.txt
+ * (C) 2006-2024 see Authors.txt
  *
  * This file is part of MPC-BE.
  *
@@ -29,26 +29,25 @@ class CPPageMisc : public CPPageBase
 	DECLARE_DYNAMIC(CPPageMisc)
 
 private:
-	int m_nJumpDistS;
-	int m_nJumpDistM;
-	int m_nJumpDistL;
+	int m_nJumpDistS = 0;
+	int m_nJumpDistM = 0;
+	int m_nJumpDistL = 0;
 
-	BOOL m_fFastSeek;
-	BOOL m_fDontUseSearchInFolder;
-	BOOL m_fPreventMinimize;
-	BOOL m_bPauseMinimizedVideo;
-	BOOL m_bHideWindowedMousePointer;
-	int  m_nMinMPlsDuration;
+	BOOL m_fDontUseSearchInFolder    = FALSE;
+	BOOL m_fPreventMinimize          = FALSE;
+	BOOL m_bHideWindowedMousePointer = FALSE;
+	BOOL m_bShowZeroHours            = FALSE;
+	int  m_nMinMPlsDuration          = 3;
 	CSpinButtonCtrl m_spnMinMPlsDuration;
-	BOOL m_fLCDSupport;
+	BOOL m_fLCDSupport       = FALSE;
 	BOOL m_bWinMediaControls = FALSE;
-	BOOL m_fMiniDump;
+	BOOL m_fMiniDump         = FALSE;
 	CComboBox m_cbFFmpegExePath;
 
 	CButton m_updaterAutoCheckCtrl;
 	CEdit m_updaterDelayCtrl;
 	CSpinButtonCtrl m_updaterDelaySpin;
-	int m_nUpdaterDelay;
+	int m_nUpdaterDelay = 7;
 
 public:
 	CPPageMisc();

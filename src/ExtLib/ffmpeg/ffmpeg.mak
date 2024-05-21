@@ -5,6 +5,7 @@ SOXR_DIR      = ../soxr
 DAV1_DIR      = ../dav1d
 FFNVCODEC_DIR = ../nv-codec-headers/include
 UAVS3D_DIR    = ../uavs3d/source/decoder
+VVDEC_DIR     = ../vvdec/vvdec/include
 
 ifeq ($(64BIT),yes)
 	PLATFORM = x64
@@ -33,11 +34,11 @@ ARSCRIPT           = $(OBJ_DIR)script.ar
 # Compiler and yasm flags
 CFLAGS = -I. -I.. -Icompat/atomics/win32 -Icompat/windows \
 	   -Ilibavcodec \
-	   -I$(ZLIB_DIR) -I$(SPEEX_DIR) -I$(SOXR_DIR) -I$(DAV1_DIR) -I$(FFNVCODEC_DIR) -I$(UAVS3D_DIR) \
+	   -I$(ZLIB_DIR) -I$(SPEEX_DIR) -I$(SOXR_DIR) -I$(DAV1_DIR) -I$(FFNVCODEC_DIR) -I$(UAVS3D_DIR) -I$(VVDEC_DIR) \
 	   -DHAVE_AV_CONFIG_H -D_ISOC99_SOURCE -D_XOPEN_SOURCE=600 \
 	   -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -DOPJ_STATIC \
 	   -D_WIN32_WINNT=0x0601 -DWINVER=0x0601 \
-	   -fomit-frame-pointer -std=gnu99 \
+	   -fomit-frame-pointer -std=c17 \
 	   -fno-common -fno-ident -mthreads
 YASMFLAGS = -I. -Pconfig.asm
 
@@ -65,6 +66,7 @@ OBJ_DIRS = $(OBJ_DIR) \
 	$(OBJ_DIR)compat \
 	$(OBJ_DIR)libavcodec \
 	$(OBJ_DIR)libavcodec/bsf \
+	$(OBJ_DIR)libavcodec/aac \
 	$(OBJ_DIR)libavcodec/vvc \
 	$(OBJ_DIR)libavcodec/x86 \
 	$(OBJ_DIR)libavcodec/x86/h26x \
@@ -97,13 +99,14 @@ SRCS_LC = \
 	libavcodec/8bps.c \
 	libavcodec/aac_ac3_parser.c \
 	libavcodec/aac_parser.c \
-	libavcodec/aacdec.c \
-	libavcodec/aacdec_common.c \
 	libavcodec/aacps.c \
 	libavcodec/aacps_common.c \
+	libavcodec/aacps_fixed.c \
 	libavcodec/aacps_float.c \
+	libavcodec/aacpsdsp_fixed.c \
 	libavcodec/aacpsdsp_float.c \
 	libavcodec/aacsbr.c \
+	libavcodec/aacsbr_fixed.c \
 	libavcodec/aactab.c \
 	libavcodec/ac3.c \
 	libavcodec/ac3_channel_layout_tab.c \
@@ -132,6 +135,7 @@ SRCS_LC = \
 	libavcodec/alsdec.c \
 	libavcodec/amrnbdec.c \
 	libavcodec/amrwbdec.c \
+	libavcodec/aom_film_grain.c \
 	libavcodec/apedec.c \
 	libavcodec/atrac.c \
 	libavcodec/atrac3.c \
@@ -147,7 +151,6 @@ SRCS_LC = \
 	libavcodec/avcodec.c \
 	libavcodec/avdct.c \
 	libavcodec/avfft.c \
-	libavcodec/avpacket.c \
 	libavcodec/avs3_parser.c \
 	libavcodec/bgmc.c \
 	libavcodec/bink.c \
@@ -161,6 +164,7 @@ SRCS_LC = \
 	libavcodec/cabac.c \
 	libavcodec/canopus.c \
 	libavcodec/cbrt_data.c \
+	libavcodec/cbrt_data_fixed.c \
 	libavcodec/cbs.c \
 	libavcodec/cbs_av1.c \
 	libavcodec/cbs_bsf.c \
@@ -212,6 +216,7 @@ SRCS_LC = \
 	libavcodec/dnxhddata.c \
 	libavcodec/dnxhddec.c \
 	libavcodec/dovi_rpu.c \
+	libavcodec/dovi_rpudec.c \
 	libavcodec/dsd.c \
 	libavcodec/dsddec.c \
 	libavcodec/dstdec.c \
@@ -301,7 +306,6 @@ SRCS_LC = \
 	libavcodec/hevcpred.c \
 	libavcodec/hpeldsp.c \
 	libavcodec/hq_hqa.c \
-	libavcodec/hq_hqadata.c \
 	libavcodec/hq_hqadsp.c \
 	libavcodec/hqx.c \
 	libavcodec/hqxdsp.c \
@@ -338,8 +342,10 @@ SRCS_LC = \
 	libavcodec/lagarithrac.c \
 	libavcodec/latm_parser.c \
 	libavcodec/libdav1d.c \
+	libavcodec/libfdk-aacdec.c \
 	libavcodec/libspeexdec.c \
 	libavcodec/libuavs3d.c \
+	libavcodec/libvvdec.c \
 	libavcodec/lossless_audiodsp.c \
 	libavcodec/lossless_videodsp.c \
 	libavcodec/lsp.c \
@@ -411,7 +417,12 @@ SRCS_LC = \
 	libavcodec/mss4.c \
 	libavcodec/msvideo1.c \
 	libavcodec/nellymoser.c \
-	libavcodec/nellymoserdec.c
+	libavcodec/nellymoserdec.c \
+	\
+	libavcodec/aac/aacdec.c \
+	libavcodec/aac/aacdec_fixed.c \
+	libavcodec/aac/aacdec_float.c \
+	libavcodec/aac/aacdec_tab.c
 
 SRCS_LC_B = \
 	libavcodec/nvdec.c \
@@ -432,6 +443,7 @@ SRCS_LC_B = \
 	libavcodec/opusdec_celt.c \
 	libavcodec/opusdsp.c \
 	libavcodec/opustab.c \
+	libavcodec/packet.c \
 	libavcodec/parser.c \
 	libavcodec/parsers.c \
 	libavcodec/pcm.c \
@@ -448,7 +460,7 @@ SRCS_LC_B = \
 	libavcodec/qpeldsp.c \
 	libavcodec/qtrle.c \
 	libavcodec/proresdata.c \
-	libavcodec/proresdec2.c \
+	libavcodec/proresdec.c \
 	libavcodec/proresdsp.c \
 	libavcodec/r210dec.c \
 	libavcodec/ra144.c \
@@ -470,6 +482,7 @@ SRCS_LC_B = \
 	libavcodec/rv40dsp.c \
 	libavcodec/s302m.c \
 	libavcodec/sbrdsp.c \
+	libavcodec/sbrdsp_fixed.c \
 	libavcodec/shorten.c \
 	libavcodec/simple_idct.c \
 	libavcodec/sinewin.c \
@@ -491,7 +504,7 @@ SRCS_LC_B = \
 	libavcodec/takdec.c \
 	libavcodec/takdsp.c \
 	libavcodec/texturedsp.c \
-	libavcodec/tiff.c \
+	libavcodec/threadprogress.c \
 	libavcodec/tiff_common.c \
 	libavcodec/to_upper4.c \
 	libavcodec/tpeldsp.c \
@@ -569,19 +582,20 @@ SRCS_LC_B = \
 	libavcodec/xvididct.c \
 	libavcodec/zlib_wrapper.c \
 	\
-	libavcodec/vvc/vvcdec.c \
-	libavcodec/vvc/vvcdsp.c \
-	libavcodec/vvc/vvc_cabac.c \
-	libavcodec/vvc/vvc_ctu.c \
-	libavcodec/vvc/vvc_data.c \
-	libavcodec/vvc/vvc_filter.c \
-	libavcodec/vvc/vvc_inter.c \
-	libavcodec/vvc/vvc_intra.c \
-	libavcodec/vvc/vvc_itx_1d.c \
-	libavcodec/vvc/vvc_mvs.c \
-	libavcodec/vvc/vvc_ps.c \
-	libavcodec/vvc/vvc_refs.c \
-	libavcodec/vvc/vvc_thread.c \
+	libavcodec/vvc/dec.c \
+	libavcodec/vvc/dsp.c \
+	libavcodec/vvc/cabac.c \
+	libavcodec/vvc/ctu.c \
+	libavcodec/vvc/data.c \
+	libavcodec/vvc/filter.c \
+	libavcodec/vvc/inter.c \
+	libavcodec/vvc/intra.c \
+	libavcodec/vvc/intra_utils.c \
+	libavcodec/vvc/itx_1d.c \
+	libavcodec/vvc/mvs.c \
+	libavcodec/vvc/ps.c \
+	libavcodec/vvc/refs.c \
+	libavcodec/vvc/thread.c \
 	\
 	libavcodec/x86/aacpsdsp_init.c \
 	libavcodec/x86/ac3dsp_init.c \
@@ -664,7 +678,6 @@ SRCS_LC_BSF = \
 	libavcodec/bsf/mjpeg2jpeg.c \
 	libavcodec/bsf/mjpega_dump_header.c \
 	libavcodec/bsf/movsub.c \
-	libavcodec/bsf/mp3_header_decompress.c \
 	libavcodec/bsf/mpeg4_unpack_bframes.c \
 	libavcodec/bsf/noise.c \
 	libavcodec/bsf/null.c \
@@ -751,6 +764,7 @@ SRCS_LU = \
 	libavutil/threadmessage.c \
 	libavutil/time.c \
 	libavutil/timecode.c \
+	libavutil/timestamp.c \
 	libavutil/tx.c \
 	libavutil/tx_double.c \
 	libavutil/tx_float.c \

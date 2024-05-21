@@ -4,21 +4,23 @@ on:
   push:
     paths-ignore:
       - .github/workflows/main.yml
-      - docs/**
-      - LICENSE.txt
-      - src/apps/mpcresources/text/**
+      - '**.txt'
+      - '**.md'
+      - '**.cmd'
+      - '**.bat'
       - '**.vcxproj.filters'
   pull_request:
     paths-ignore:
       - .github/workflows/main.yml
-      - docs/**
-      - LICENSE.txt
-      - src/apps/mpcresources/text/**
+      - '**.txt'
+      - '**.md'
+      - '**.cmd'
+      - '**.bat'
       - '**.vcxproj.filters'
 
 jobs:
   build:
-    runs-on: windows-latest
+    runs-on: windows-2022
     timeout-minutes: 60
 
     steps:

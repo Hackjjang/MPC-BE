@@ -1,6 +1,6 @@
 /*
  * (C) 2003-2006 Gabest
- * (C) 2006-2023 see Authors.txt
+ * (C) 2006-2024 see Authors.txt
  *
  * This file is part of MPC-BE.
  *
@@ -261,62 +261,97 @@ void CMediaFormats::GetFilter(CString& filter, std::vector<CString>& mask)
 {
 	CString strTemp;
 
+	bool bExplorerShowsFileExts = false;
+	CRegKey key;
+	if (ERROR_SUCCESS == key.Open(HKEY_CURRENT_USER, L"Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced", KEY_READ)) {
+		DWORD dw;
+		if (ERROR_SUCCESS == key.QueryDWORDValue(L"HideFileExt", dw)) {
+			bExplorerShowsFileExts = (dw == 0);
+		}
+	}
+
 	// Add All Media formats
 	filter += ResStr(IDS_AG_MEDIAFILES);
+	if (bExplorerShowsFileExts) {
+		filter += L"(*.avi;*.mp4;*.mkv;*.mp3;*.m4a;*.mka;...)";
+	}
+	filter += L'|';
 	mask.emplace_back(L"");
 
 	for (const auto& mfc : (*this)) {
-		strTemp = mfc.GetFilter() + L";";
+		strTemp = mfc.GetFilter() + L';';
 		mask[0] += strTemp;
 		filter += strTemp;
 	}
 	mask[0].TrimRight(';');
 	filter.TrimRight(';');
-	filter += L"|";
+	filter += L'|';
 
 	// Add Video formats
 	filter += ResStr(IDS_AG_VIDEOFILES);
+	if (bExplorerShowsFileExts) {
+		filter += L"(*.avi;*.mp4;*.mkv;...)";
+	}
+	filter += L'|';
 	mask.emplace_back(L"");
 
 	for (const auto& mfc : (*this)) {
 		if (mfc.GetFileType() == TVideo) {
-			strTemp = mfc.GetFilter() + L";";
+			strTemp = mfc.GetFilter() + L';';
 			mask[1] += strTemp;
 			filter += strTemp;
 		}
 	}
 	filter.TrimRight(';');
-	filter += L"|";
+	filter += L'|';
 
 	// Add Audio formats
 	filter += ResStr(IDS_AG_AUDIOFILES);
+	if (bExplorerShowsFileExts) {
+		filter += L"(*.mp3;*.m4a;*.mka;...)";
+	}
+	filter += L'|';
 	mask.emplace_back(L"");
 
 	for (const auto& mfc : (*this)) {
 		if (mfc.GetFileType() == TAudio) {
-			strTemp = mfc.GetFilter() + L";";
+			strTemp = mfc.GetFilter() + L';';
 			mask[1] += strTemp;
 			filter += strTemp;
 		}
 	}
 	filter.TrimRight(';');
-	filter += L"|";
+	filter += L'|';
 
 	for (const auto& mfc : (*this)) {
-		filter += mfc.GetDescription() + L"|" + mfc.GetFilter() + L"|";
+		filter += mfc.GetDescription() + L'|' + mfc.GetFilter() + L'|';
 		mask.emplace_back(mfc.GetFilter());
 	}
 
-	filter += ResStr(IDS_AG_ALLFILES);
+	filter += ResStr(IDS_AG_ALLFILES) + L" (*.*)|*.*|";
 	mask.emplace_back(L"*.*");
 
-	filter += L"|";
+	filter += L'|';
 }
 
 void CMediaFormats::GetAudioFilter(CString& filter, std::vector<CString>& mask)
 {
 	CString strTemp;
+
+	bool bExplorerShowsFileExts = false;
+	CRegKey key;
+	if (ERROR_SUCCESS == key.Open(HKEY_CURRENT_USER, L"Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced", KEY_READ)) {
+		DWORD dw;
+		if (ERROR_SUCCESS == key.QueryDWORDValue(L"HideFileExt", dw)) {
+			bExplorerShowsFileExts = (dw == 0);
+		}
+	}
+
 	filter += ResStr(IDS_AG_AUDIOFILES);
+	if (bExplorerShowsFileExts) {
+		filter += L"(*.mp3;*.m4a;*.mka;...)";
+	}
+	filter += L'|';
 	mask.emplace_back(L"");
 
 	for (const auto& mfc : (*this)) {
@@ -338,7 +373,7 @@ void CMediaFormats::GetAudioFilter(CString& filter, std::vector<CString>& mask)
 		}
 	}
 
-	filter += ResStr(IDS_AG_ALLFILES);
+	filter += ResStr(IDS_AG_ALLFILES) + L" (*.*)|*.*|";
 	mask.emplace_back(L"*.*");
 
 	filter += L"|";

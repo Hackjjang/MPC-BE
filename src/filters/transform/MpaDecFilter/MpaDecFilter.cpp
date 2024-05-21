@@ -33,8 +33,9 @@
 #include "DSUtil/SysVersion.h"
 #include "Version.h"
 #include <basestruct.h>
-
-#include <ExtLib/ffmpeg/libavcodec/avcodec.h>
+extern "C" {
+	#include <ExtLib/ffmpeg/libavcodec/avcodec.h>
+}
 #include "AudioDecoders.h"
 
 // option names
@@ -2895,7 +2896,7 @@ STDMETHODIMP CMpaDecFilter::CreatePage(const GUID& guid, IPropertyPage** ppPage)
 
 // IExFilterConfig
 
-STDMETHODIMP CMpaDecFilter::GetInt64(LPCSTR field, __int64 *value)
+STDMETHODIMP CMpaDecFilter::Flt_GetInt64(LPCSTR field, __int64 *value)
 {
 	CheckPointer(value, E_POINTER);
 
@@ -2910,7 +2911,7 @@ STDMETHODIMP CMpaDecFilter::GetInt64(LPCSTR field, __int64 *value)
 	return E_INVALIDARG;
 }
 
-STDMETHODIMP CMpaDecFilter::SetBool(LPCSTR field, bool value)
+STDMETHODIMP CMpaDecFilter::Flt_SetBool(LPCSTR field, bool value)
 {
 	if (strcmp(field, "stereodownmix") == 0) {
 		m_FFAudioDec.SetStereoDownmix(value);

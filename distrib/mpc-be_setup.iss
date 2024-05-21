@@ -1,5 +1,5 @@
 ﻿;
-; (C) 2009-2023 see Authors.txt
+; (C) 2009-2024 see Authors.txt
 ;
 ; This file is part of MPC-BE.
 ;
@@ -68,7 +68,7 @@
   #define Description  = app_name + " x64 " + app_version
   #define VisualElementsManifest = "VisualElements\mpc-be64.VisualElementsManifest.xml"
 #endif
-#define mpcvr_desc     = "MPC Video Renderer 0.7.1"
+#define mpcvr_desc     = "MPC Video Renderer 0.8.1"
 
 [Setup]
 #ifdef Win32Build
@@ -393,11 +393,7 @@ begin
 
   if (Result = '') or not DirExists(Result) then
   begin
-    #ifdef Win32Build
     Result := ExpandConstant('{pf}\{#app_name}');
-    #else
-    Result := ExpandConstant('{pf}\{#app_name} x64');
-    #endif
   end;
 end;
 

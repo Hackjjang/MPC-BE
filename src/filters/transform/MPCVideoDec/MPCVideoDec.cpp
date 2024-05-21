@@ -56,7 +56,6 @@ extern "C" {
 	#include <ExtLib/ffmpeg/libavutil/mastering_display_metadata.h>
 	#include <ExtLib/ffmpeg/libavutil/dovi_meta.h>
 	#include <ExtLib/ffmpeg/libavutil/opt.h>
-	#include <ExtLib/ffmpeg/libavutil/pixdesc.h>
 	#include <ExtLib/ffmpeg/libavutil/hwcontext_cuda_internal.h>
 	#include <ExtLib/ffmpeg/libavutil/hwcontext_d3d11va.h>
 	#include <ExtLib/ffmpeg/libavutil/hwcontext_d3d12va.h>
@@ -1225,7 +1224,7 @@ CMPCVideoDecFilter::CMPCVideoDecFilter(LPUNKNOWN lpunk, HRESULT* phr)
 	}
 #endif
 
-	if (m_nDiscardMode != AVDISCARD_BIDIR) {
+	if (m_nDiscardMode != AVDISCARD_NONREF) {
 		m_nDiscardMode = AVDISCARD_DEFAULT;
 	}
 
@@ -2093,6 +2092,13 @@ redo:
 
 	if (m_CodecId == AV_CODEC_ID_AV1 && (m_bUseDXVA || m_bUseD3D11 || m_bUseD3D11cb || m_bUseD3D12cb || m_bUseNVDEC)) {
 		m_pAVCodec = avcodec_find_decoder_by_name("av1");
+	} else if (m_CodecId == AV_CODEC_ID_VVC) {
+		if (CPUInfo::HaveSSE4()) {
+			// VVdeC crashes on older CPUs. need more info...
+			m_pAVCodec = avcodec_find_decoder_by_name("libvvdec");
+		} else {
+			m_pAVCodec = avcodec_find_decoder_by_name("vvc");
+		}
 	} else {
 		m_pAVCodec = avcodec_find_decoder(m_CodecId);
 	}
@@ -2307,6 +2313,10 @@ redo:
 		av_dict_set_int(&options, "x264_build", x264_build, 0);
 	}
 
+	if (m_CodecId == AV_CODEC_ID_VVC) {
+		m_pAVCtx->strict_std_compliance = FF_COMPLIANCE_EXPERIMENTAL;
+	}
+
 	avcodec_lock;
 	m_bInInit = TRUE;
 	const int ret = avcodec_open2(m_pAVCtx, m_pAVCodec, &options);
@@ -2455,7 +2465,8 @@ redo:
 			}
 
 			if (m_CodecId == AV_CODEC_ID_H264) {
-				if (m_nDXVA_SD && m_nSurfaceWidth < 1280) { // check "Disable DXVA for SD" option
+				// check "Disable DXVA for SD (H.264)" option 
+				if (m_nDXVA_SD && std::max(m_nSurfaceWidth, m_nSurfaceHeight) <= 1024 && std::min(m_nSurfaceWidth, m_nSurfaceHeight) <= 576) {
 					break;
 				}
 
@@ -3132,7 +3143,7 @@ HRESULT CMPCVideoDecFilter::NewSegment(REFERENCE_TIME rtStart, REFERENCE_TIME rt
 
 	m_rtStartCache = INVALID_TIME;
 
-	m_rtLastStop  = 0;
+	m_rtLastStop = 0;
 
 	if (m_bReorderBFrame) {
 		m_nBFramePos = 0;
@@ -4579,7 +4590,7 @@ STDMETHODIMP_(int) CMPCVideoDecFilter::GetThreadNumber()
 
 STDMETHODIMP CMPCVideoDecFilter::SetDiscardMode(int nValue)
 {
-	if (nValue != AVDISCARD_DEFAULT && nValue != AVDISCARD_BIDIR) {
+	if (nValue != AVDISCARD_DEFAULT && nValue != AVDISCARD_NONREF) {
 		return E_INVALIDARG;
 	}
 
@@ -4884,7 +4895,7 @@ STDMETHODIMP_(CString) CMPCVideoDecFilter::GetInformation(MPCInfo index)
 
 // IExFilterConfig
 
-STDMETHODIMP CMPCVideoDecFilter::GetInt(LPCSTR field, int* value)
+STDMETHODIMP CMPCVideoDecFilter::Flt_GetInt(LPCSTR field, int* value)
 {
 	CheckPointer(value, E_POINTER);
 
@@ -4908,7 +4919,7 @@ STDMETHODIMP CMPCVideoDecFilter::GetInt(LPCSTR field, int* value)
 	return E_INVALIDARG;
 }
 
-STDMETHODIMP CMPCVideoDecFilter::GetInt64(LPCSTR field, __int64 *value)
+STDMETHODIMP CMPCVideoDecFilter::Flt_GetInt64(LPCSTR field, __int64 *value)
 {
 	CheckPointer(value, E_POINTER);
 
@@ -4923,7 +4934,7 @@ STDMETHODIMP CMPCVideoDecFilter::GetInt64(LPCSTR field, __int64 *value)
 	return E_INVALIDARG;
 }
 
-STDMETHODIMP CMPCVideoDecFilter::GetString(LPCSTR field, LPWSTR* value, unsigned* chars)
+STDMETHODIMP CMPCVideoDecFilter::Flt_GetString(LPCSTR field, LPWSTR* value, unsigned* chars)
 {
 	// experimental !
 
@@ -4966,7 +4977,7 @@ STDMETHODIMP CMPCVideoDecFilter::GetString(LPCSTR field, LPWSTR* value, unsigned
 	return E_INVALIDARG;
 }
 
-STDMETHODIMP CMPCVideoDecFilter::SetBool(LPCSTR field, bool value)
+STDMETHODIMP CMPCVideoDecFilter::Flt_SetBool(LPCSTR field, bool value)
 {
 	if (strcmp(field, "hw_decoding") == 0) {
 		CAutoLock cLock(&m_csInitDec);
@@ -4978,7 +4989,7 @@ STDMETHODIMP CMPCVideoDecFilter::SetBool(LPCSTR field, bool value)
 	return E_INVALIDARG;
 }
 
-STDMETHODIMP CMPCVideoDecFilter::SetInt(LPCSTR field, int value)
+STDMETHODIMP CMPCVideoDecFilter::Flt_SetInt(LPCSTR field, int value)
 {
 	if (strcmp(field, "mvc_mode") == 0) {
 		CAutoLock cLock(&m_csInitDec);

@@ -3,7 +3,6 @@
 
 #define SWS_MAX_FILTER_SIZE 256
 #ifdef __GNUC__
-	#define HAVE_MMX2 HAVE_MMXEXT
 	#define ARCH_X86 1
 	#define HAVE_INLINE_ASM 1
 	#define HAVE_AESNI 1
@@ -24,7 +23,6 @@
 	#define HAVE_SSE42 1
 	#define HAVE_SSSE3 1
 	#define HAVE_XOP 1
-	#define HAVE_CPUNOP 0
 	#define HAVE_I686 1
 	#define HAVE_AESNI_EXTERNAL 1
 	#define HAVE_AMD3DNOW_EXTERNAL 1
@@ -44,7 +42,6 @@
 	#define HAVE_SSE42_EXTERNAL 1
 	#define HAVE_SSSE3_EXTERNAL 1
 	#define HAVE_XOP_EXTERNAL 1
-	#define HAVE_CPUNOP_EXTERNAL 0
 	#define HAVE_I686_EXTERNAL 0
 	#define HAVE_AESNI_INLINE 1
 	#define HAVE_AMD3DNOW_INLINE 1
@@ -64,7 +61,6 @@
 	#define HAVE_SSE42_INLINE 1
 	#define HAVE_SSSE3_INLINE 1
 	#define HAVE_XOP_INLINE 1
-	#define HAVE_CPUNOP_INLINE 0
 	#define HAVE_I686_INLINE 0
 
 	#ifdef ARCH_X86_64
@@ -86,9 +82,6 @@
 		#define CONFIG_PIC 0
 	#endif
 
-	#ifndef av_restrict
-	#define av_restrict restrict
-	#endif
 #else
 	#define HAVE_INLINE_ASM 0
 	#define HAVE_AESNI 0
@@ -109,7 +102,6 @@
 	#define HAVE_SSE42 0
 	#define HAVE_SSSE3 0
 	#define HAVE_XOP 0
-	#define HAVE_CPUNOP 0
 	#define HAVE_I686 0
 	#define HAVE_AESNI_EXTERNAL 0
 	#define HAVE_AMD3DNOW_EXTERNAL 0
@@ -129,7 +121,6 @@
 	#define HAVE_SSE42_EXTERNAL 0
 	#define HAVE_SSSE3_EXTERNAL 0
 	#define HAVE_XOP_EXTERNAL 0
-	#define HAVE_CPUNOP_EXTERNAL 0
 	#define HAVE_I686_EXTERNAL 0
 	#define HAVE_AESNI_INLINE 0
 	#define HAVE_AMD3DNOW_INLINE 0
@@ -149,7 +140,6 @@
 	#define HAVE_SSE42_INLINE 0
 	#define HAVE_SSSE3_INLINE 0
 	#define HAVE_XOP_INLINE 0
-	#define HAVE_CPUNOP_INLINE 0
 	#define HAVE_I686_INLINE 0
 	#define ARCH_X86 0
 	#define ARCH_X86_32 0
@@ -419,13 +409,17 @@
 #define HAVE_OPENCL_DXVA2 0
 #define HAVE_OPENCL_VAAPI_BEIGNET 0
 #define HAVE_OPENCL_VAAPI_INTEL_MEDIA 0
+#define HAVE_OPENCL_VIDEOTOOLBOX 0
 #define HAVE_POD2MAN 1
 #define HAVE_POLL_H 0
+#define HAVE_PTHREAD_NP_H 0
 #define HAVE_POSIX_MEMALIGN 0
 #define HAVE_PRCTL 0
 #define HAVE_PRAGMA_DEPRECATED 1
 #define HAVE_POWF 1
 #define HAVE_PTHREAD_CANCEL 0
+#define HAVE_PTHREAD_SET_NAME_NP 0
+#define HAVE_PTHREAD_SETNAME_NP 0
 #define HAVE_RSYNC_CONTIMEOUT 0
 #define HAVE_SARESTART 0
 #define HAVE_SEM_TIMEDWAIT 0
@@ -552,6 +546,8 @@
 #define CONFIG_HUFFMAN 1
 #define CONFIG_HUFFYUVDSP 1
 #define CONFIG_HUFFYUVENCDSP 0
+#define CONFIG_IAMFDEC 0
+#define CONFIG_IAMFENC 0
 #define CONFIG_IDCTDSP 1
 #define CONFIG_INFLATE_WRAPPER 1
 #define CONFIG_DEFLATE_WRAPPER 1

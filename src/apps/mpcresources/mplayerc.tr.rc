@@ -120,12 +120,21 @@ BEGIN
     PUSHBUTTON      "Özellikler",IDC_BUTTON1,226,14,60,14
     COMBOBOX        IDC_COMBO1,10,33,212,46,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     CONTROL         "İkili çıkış",IDC_CHECK1,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,226,35,60,10
-    GROUPBOX        "Ses açma ayarları",IDC_STATIC,5,54,285,51
-    CONTROL         "Ses dosyalarını oto-yükle",IDC_CHECK2,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,65,276,9
-    EDITTEXT        IDC_EDIT4,10,76,222,13,ES_AUTOHSCROLL
-    PUSHBUTTON      "Sıfırla",IDC_BUTTON2,235,76,50,13
+    GROUPBOX        "Ses",IDC_STATIC,5,53,285,46
+    CTEXT           "Ses",IDC_STATIC,42,60,55,8
+    RTEXT           "Alçak",IDC_STATIC,7,80,20,8
+    CONTROL         "",IDC_SLIDER1,"msctls_trackbar32",TBS_AUTOTICKS | TBS_BOTH | TBS_TOOLTIPS | WS_TABSTOP | 0x400,28,72,85,19
+    LTEXT           "Yüksek",IDC_STATIC,116,80,27,8
+    CTEXT           "Denge",IDC_STATIC_BALANCE,191,60,55,8,SS_NOTIFY
+    RTEXT           "Sol",IDC_STATIC,144,80,30,8
+    CONTROL         "",IDC_SLIDER2,"msctls_trackbar32",TBS_AUTOTICKS | TBS_TOOLTIPS | WS_TABSTOP | 0x400,176,79,85,19
+    LTEXT           "Sağ",IDC_STATIC,262,80,27,8
+    GROUPBOX        "Ses açma ayarları",IDC_STATIC,5,102,285,51
+    CONTROL         "Ses dosyalarını oto-yükle",IDC_CHECK2,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,113,276,9
+    EDITTEXT        IDC_EDIT4,10,124,222,13,ES_AUTOHSCROLL
+    PUSHBUTTON      "Sıfırla",IDC_BUTTON2,235,124,50,13
     CONTROL         "Her zaman harici ses dosyalarını tercih et",IDC_CHECK3,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,92,273,9
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,140,273,9
 END
 
 IDD_PPAGESOUNDPROCESSING DIALOGEX 0, 0, 296, 264
@@ -314,43 +323,39 @@ IDD_PPAGEPLAYBACK DIALOGEX 0, 0, 296, 264
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    GROUPBOX        "Ses",IDC_STATIC,5,5,286,46
-    CTEXT           "Ses",IDC_STATIC,42,12,55,8
-    RTEXT           "Alçak",IDC_STATIC,7,32,20,8
-    CONTROL         "",IDC_SLIDER1,"msctls_trackbar32",TBS_AUTOTICKS | TBS_BOTH | TBS_TOOLTIPS | WS_TABSTOP | 0x400,28,24,85,19
-    LTEXT           "Yüksek",IDC_STATIC,116,32,27,8
-    CTEXT           "Denge",IDC_STATIC_BALANCE,191,12,55,8,SS_NOTIFY
-    RTEXT           "Sol",IDC_STATIC,144,32,30,8
-    CONTROL         "",IDC_SLIDER2,"msctls_trackbar32",TBS_AUTOTICKS | TBS_TOOLTIPS | WS_TABSTOP | 0x400,176,31,85,19
-    LTEXT           "Sağ",IDC_STATIC,262,32,27,8
-    GROUPBOX        "Oynatma",IDC_STATIC,5,53,129,60
-    CONTROL         "Sadece",IDC_RADIO1,"Button",BS_AUTORADIOBUTTON | WS_GROUP,10,65,55,10
-    CONTROL         "Sürekli tekrarla",IDC_RADIO2,"Button",BS_AUTORADIOBUTTON,10,80,116,8
-    EDITTEXT        IDC_EDIT1,65,63,20,13,ES_AUTOHSCROLL | ES_NUMBER | WS_GROUP
-    LTEXT           "kez oynat",IDC_STATIC1,90,65,40,8
-    CONTROL         "Oynatma bitince geri sar",IDC_CHECK1,"Button",BS_AUTOCHECKBOX | BS_TOP | BS_MULTILINE | WS_TABSTOP,10,93,116,18
-    GROUPBOX        "Kontrol",IDC_STATIC,5,115,286,54
-    LTEXT           "Ses adımı:",IDC_STATIC,10,127,108,8
-    COMBOBOX        IDC_COMBOVOLUME,120,124,60,47,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Hız adımı:",IDC_STATIC,10,143,108,8
-    COMBOBOX        IDC_COMBOSPEEDSTEP,120,140,60,47,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    CONTROL         "Oturum için hızı varsayılan ayarlara getirme",IDC_CHECK9,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,157,175,9
-    GROUPBOX        "",IDC_STATIC,137,57,154,56
-    CONTROL         "Varsayılan parça seçimi",IDC_CHECK4,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,142,56,100,9
-    LTEXT           "Alt yazı:",IDC_STATIC,142,71,44,8
-    EDITTEXT        IDC_EDIT2,190,69,94,13,ES_AUTOHSCROLL
-    LTEXT           "Ses:",IDC_STATIC,142,87,44,8
-    EDITTEXT        IDC_EDIT3,190,85,94,13,ES_AUTOHSCROLL
-    LTEXT           "(Örnek: tur türkçe İngilizce eng jap)",IDC_STATIC,147,101,132,8
-    GROUPBOX        "Açma ayarları",IDC_STATIC,5,172,286,79
-    LTEXT           "Bir ses dosyası açıldığında",IDC_STATIC,10,185,99,8
-    COMBOBOX        IDC_COMBO4,113,182,172,47,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Oynatma listesine ekle:",IDC_STATIC,10,201,139,8
-    COMBOBOX        IDC_COMBO5,150,198,135,47,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    GROUPBOX        "Oynatma",IDC_STATIC,5,5,129,60
+    CONTROL         "Sadece",IDC_RADIO1,"Button",BS_AUTORADIOBUTTON | WS_GROUP,10,17,55,10
+    CONTROL         "Sürekli tekrarla",IDC_RADIO2,"Button",BS_AUTORADIOBUTTON,10,32,116,8
+    EDITTEXT        IDC_EDIT1,65,15,20,13,ES_AUTOHSCROLL | ES_NUMBER | WS_GROUP
+    LTEXT           "kez oynat",IDC_STATIC1,90,17,40,8
+    CONTROL         "Oynatma bitince geri sar",IDC_CHECK1,"Button",BS_AUTOCHECKBOX | BS_TOP | BS_MULTILINE | WS_TABSTOP,10,45,116,18
+    GROUPBOX        "Kontrol",IDC_STATIC,5,67,286,54
+    LTEXT           "Ses adımı:",IDC_STATIC,10,79,108,8
+    COMBOBOX        IDC_COMBOVOLUME,120,76,60,47,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "%",IDC_STATIC2,183,79,8,8
+    LTEXT           "Hız adımı:",IDC_STATIC,10,95,108,8
+    COMBOBOX        IDC_COMBOSPEEDSTEP,120,92,60,47,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "%",IDC_STATIC3,183,95,8,8
+    CONTROL         "Oturum için hızı varsayılan ayarlara getirme",IDC_CHECK9,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,109,175,9
+    GROUPBOX        "",IDC_STATIC,137,9,154,56
+    CONTROL         "Varsayılan parça seçimi",IDC_CHECK4,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,142,8,100,9
+    LTEXT           "Alt yazı:",IDC_STATIC,142,23,44,8
+    EDITTEXT        IDC_EDIT2,190,21,94,13,ES_AUTOHSCROLL
+    LTEXT           "Ses:",IDC_STATIC,142,39,44,8
+    EDITTEXT        IDC_EDIT3,190,37,94,13,ES_AUTOHSCROLL
+    LTEXT           "(Örnek: tur türkçe İngilizce eng jap)",IDC_STATIC,147,53,132,8
+    GROUPBOX        "Açma ayarları",IDC_STATIC,5,124,286,79
+    LTEXT           "Bir ses dosyası açıldığında",IDC_STATIC,10,137,99,8
+    COMBOBOX        IDC_COMBO4,113,134,172,47,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Oynatma listesine ekle:",IDC_STATIC,10,153,139,8
+    COMBOBOX        IDC_COMBO5,150,150,135,47,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     CONTROL         "Süzgeç grafiği kurulumu için oynatıcı önceliğini kullan",IDC_CHECK7,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,215,276,9
-    CONTROL         "Oluşturulamayan bağlantıları rapor et",IDC_CHECK6,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,227,276,9
-    CONTROL         "Oynatma listesindeki seçili parçaları hatırla",IDC_CHECK8,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,239,276,9
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,167,276,9
+    CONTROL         "Oluşturulamayan bağlantıları rapor et",IDC_CHECK6,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,179,276,9
+    CONTROL         "Oynatma listesindeki seçili parçaları hatırla",IDC_CHECK8,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,191,276,9
+    CONTROL         "Hızlı arama (ref. karede)",IDC_CHECK3,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,209,264,9
+    CONTROL         "Küçültüldüğünde video oynatmayı duraklat",IDC_CHECK5,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,221,280,9
 END
 
 IDD_PPAGESUBRENDERING DIALOGEX 0, 0, 296, 264
@@ -1068,33 +1073,32 @@ BEGIN
     EDITTEXT        IDC_EDIT2,64,17,40,14,ES_RIGHT | ES_AUTOHSCROLL | ES_NUMBER
     EDITTEXT        IDC_EDIT3,110,17,40,14,ES_RIGHT | ES_AUTOHSCROLL | ES_NUMBER
     PUSHBUTTON      "Varsayılan",IDC_BUTTON1,158,17,56,14
-    CONTROL         "Hızlı arama (ref. karede)",IDC_CHECK1,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,45,264,9
     CONTROL         "Oynatma listesinde sadece bir öğe olduğunda 'Geri/İleri Git' komutlarındaki 'klasörde arama' özelliğini kullanma.",IDC_CHECK7,
-                    "Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,7,55,280,18
+                    "Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,7,41,280,18
     CONTROL         "Varsayılan olmayan monitörde Tam Ekran olduğunda SİMGE DURUMUNA'yı engelle",IDC_CHECK6,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,75,282,9
-    CONTROL         "Küçültüldüğünde video oynatmayı duraklat",IDC_CHECK4,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,87,280,9
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,61,282,9
     CONTROL         "Pencere modunda oynatma sırasında işaretçiyi otomatik gizle",IDC_CHECK5,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,99,280,9
-    LTEXT           "Bu süreden daha kısa 000xx.mpls gösterme:",IDC_STATIC,7,112,150,8
-    EDITTEXT        IDC_EDIT5,161,110,30,13,ES_CENTER | ES_AUTOHSCROLL | ES_NUMBER
-    CONTROL         "",IDC_SPIN2,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS | UDS_HOTTRACK,181,110,11,14
-    LTEXT           "dk.",IDC_STATIC,197,112,30,8
-    CONTROL         "Logitech LCD desteğini etkinleştir",IDC_CHECK_LCD,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,126,264,9
-    CONTROL         "Windows Medya Kontrollerini kullan",IDC_CHECK9,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,138,220,9
-    CONTROL         "MiniDump etkinleştir",IDC_CHECK2,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,150,184,9
-    LTEXT           "FFmpeg çalıştırılabilir dosyası:",IDC_STATIC,7,165,104,8
-    COMBOBOX        IDC_COMBO1,113,163,170,30,CBS_DROPDOWN | CBS_AUTOHSCROLL | WS_VSCROLL | WS_TABSTOP
-    GROUPBOX        "Güncelleme kontrolü",IDC_STATIC,5,180,286,40
-    CONTROL         "Otomatik güncelleme kontrolünü etkinleştir",IDC_CHECK3,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,192,250,9
-    LTEXT           "Her kontrol arasındaki gecikme:",IDC_STATIC5,10,205,110,8
-    EDITTEXT        IDC_EDIT4,120,203,30,13,ES_CENTER | ES_AUTOHSCROLL | ES_NUMBER
-    CONTROL         "",IDC_SPIN1,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS | UDS_HOTTRACK,140,203,13,14
-    LTEXT           "gün",IDC_STATIC6,155,205,50,8
-    GROUPBOX        "Ayar yönetimi",IDC_STATIC,5,222,286,28
-    PUSHBUTTON      "Sıfırla",IDC_RESET_SETTINGS,10,233,55,14
-    PUSHBUTTON      "Ver",IDC_EXPORT_SETTINGS,73,233,55,14
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,73,280,9
+    CONTROL         "Durum çubuğunda ve OSD'de sıfır saati göster",IDC_CHECK8,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,85,280,9
+    LTEXT           "Bu süreden daha kısa 000xx.mpls gösterme:",IDC_STATIC,7,99,150,8
+    EDITTEXT        IDC_EDIT5,161,97,30,13,ES_CENTER | ES_AUTOHSCROLL | ES_NUMBER
+    CONTROL         "",IDC_SPIN2,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS | UDS_HOTTRACK,181,97,11,14
+    LTEXT           "dk.",IDC_STATIC,197,99,30,8
+    CONTROL         "Logitech LCD desteğini etkinleştir",IDC_CHECK_LCD,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,113,264,9
+    CONTROL         "Windows Medya Kontrollerini kullan",IDC_CHECK9,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,125,220,9
+    CONTROL         "MiniDump etkinleştir",IDC_CHECK2,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,137,184,9
+    LTEXT           "FFmpeg çalıştırılabilir dosyası:",IDC_STATIC,7,152,104,8
+    COMBOBOX        IDC_COMBO1,113,150,170,30,CBS_DROPDOWN | CBS_AUTOHSCROLL | WS_VSCROLL | WS_TABSTOP
+    GROUPBOX        "Güncelleme kontrolü",IDC_STATIC,5,167,286,40
+    CONTROL         "Otomatik güncelleme kontrolünü etkinleştir",IDC_CHECK3,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,179,250,9
+    LTEXT           "Her kontrol arasındaki gecikme:",IDC_STATIC5,10,192,110,8
+    EDITTEXT        IDC_EDIT4,120,190,30,13,ES_CENTER | ES_AUTOHSCROLL | ES_NUMBER
+    CONTROL         "",IDC_SPIN1,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS | UDS_HOTTRACK,140,190,13,14
+    LTEXT           "gün",IDC_STATIC6,155,192,50,8
+    GROUPBOX        "Ayar yönetimi",IDC_STATIC,5,209,286,28
+    PUSHBUTTON      "Sıfırla",IDC_RESET_SETTINGS,10,220,55,14
+    PUSHBUTTON      "Ver",IDC_EXPORT_SETTINGS,73,220,55,14
 END
 
 IDD_TUNER_SCAN DIALOGEX 0, 0, 407, 246
@@ -1234,11 +1238,6 @@ BEGIN
     CONTROL         "Alt yazıda değişiklik algılanırsa oto-yeniden yükle",IDC_CHECK3,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,5,79,285,9
     CONTROL         "Alt yazı Eşzamanlama kullan",IDC_CHECK_SUBRESYNC,"Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,5,91,285,9
-    GROUPBOX        "Çevrim içi veritabanı",IDC_STATIC1,5,105,286,45
-    LTEXT           "Çevrim içi alt yazı veritabanı adresi:",IDC_STATIC2,10,116,222,8
-    LTEXT           "http://",IDC_STATIC3,10,130,22,8
-    COMBOBOX        IDC_COMBO1,35,128,199,30,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
-    PUSHBUTTON      "Dene",IDC_BUTTON2,237,127,50,14
 END
 
 IDD_UPDATE_DIALOG DIALOGEX 0, 0, 238, 60
@@ -1335,7 +1334,9 @@ BEGIN
 
     IDD_PPAGEAUDIO, DIALOG
     BEGIN
-        VERTGUIDE, 124
+        VERTGUIDE, 5
+        VERTGUIDE, 10
+        VERTGUIDE, 290
     END
 
     IDD_PPAGESOUNDPROCESSING, DIALOG
@@ -2453,45 +2454,41 @@ END
 
 STRINGTABLE
 BEGIN
-    IDD_PPAGEPLAYBACK       "Oynatma"
     IDD_PPAGEPLAYER         "Oynatıcı"
-    IDD_PPAGEDVD            "Oynatma::DVD-Video"
-    IDD_PPAGESUBTITLES      "Alt Yazılar"
     IDD_PPAGEFORMATS        "Oynatıcı::Biçimler"
-    IDD_PPAGECOLOR          "Video::Renk Düzeltmesi"
-    IDD_PPAGEAUDIO          "Ses"
-    IDD_PPAGEEXTERNALFILTERS "Harici Süzgeçler"
-    IDD_PPAGESOUNDPROCESSING "Ses::Ses İşleme"
+    IDD_PPAGEACCELTBL       "Oynatıcı::Tuşlar"
+    IDD_PPAGEMOUSE          "Oynatıcı::Fare"
+    IDD_PPAGELOGO           "Oynatıcı::Logo"
+    IDD_PPAGEINTERFACE      "Oynatıcı::Arayüz"
+    IDD_PPAGEWINDOWSIZE     "Oynatıcı::Pencere Boyutu"
+    IDD_PPAGEWEBSERVER      "Oynatıcı::Web Arayüzü"
+    IDD_PPAGEPLAYBACK       "Oynatma"
+    IDD_PPAGEDVD            "Oynatma::DVD-Video"
 END
 
 STRINGTABLE
 BEGIN
-    IDD_PPAGEACCELTBL       "Oynatıcı::Tuşlar"
-    IDD_PPAGESUBSTYLE       "Alt Yazılar::Görünüm"
-    IDD_PPAGEMOUSE          "Oynatıcı::Fare"
-    IDD_PPAGEINTERNALFILTERS "Dahili Süzgeçler"
-    IDD_PPAGELOGO           "Oynatıcı::Logo"
+    IDD_PPAGECAPTURE        "Oynatma::Yakalama"
+    IDD_PPAGEYOUTUBE        "Oynatma::Çevrim İçi Servisler"
     IDD_PPAGEVIDEO          "Video"
-    IDD_PPAGEWEBSERVER      "Oynatıcı::Web Arayüzü"
+    IDD_PPAGECOLOR          "Video::Renk Düzeltmesi"
+    IDD_PPAGESYNC           "Video::Görüntü Eşzamanlama"
+    IDD_PPAGEFULLSCREEN     "Video::Tam Ekran"
+    IDD_PPAGEAUDIO          "Ses"
+    IDD_PPAGESOUNDPROCESSING "Ses::Ses İşleme"
+    IDD_PPAGESUBTITLES      "Alt Yazılar"
+    IDD_PPAGESUBRENDERING   "Alt Yazılar::Oluşturma"
+    IDD_PPAGESUBSTYLE       "Alt Yazılar::Görünüm"
+    IDD_PPAGEINTERNALFILTERS "Dahili Süzgeçler"
+    IDD_PPAGEEXTERNALFILTERS "Harici Süzgeçler"
+    IDD_PPAGEFILTERSPRIORITY "Harici Süzgeçler::Öncelik"
+    IDD_PPAGEMISC           "Diğer"
 END
 
 STRINGTABLE
 BEGIN
     IDD_FILEPROPRES         "Kaynaklar"
-    IDD_PPAGEMISC           "Diğer"
     IDD_FILEMEDIAINFO       "Medya Bilgisi"
-    IDD_PPAGECAPTURE        "Oynatma::Yakalama"
-    IDD_PPAGESYNC           "Video::Görüntü Eşzamanlama"
-    IDD_PPAGEFULLSCREEN     "Video::Tam Ekran"
-    IDD_PPAGEINTERFACE      "Oynatıcı::Arayüz"
-    IDD_PPAGEYOUTUBE        "Oynatma::Çevrim İçi Servisler"
-    IDD_PPAGEWINDOWSIZE     "Oynatıcı::Pencere Boyutu"
-    IDD_PPAGEFILTERSPRIORITY "Harici Süzgeçler::Öncelik"
-END
-
-STRINGTABLE
-BEGIN
-    IDD_PPAGESUBRENDERING   "Alt Yazılar::Oluşturma"
 END
 
 STRINGTABLE
@@ -2700,12 +2697,18 @@ END
 
 STRINGTABLE
 BEGIN
+    IDS_AG_MEDIAFILES       "Medya dosyaları (tüm biçimler)"
+    IDS_AG_VIDEOFILES       "Video dosyası (tüm biçimler)"
+    IDS_AG_AUDIOFILES       "Ses dosyaları (tüm biçimler)"
+    IDS_AG_ALLFILES         "Tüm dosyalar"
+END
+
+STRINGTABLE
+BEGIN
+    IDS_AG_SUBTITLEFILES    "Alt yazı dosyaları"
     IDS_AG_AUDIO_FILE       "Ses dosyası"
     IDS_AG_PLAYLIST_FILE    "Oynatma listesi dosyası"
     IDS_AG_OTHER            "Diğer"
-    IDS_AG_MEDIAFILES       "Medya dosyaları (tüm biçimler)|"
-    IDS_AG_ALLFILES         "Tüm dosyalar (*.*)|*.*|"
-    IDS_AG_AUDIOFILES       "Ses dosyaları (tüm biçimler)|"
     IDS_PIXELSHADERCOMPILER_0  "D3DX9_xx.DLL yüklenemedi, piksel tonlayıcıları çalışmayabilir."
     IDS_PIXELSHADERCOMPILER_1  "D3DX9_xx.DLL içindeki gerekli bazı özellik noktaları bulunamadı, piksel tonlayıcıları çalışmayabilir."
     IDS_AG_NOT_KNOWN        "Bilinmeyen"
@@ -2724,7 +2727,6 @@ BEGIN
     IDS_CANCEL              "İptal"
     IDS_TEXTFILE_ENC        "Kodlama:"
     IDS_SAVE_FILE           "Dosya kaydediliyor"
-    IDS_AG_VIDEOFILES       "Video dosyası (tüm biçimler)|"
     IDS_VOLUME_OSD_MUTE     "Ses: %d%% [Sessiz]"
     IDS_COPY_TO_CLIPBOARD   "Panoya Kopyala"
     IDS_AUDIO_LEVEL         "Seviye (%d):"
@@ -3061,7 +3063,6 @@ END
 STRINGTABLE
 BEGIN
     IDS_MAINFRM_47          " başarıyla yüklendi"
-    IDS_MAINFRM_48          "Tüm Dosyalar (*.*)|*.*||"
     IDS_MAINFRM_49          "VTB alınamadı, hr = %08x"
     IDS_MAINFRM_51          "GeçerliGörAl yapılamadı, hr = %08x"
     IDS_MAINFRM_53          "Dosya oluşturulamadı"
@@ -3187,7 +3188,7 @@ END
 
 STRINGTABLE
 BEGIN
-    IDS_CMD_USAGE           "Kullanım: mpc-be.exe ""yol_adı"" [anahtarlar]\n\n""yol_adı""\t\tYüklenecek dosya ya da klasör (özel\n\t\tkarakterler desteklenmektedir))"
+    IDS_CMD_USAGE           "Kullanım: mpc-be.exe ""yol_adı"" [anahtarlar]\n\n""yol_adı""\t\tYüklenecek dosya ya da klasör (özel\n\t\tkarakterler desteklenmektedir)"
     IDS_CMD_HELP            "/help /h /?\tKomut satırı anahtarları hakkında yardım görüntülenir"
     IDS_CMD_DUB             "/dub ""dublaj_adı""\tHarici bir ses dosyası yüklemek için"
     IDS_CMD_DUBDELAY        "/dubdelay ""dosya""\tXXms olarak atlanacak harici bir ses dosyası yüklemek için\n\t\t(eğer dosya ""...GECİKME XXms..."" içeriyorsa)"
@@ -3225,7 +3226,9 @@ BEGIN
     IDS_CMD_FIXEDSIZE       "/fixedsize w,h\tSabit pencere boyutu kullanılır"
     IDS_CMD_MONITOR         "/monitor N\tN monitöründe başlatılır; N, 1'den başlar"
     IDS_CMD_AUDIORENDERER   "/audiorenderer N\tSes işleyici N ile başlanılır; N, 0 ile başlar\n\t\t(""Ses"" ayarlarına bakınız)"
+    IDS_CMD_VOLUME          "/volume N\tSesi Ayarlar. Burada N, 0 ile 100 arasında bir aralıktır"
     IDS_CMD_CLIPBOARD       "/clipboard\t\tPanodan dosya yolu/URL açar (liste desteklenir)"
+    IDS_CMD_DEVICE          "/device\t\tVarsayılan video aygıtını açar"
     IDS_CMD_RESET           "/reset\t\tVarsayılan ayarlara geri dönülür"
 END
 

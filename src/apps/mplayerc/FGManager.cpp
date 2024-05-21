@@ -103,7 +103,7 @@ public:
 			pBF->SetSwPixelFormat(PixFmt_RGB32, true);
 
 			if (CComQIPtr<IExFilterConfig> pEFC = pBF.p) {
-				pEFC->SetBool("hw_decoding", false);
+				pEFC->Flt_SetBool("hw_decoding", false);
 			}
 		}
 		video_filters[VDEC_UNCOMPRESSED] = false;
@@ -123,7 +123,7 @@ public:
 			}
 			const int mvc_mode_value = (iMvcOutputMode << 16) | (s.bStereo3DSwapLR ? 1 : 0);
 
-			pEFC->SetInt("mvc_mode", mvc_mode_value);
+			pEFC->Flt_SetInt("mvc_mode", mvc_mode_value);
 		}
 
 		*ppBF = pBF.Detach();
@@ -454,40 +454,40 @@ HRESULT CFGManager::EnumSourceFilters(LPCWSTR lpcwstrFileName, CFGFilterList& fl
 		}
 
 		if (type.GetLength()) {
-			for (const auto& [_, clsid_value] : s.FiltersPriority.values) {
-				if (clsid_value != CLSID_NULL) {
-					for (const auto& pFGF : m_override) {
-						if (pFGF->GetCLSID() == clsid_value) {
-							const std::list<GUID>& types = pFGF->GetTypes();
-							if (types.size() && !httpbuf.size()) {
-								bool bIsSplitter = false;
-								auto it = types.cbegin();
-								while (it != types.cend() && std::next(it) != types.cend()) {
-									CLSID major = *it++;
-									CLSID sub = *it++;
+			if (const auto it = s.FiltersPriority.values.find(type); it != s.FiltersPriority.values.cend() && it->second != CLSID_NULL) {
+				const auto& clsid_value = it->second;
 
-									if (major == MEDIATYPE_Stream) {
-										bIsSplitter = true;
+				for (const auto& pFGF : m_override) {
+					if (pFGF->GetCLSID() == clsid_value) {
+						const std::list<GUID>& types = pFGF->GetTypes();
+						if (types.size() && !httpbuf.size()) {
+							bool bIsSplitter = false;
+							auto it = types.cbegin();
+							while (it != types.cend() && std::next(it) != types.cend()) {
+								CLSID major = *it++;
+								CLSID sub   = *it++;
 
-										std::list<GUID> typesNew;
-										typesNew.emplace_back(major);
-										typesNew.emplace_back(sub);
-										pFGF->SetTypes(typesNew);
+								if (major == MEDIATYPE_Stream) {
+									bIsSplitter = true;
 
-										break;
-									}
-								}
-								if (bIsSplitter) {
-									CFGFilter* pFGFAsync = LookupFilterRegistry(CLSID_AsyncReader, m_override, MERIT64_HIGH + 1);
-									fl.Insert(pFGFAsync, 0);
+									std::list<GUID> typesNew;
+									typesNew.emplace_back(major);
+									typesNew.emplace_back(sub);
+									pFGF->SetTypes(typesNew);
+
+									break;
 								}
 							}
-
-							pFGF->SetMerit(MERIT64_HIGH);
-							fl.Insert(pFGF, 0, false, false);
-
-							break;
+							if (bIsSplitter) {
+								CFGFilter* pFGFAsync = LookupFilterRegistry(CLSID_AsyncReader, m_override, MERIT64_HIGH + 1);
+								fl.Insert(pFGFAsync, 0);
+							}
 						}
+
+						pFGF->SetMerit(MERIT64_HIGH);
+						fl.Insert(pFGF, 0, false, false);
+
+						break;
 					}
 				}
 			}
@@ -2771,7 +2771,7 @@ STDMETHODIMP CFGManagerCustom::AddFilter(IBaseFilter* pBF, LPCWSTR pName)
 	}
 
 	if (CComQIPtr<IExFilterConfig> pEFC = pBF) {
-		pEFC->SetBool("stereodownmix", s.bAudioMixer && s.nAudioMixerLayout == SPK_STEREO && s.bAudioStereoFromDecoder);
+		pEFC->Flt_SetBool("stereodownmix", s.bAudioMixer && s.nAudioMixerLayout == SPK_STEREO && s.bAudioStereoFromDecoder);
 	}
 
 	if (CComQIPtr<IAudioSwitcherFilter> pASF = pBF) {
