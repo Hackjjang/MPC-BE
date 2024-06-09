@@ -71,11 +71,16 @@ CSaveTaskDlg::CSaveTaskDlg(const std::list<SaveItem_t>& saveItems, const CString
 		case 'a':
 			m_dstPaths[i] = RenameFileExt(dstPath, (finalext == L".mp4") ? L".audio.m4a" : L".audio.mka");
 			break;
-		case 's':
+		case 's': {
 			CStringW subext = L"." + item.title + L".vtt";
 			FixFilename(subext);
 			m_dstPaths[i] = RenameFileExt(dstPath, subext);
 			break;
+		}
+		case 't': {
+			GetTemporaryFilePath(item.title, m_dstPaths[i]);
+			break;
+		}
 		}
 	}
 
@@ -384,16 +389,33 @@ void CSaveTaskDlg::SaveHTTP(const int iSubLangDefault)
 		const CPathW finalfile(m_dstPaths.front());
 		const CStringW finalext = finalfile.GetExtension().Mid(1).MakeLower();
 		const CStringW tmpfile  = finalfile + L".tmp";
+		const CStringW format =
+			(finalext == L"m4a") ? L"mp4" :
+			(finalext == L"mka") ? L"matroska" :
+			finalext;
 
+		CStringW strArgs = L"-y";
 		CStringW mapping;
 		CStringW metadata;
 		unsigned isub = 0;
-		CStringW strArgs = L"-y";
+
 		for (unsigned i = 0; i < m_saveItems.size(); ++i) {
 			const auto& item = m_saveItems[i];
 
-			strArgs.AppendFormat(LR"( -i "%s")", m_dstPaths[i]);
-			mapping.AppendFormat(L" -map %u", i);
+			if (item.type == 't' && finalext == L"mka") {
+				strArgs.AppendFormat(LR"( -attach "%s")", m_dstPaths[i]);
+				if (item.title == L".jpg") {
+					metadata.Append(L" -metadata:s:t mimetype=image/jpeg -metadata:s:t:0 filename=cover.jpg");
+				}
+				else if (item.title == L".webp") {
+					metadata.Append(L" -metadata:s:t mimetype=image/webp -metadata:s:t:0 filename=cover.webp");
+				}
+			}
+			else {
+				strArgs.AppendFormat(LR"( -i "%s")", m_dstPaths[i]);
+				mapping.AppendFormat(L" -map %u", i);
+			}
+
 			if (item.type == 's') {
 				LPCSTR lang = ISO6391To6392(item.lang);
 				if (lang[0]) {
@@ -416,10 +438,16 @@ void CSaveTaskDlg::SaveHTTP(const int iSubLangDefault)
 		if (iSubLangDefault >= 0) {
 			strArgs.AppendFormat(L" -disposition:s:%d default", iSubLangDefault);
 		}
-		if (finalext == L"mp4") {
+		if (m_saveItems.back().type == 't' && finalext == L"m4a") {
+			if (EndsWith(m_dstPaths.back(), L".webp")) {
+				strArgs.Append(L" -c:v:0 mjpeg");
+			}
+			strArgs.Append(L" -disposition:v:0 attached_pic");
+		}
+		if (format == L"mp4") {
 			strArgs.Append(L" -movflags +faststart");
 		}
-		strArgs.AppendFormat(LR"( -f %s "%s")", finalext, tmpfile);
+		strArgs.AppendFormat(LR"( -f %s "%s")", format, tmpfile);
 
 		SHELLEXECUTEINFOW execinfo = { sizeof(execinfo) };
 		execinfo.lpFile = m_ffmpegPath.GetString();
@@ -480,7 +508,7 @@ HRESULT CSaveTaskDlg::DownloadHTTP(CStringW url, const CStringW filepath)
 
 	while (!m_bAbort) {
 		DWORD dwSizeRead = 0;
-		hr = httpAsync.Read(pBuffer.data(), bufLen, dwSizeRead);
+		hr = httpAsync.Read(pBuffer.data(), bufLen, dwSizeRead, http::readTimeout);
 		if (hr != S_OK) {
 			break;
 		}

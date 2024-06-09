@@ -39,7 +39,7 @@ CFLAGS = -I. -I.. -Icompat/atomics/win32 -Icompat/windows \
 	   -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -DOPJ_STATIC \
 	   -D_WIN32_WINNT=0x0601 -DWINVER=0x0601 \
 	   -fomit-frame-pointer -std=c17 \
-	   -fno-common -fno-ident -mthreads
+	   -fno-common -fno-ident -mthreads -Wno-discarded-qualifiers
 YASMFLAGS = -I. -Pconfig.asm
 
 ifeq ($(64BIT),yes)
@@ -58,7 +58,7 @@ endif
 ifeq ($(DEBUG),yes)
 	CFLAGS     += -DDEBUG -D_DEBUG -g -Og
 else
-	CFLAGS     += -DNDEBUG -UDEBUG -U_DEBUG -O3 -fno-tree-vectorize
+	CFLAGS     += -DNDEBUG -UDEBUG -U_DEBUG -O3 -fno-tree-vectorize -Wno-stringop-overflow
 endif
 
 # Object directories
@@ -67,6 +67,7 @@ OBJ_DIRS = $(OBJ_DIR) \
 	$(OBJ_DIR)libavcodec \
 	$(OBJ_DIR)libavcodec/bsf \
 	$(OBJ_DIR)libavcodec/aac \
+	$(OBJ_DIR)libavcodec/hevc \
 	$(OBJ_DIR)libavcodec/vvc \
 	$(OBJ_DIR)libavcodec/x86 \
 	$(OBJ_DIR)libavcodec/x86/h26x \
@@ -292,18 +293,6 @@ SRCS_LC = \
 	libavcodec/half2float.c \
 	libavcodec/hap.c \
 	libavcodec/hapdec.c \
-	libavcodec/hevc_cabac.c \
-	libavcodec/hevc_data.c \
-	libavcodec/hevc_filter.c \
-	libavcodec/hevc_mvs.c \
-	libavcodec/hevc_parse.c \
-	libavcodec/hevc_parser.c \
-	libavcodec/hevc_ps.c \
-	libavcodec/hevc_refs.c \
-	libavcodec/hevc_sei.c \
-	libavcodec/hevcdec.c \
-	libavcodec/hevcdsp.c \
-	libavcodec/hevcpred.c \
 	libavcodec/hpeldsp.c \
 	libavcodec/hq_hqa.c \
 	libavcodec/hq_hqadsp.c \
@@ -420,9 +409,25 @@ SRCS_LC = \
 	libavcodec/nellymoserdec.c \
 	\
 	libavcodec/aac/aacdec.c \
+	libavcodec/aac/aacdec_ac.c \
 	libavcodec/aac/aacdec_fixed.c \
 	libavcodec/aac/aacdec_float.c \
-	libavcodec/aac/aacdec_tab.c
+	libavcodec/aac/aacdec_lpd.c \
+	libavcodec/aac/aacdec_tab.c \
+	libavcodec/aac/aacdec_usac.c \
+	\
+	libavcodec/hevc/cabac.c \
+	libavcodec/hevc/data.c \
+	libavcodec/hevc/dsp.c \
+	libavcodec/hevc/filter.c \
+	libavcodec/hevc/hevcdec.c \
+	libavcodec/hevc/mvs.c \
+	libavcodec/hevc/parse.c \
+	libavcodec/hevc/parser.c \
+	libavcodec/hevc/pred.c \
+	libavcodec/hevc/ps.c \
+	libavcodec/hevc/refs.c \
+	libavcodec/hevc/sei.c
 
 SRCS_LC_B = \
 	libavcodec/nvdec.c \
@@ -901,7 +906,9 @@ SRCS_YASM_LC = \
 	\
 	libavcodec/x86/h26x/h2656_inter.asm \
 	\
-	libavcodec/x86/vvc/vvc_mc.asm
+	libavcodec/x86/vvc/vvc_alf.asm \
+	libavcodec/x86/vvc/vvc_mc.asm \
+	libavcodec/x86/vvc/vvc_sad.asm
 
 SRCS_YASM_LF = 
 

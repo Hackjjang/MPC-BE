@@ -1,6 +1,6 @@
 /*
  * (C) 2003-2006 Gabest
- * (C) 2006-2023 see Authors.txt
+ * (C) 2006-2024 see Authors.txt
  *
  * This file is part of MPC-BE.
  *
@@ -71,6 +71,8 @@ void CPPagePlayer::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_SPIN1,  m_spnRecentFiles);
 	DDX_Control(pDX, IDC_EDIT2,  m_edtNetworkTimeout);
 	DDX_Control(pDX, IDC_SPIN2,  m_spnNetworkTimeout);
+	DDX_Control(pDX, IDC_EDIT4,  m_edtNetworkReceiveTimeout);
+	DDX_Control(pDX, IDC_SPIN4,  m_spnNetworkReceiveTimeout);
 }
 
 BEGIN_MESSAGE_MAP(CPPagePlayer, CPPageBase)
@@ -141,6 +143,10 @@ BOOL CPPagePlayer::OnInitDialog()
 	m_edtNetworkTimeout = s.iNetworkTimeout;
 	m_edtNetworkTimeout.SetRange(APP_NETTIMEOUT_MIN, APP_NETTIMEOUT_MAX);
 	m_spnNetworkTimeout.SetRange(APP_NETTIMEOUT_MIN, APP_NETTIMEOUT_MAX);
+
+	m_edtNetworkReceiveTimeout = s.iNetworkReceiveTimeout;
+	m_edtNetworkReceiveTimeout.SetRange(APP_NETRECEIVETIMEOUT_MIN, APP_NETRECEIVETIMEOUT_MAX);
+	m_spnNetworkReceiveTimeout.SetRange(APP_NETRECEIVETIMEOUT_MIN, APP_NETRECEIVETIMEOUT_MAX);
 
 	UpdateData(FALSE);
 
@@ -266,6 +272,7 @@ BOOL CPPagePlayer::OnApply()
 	s.iRecentFilesNumber = m_edtRecentFiles;
 
 	s.iNetworkTimeout = m_edtNetworkTimeout;
+	s.iNetworkReceiveTimeout = m_edtNetworkReceiveTimeout;
 
 	// Check if the settings location needs to be changed
 	CProfile& profile = AfxGetProfile();

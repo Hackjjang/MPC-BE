@@ -25,8 +25,8 @@
 #include "libavutil/avassert.h"
 
 #include "dxva2_internal.h"
-#include "hevc_data.h"
-#include "hevcdec.h"
+#include "hevc/data.h"
+#include "hevc/hevcdec.h"
 #include "hwaccel_internal.h"
 
 #define MAX_SLICES 256
@@ -67,7 +67,7 @@ void ff_dxva2_hevc_fill_picture_parameters(const AVCodecContext *avctx, AVDXVACo
 // ==> End patch MPC
 {
     const HEVCContext *h = avctx->priv_data;
-    const HEVCFrame *current_picture = h->ref;
+    const HEVCFrame *current_picture = h->cur_frame;
     const HEVCSPS *sps = h->ps.sps;
     const HEVCPPS *pps = h->ps.pps;
     int i, j;
@@ -82,16 +82,16 @@ void ff_dxva2_hevc_fill_picture_parameters(const AVCodecContext *avctx, AVDXVACo
     pp->PicHeightInMinCbsY = sps->min_cb_height;
 
 // ==> Start patch MPC
-    if (sps->sps_range_extension_flag) {
-        ppext->dwRangeExtensionFlags |= (sps->transform_skip_rotation_enabled_flag     <<  0) |
-                                        (sps->transform_skip_context_enabled_flag      <<  1) |
-                                        (sps->implicit_rdpcm_enabled_flag              <<  2) |
-                                        (sps->explicit_rdpcm_enabled_flag              <<  3) |
-                                        (sps->extended_precision_processing_flag       <<  4) |
-                                        (sps->intra_smoothing_disabled_flag            <<  5) |
-                                        (sps->high_precision_offsets_enabled_flag      <<  6) |
-                                        (sps->persistent_rice_adaptation_enabled_flag  <<  7) |
-                                        (sps->cabac_bypass_alignment_enabled_flag      <<  8);
+    if (sps->range_extension) {
+        ppext->dwRangeExtensionFlags |= (sps->transform_skip_rotation_enabled    <<  0) |
+                                        (sps->transform_skip_context_enabled     <<  1) |
+                                        (sps->implicit_rdpcm_enabled             <<  2) |
+                                        (sps->explicit_rdpcm_enabled             <<  3) |
+                                        (sps->extended_precision_processing      <<  4) |
+                                        (sps->intra_smoothing_disabled           <<  5) |
+                                        (sps->high_precision_offsets_enabled     <<  6) |
+                                        (sps->persistent_rice_adaptation_enabled <<  7) |
+                                        (sps->cabac_bypass_alignment_enabled     <<  8);
     }
     if (pps->pps_range_extensions_flag) {
         ppext->dwRangeExtensionFlags |= (pps->cross_component_prediction_enabled_flag  <<  9) |
@@ -113,7 +113,7 @@ void ff_dxva2_hevc_fill_picture_parameters(const AVCodecContext *avctx, AVDXVACo
 // ==> End patch MPC
 
     pp->wFormatAndSequenceInfoFlags = (sps->chroma_format_idc             <<  0) |
-                                      (sps->separate_colour_plane_flag    <<  2) |
+                                      (sps->separate_colour_plane         <<  2) |
                                       ((sps->bit_depth - 8)               <<  3) |
                                       ((sps->bit_depth - 8)               <<  6) |
                                       ((sps->log2_max_poc_lsb - 4)        <<  9) |
@@ -140,18 +140,18 @@ void ff_dxva2_hevc_fill_picture_parameters(const AVCodecContext *avctx, AVDXVACo
         pp->wNumBitsForShortTermRPSInSlice       = h->sh.short_term_ref_pic_set_size;
     }
 
-    pp->dwCodingParamToolFlags = (sps->scaling_list_enable_flag                  <<  0) |
-                                 (sps->amp_enabled_flag                          <<  1) |
+    pp->dwCodingParamToolFlags = (sps->scaling_list_enabled                      <<  0) |
+                                 (sps->amp_enabled                               <<  1) |
                                  (sps->sao_enabled                               <<  2) |
-                                 (sps->pcm_enabled_flag                          <<  3) |
-                                 ((sps->pcm_enabled_flag ? (sps->pcm.bit_depth - 1) : 0)            <<  4) |
-                                 ((sps->pcm_enabled_flag ? (sps->pcm.bit_depth_chroma - 1) : 0)     <<  8) |
-                                 ((sps->pcm_enabled_flag ? (sps->pcm.log2_min_pcm_cb_size - 3) : 0) << 12) |
-                                 ((sps->pcm_enabled_flag ? (sps->pcm.log2_max_pcm_cb_size - sps->pcm.log2_min_pcm_cb_size) : 0) << 14) |
-                                 (sps->pcm.loop_filter_disable_flag              << 16) |
-                                 (sps->long_term_ref_pics_present_flag           << 17) |
-                                 (sps->sps_temporal_mvp_enabled_flag             << 18) |
-                                 (sps->sps_strong_intra_smoothing_enable_flag    << 19) |
+                                 (sps->pcm_enabled                               <<  3) |
+                                 ((sps->pcm_enabled      ? (sps->pcm.bit_depth - 1) : 0)            <<  4) |
+                                 ((sps->pcm_enabled      ? (sps->pcm.bit_depth_chroma - 1) : 0)     <<  8) |
+                                 ((sps->pcm_enabled      ? (sps->pcm.log2_min_pcm_cb_size - 3) : 0) << 12) |
+                                 ((sps->pcm_enabled      ? (sps->pcm.log2_max_pcm_cb_size - sps->pcm.log2_min_pcm_cb_size) : 0) << 14) |
+                                 (sps->pcm_loop_filter_disabled                  << 16) |
+                                 (sps->long_term_ref_pics_present                << 17) |
+                                 (sps->temporal_mvp_enabled                      << 18) |
+                                 (sps->strong_intra_smoothing_enabled            << 19) |
                                  (pps->dependent_slice_segments_enabled_flag     << 20) |
                                  (pps->output_flag_present_flag                  << 21) |
                                  (pps->num_extra_slice_header_bits               << 22) |
@@ -211,7 +211,7 @@ void ff_dxva2_hevc_fill_picture_parameters(const AVCodecContext *avctx, AVDXVACo
         }
 
         if (frame) {
-            fill_picture_entry(&pp->RefPicList[i], ff_dxva2_get_surface_index(avctx, ctx, frame->frame, 0), !!(frame->flags & HEVC_FRAME_FLAG_LONG_REF));
+            fill_picture_entry(&pp->RefPicList[i], ff_dxva2_get_surface_index(avctx, ctx, frame->f, 0), !!(frame->flags & HEVC_FRAME_FLAG_LONG_REF));
             pp->PicOrderCntValList[i] = frame->poc;
         } else {
             pp->RefPicList[i].bPicEntry = 0xff;
@@ -219,7 +219,7 @@ void ff_dxva2_hevc_fill_picture_parameters(const AVCodecContext *avctx, AVDXVACo
         }
     }
 
-    fill_picture_entry(&pp->CurrPic, ff_dxva2_get_surface_index(avctx, ctx, current_picture->frame, 1), 0);
+    fill_picture_entry(&pp->CurrPic, ff_dxva2_get_surface_index(avctx, ctx, current_picture->f, 1), 0);
 
     #define DO_REF_LIST(ref_idx, ref_list) { \
         const RefPicList *rpl = &h->rps[ref_idx]; \
@@ -228,7 +228,7 @@ void ff_dxva2_hevc_fill_picture_parameters(const AVCodecContext *avctx, AVDXVACo
             while (!frame && j < rpl->nb_refs) \
                 frame = rpl->ref[j++]; \
             if (frame && frame->flags & (HEVC_FRAME_FLAG_LONG_REF | HEVC_FRAME_FLAG_SHORT_REF)) \
-                pp->ref_list[i] = get_refpic_index(pp, ff_dxva2_get_surface_index(avctx, ctx, frame->frame, 0)); \
+                pp->ref_list[i] = get_refpic_index(pp, ff_dxva2_get_surface_index(avctx, ctx, frame->f, 0)); \
             else \
                 pp->ref_list[i] = 0xff; \
         } \
@@ -286,7 +286,7 @@ static int commit_bitstream_and_slice_buffer(AVCodecContext *avctx,
 {
     const HEVCContext *h = avctx->priv_data;
     AVDXVAContext *ctx = DXVA_CONTEXT(avctx);
-    const HEVCFrame *current_picture = h->ref;
+    const HEVCFrame *current_picture = h->cur_frame;
     struct hevc_dxva2_picture_context *ctx_pic = current_picture->hwaccel_picture_private;
     DXVA_Slice_HEVC_Short *slice = NULL;
     void     *dxva_data_ptr;
@@ -405,7 +405,7 @@ static int dxva2_hevc_start_frame(AVCodecContext *avctx,
 {
     const HEVCContext *h = avctx->priv_data;
     AVDXVAContext *ctx = DXVA_CONTEXT(avctx);
-    struct hevc_dxva2_picture_context *ctx_pic = h->ref->hwaccel_picture_private;
+    struct hevc_dxva2_picture_context *ctx_pic = h->cur_frame->hwaccel_picture_private;
 
     if (!DXVA_CONTEXT_VALID(avctx, ctx))
         return -1;
@@ -428,7 +428,7 @@ static int dxva2_hevc_decode_slice(AVCodecContext *avctx,
                                    uint32_t size)
 {
     const HEVCContext *h = avctx->priv_data;
-    const HEVCFrame *current_picture = h->ref;
+    const HEVCFrame *current_picture = h->cur_frame;
     struct hevc_dxva2_picture_context *ctx_pic = current_picture->hwaccel_picture_private;
     unsigned position;
 
@@ -449,7 +449,7 @@ static int dxva2_hevc_decode_slice(AVCodecContext *avctx,
 static int dxva2_hevc_end_frame(AVCodecContext *avctx)
 {
     HEVCContext *h = avctx->priv_data;
-    struct hevc_dxva2_picture_context *ctx_pic = h->ref->hwaccel_picture_private;
+    struct hevc_dxva2_picture_context *ctx_pic = h->cur_frame->hwaccel_picture_private;
 // ==> Start patch MPC
     //int scale = ctx_pic->pp.dwCodingParamToolFlags & 1;
     int scale = ctx_pic->pp.main.dwCodingParamToolFlags & 1;
@@ -460,7 +460,7 @@ static int dxva2_hevc_end_frame(AVCodecContext *avctx)
     if (ctx_pic->slice_count <= 0 || ctx_pic->bitstream_size <= 0)
         return -1;
 
-    ret = ff_dxva2_common_end_frame(avctx, h->ref->frame,
+    ret = ff_dxva2_common_end_frame(avctx, h->cur_frame->f,
 // ==> Start patch MPC
                                     //&ctx_pic->pp, sizeof(ctx_pic->pp),
                                     &ctx_pic->pp, rext ? sizeof(ctx_pic->pp) : sizeof(ctx_pic->pp.main),

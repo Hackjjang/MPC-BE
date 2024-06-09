@@ -44,10 +44,14 @@
 #include "libavutil/mathematics.h"
 #include "libavcodec/aacsbr.h"
 
+DECLARE_ALIGNED(32, static float, sine_96)[96];
 DECLARE_ALIGNED(32, static float, sine_120)[120];
+DECLARE_ALIGNED(32, static float, sine_768)[768];
 DECLARE_ALIGNED(32, static float, sine_960)[960];
 DECLARE_ALIGNED(32, static float, aac_kbd_long_960)[960];
 DECLARE_ALIGNED(32, static float, aac_kbd_short_120)[120];
+DECLARE_ALIGNED(32, static float, aac_kbd_long_768)[768];
+DECLARE_ALIGNED(32, static float, aac_kbd_short_96)[96];
 
 static void init_tables_float_fn(void)
 {
@@ -78,6 +82,11 @@ static const float cce_scale[] = {
 /** Dequantization-related **/
 #include "aacdec_tab.h"
 #include "libavutil/intfloat.h"
+
+#include "config.h"
+#if ARCH_ARM
+#include "libavcodec/arm/aac.h"
+#endif
 
 #ifndef VMUL2
 static inline float *VMUL2(float *dst, const float *v, unsigned idx,
