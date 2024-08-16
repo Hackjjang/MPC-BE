@@ -724,7 +724,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
 	// create a Main View Window
 	if (!m_wndView.Create(nullptr, nullptr, AFX_WS_DEFAULT_VIEW | WS_CLIPCHILDREN | WS_CLIPSIBLINGS,
-						  CRect(0, 0, 0, 0), this, AFX_IDW_PANE_FIRST)) {
+						  RECT{0,0,0,0}, this, AFX_IDW_PANE_FIRST)) {
 		DLog(L"Failed to create Main View Window");
 		return -1;
 	}
@@ -1033,9 +1033,9 @@ void CMainFrame::OnClose()
 		SaveControlBars();
 	}
 
-	ShowWindow(SW_HIDE);
-
 	CloseMedia();
+
+	ShowWindow(SW_HIDE);
 
 	s.WinLircClient.DisConnect();
 	s.UIceClient.DisConnect();
@@ -3242,7 +3242,7 @@ LRESULT CMainFrame::OnGraphNotify(WPARAM wParam, LPARAM lParam)
 					OpenDVDData* pDVDData = dynamic_cast<OpenDVDData*>(m_lastOMD.get());
 					ASSERT(pDVDData);
 
-					CString Domain('-');
+					CString Domain(L'-');
 
 					switch (m_iDVDDomain) {
 						case DVD_DOMAIN_FirstPlay:
@@ -3343,19 +3343,21 @@ LRESULT CMainFrame::OnGraphNotify(WPARAM wParam, LPARAM lParam)
 									// if the playback is reinitialized so we clear the saved state
 									pDVDData->pDvdState.Release();
 								}
-								else if (s.bKeepHistory && s.bRememberDVDPos) {
+								else if (s.bKeepHistory && s.bRememberDVDPos && m_SessionInfo.DVDTitle > 0) {
 									// restore DVD-Video position
-									hr = m_pDVDC->PlayTitle(m_SessionInfo.DVDTitle, DVD_CMD_FLAG_Flush, nullptr);
+									hr = m_pDVDC->PlayTitle(m_SessionInfo.DVDTitle, DVD_CMD_FLAG_Block | DVD_CMD_FLAG_Flush, nullptr);
 									if (SUCCEEDED(hr)) {
-										hr = m_pDVDC->Resume(DVD_CMD_FLAG_Block | DVD_CMD_FLAG_Flush, nullptr);
-										if (SUCCEEDED(hr)) {
-											hr = m_pDVDC->PlayAtTime(&m_SessionInfo.DVDTimecode, DVD_CMD_FLAG_Flush, nullptr);
-										} else {
-											hr = m_pDVDC->PlayChapterInTitle(m_SessionInfo.DVDTitle, 1, DVD_CMD_FLAG_Block | DVD_CMD_FLAG_Flush, nullptr);
+										if (m_SessionInfo.DVDTimecode.bSeconds > 0 || m_SessionInfo.DVDTimecode.bMinutes > 0 || m_SessionInfo.DVDTimecode.bHours > 0 || m_SessionInfo.DVDTimecode.bFrames > 0) {
+											hr = m_pDVDC->Resume(DVD_CMD_FLAG_Block | DVD_CMD_FLAG_Flush, nullptr);
 											if (SUCCEEDED(hr)) {
 												hr = m_pDVDC->PlayAtTime(&m_SessionInfo.DVDTimecode, DVD_CMD_FLAG_Flush, nullptr);
-												if (FAILED(hr)) {
-													hr = m_pDVDC->PlayAtTimeInTitle(m_SessionInfo.DVDTitle, &m_SessionInfo.DVDTimecode, DVD_CMD_FLAG_Block | DVD_CMD_FLAG_Flush, nullptr);
+											} else {
+												hr = m_pDVDC->PlayChapterInTitle(m_SessionInfo.DVDTitle, 1, DVD_CMD_FLAG_Block | DVD_CMD_FLAG_Flush, nullptr);
+												if (SUCCEEDED(hr)) {
+													hr = m_pDVDC->PlayAtTime(&m_SessionInfo.DVDTimecode, DVD_CMD_FLAG_Flush, nullptr);
+													if (FAILED(hr)) {
+														hr = m_pDVDC->PlayAtTimeInTitle(m_SessionInfo.DVDTitle, &m_SessionInfo.DVDTimecode, DVD_CMD_FLAG_Block | DVD_CMD_FLAG_Flush, nullptr);
+													}
 												}
 											}
 										}
@@ -3391,6 +3393,8 @@ LRESULT CMainFrame::OnGraphNotify(WPARAM wParam, LPARAM lParam)
 							if (s.bShowDebugInfo) {
 								m_OSD.DebugMessage(L"%s", Domain);
 							}
+
+							m_iDVDTitleForHistory = m_iDVDTitle;
 
 							if (!m_bValidDVDOpen) {
 								m_bValidDVDOpen = true;
@@ -5929,7 +5933,7 @@ void CMainFrame::DropFiles(std::list<CString>& slFiles)
 					}
 				} else {
 					ISubStream *pSubStream = nullptr;
-					if (LoadSubtitle(fname, &pSubStream)) {
+					if (LoadSubtitle(fname, &pSubStream, false)) {
 						SetSubtitle(pSubStream); // the subtitle at the insert position according to LoadSubtitle()
 						b_SubLoaded = true;
 
@@ -6737,7 +6741,7 @@ void CMainFrame::OnFileLoadSubtitle()
 	} else {
 		for (const auto& fn : fns) {
 			ISubStream *pSubStream = nullptr;
-			if (LoadSubtitle(fn, &pSubStream)) {
+			if (LoadSubtitle(fn, &pSubStream, false)) {
 				SetSubtitle(pSubStream); // the subtitle at the insert position according to LoadSubtitle()
 				AddSubtitlePathsAddons(fn.GetString());
 			}
@@ -6778,17 +6782,19 @@ void CMainFrame::OnFileLoadAudio()
 		while (pos) {
 			CString fname = fd.GetNextPathName(pos);
 
-			if (CComQIPtr<IGraphBuilderAudio> pGBA = m_pGB.p) {
-				HRESULT hr = pGBA->RenderAudioFile(fname);
-				if (SUCCEEDED(hr)) {
-					pli->m_auds.emplace_back(fname);
-					AddAudioPathsAddons(fname.GetString());
+			if (!m_wndPlaylistBar.CheckAudioInCurrent(fname)) {
+				if (CComQIPtr<IGraphBuilderAudio> pGBA = m_pGB.p) {
+					HRESULT hr = pGBA->RenderAudioFile(fname);
+					if (SUCCEEDED(hr)) {
+						m_wndPlaylistBar.AddAudioToCurrent(fname);
+						AddAudioPathsAddons(fname.GetString());
 
-					CComQIPtr<IAMStreamSelect> pSS = FindSwitcherFilter();
-					if (pSS) {
-						DWORD cStreams = 0;
-						if (SUCCEEDED(pSS->Count(&cStreams)) && cStreams > 0) {
-							pSS->Enable(cStreams - 1, AMSTREAMSELECTENABLE_ENABLE);
+						CComQIPtr<IAMStreamSelect> pSS = FindSwitcherFilter();
+						if (pSS) {
+							DWORD cStreams = 0;
+							if (SUCCEEDED(pSS->Count(&cStreams)) && cStreams > 0) {
+								pSS->Enable(cStreams - 1, AMSTREAMSELECTENABLE_ENABLE);
+							}
 						}
 					}
 				}
@@ -10266,7 +10272,7 @@ void CMainFrame::AddFavorite(bool bDisplayMessage/* = false*/, bool bShowDialog/
 	}
 	else if (GetPlaybackMode() == PM_DVD) {
 		// RememberPos
-		if (s.bFavRememberPos) {
+		if (s.bFavRememberPos && m_iDVDTitleForHistory > 0) {
 			CDVDStateStream stream;
 			stream.AddRef();
 			CComPtr<IDvdState> pStateData;
@@ -10276,7 +10282,7 @@ void CMainFrame::AddFavorite(bool bDisplayMessage/* = false*/, bool bShowDialog/
 				&& SUCCEEDED(OleSaveToStream(pPersistStream, (IStream*)&stream))) {
 				sesInfo.DVDState = stream.m_data;
 			}
-			sesInfo.DVDTitle = m_iDVDTitle;
+			sesInfo.DVDTitle = m_iDVDTitleForHistory;
 			sesInfo.DVDTimecode = m_SessionInfo.DVDTimecode;
 		}
 		AfxGetMyApp()->m_FavoritesFile.AppendFavorite(sesInfo);
@@ -11993,11 +11999,21 @@ CString CMainFrame::OpenCreateGraphObject(OpenMediaData* pOMD)
 		m_bCustomGraph = m_bShockwaveGraph;
 
 		if (!m_bCustomGraph) {
-			m_pGB = DNew CFGManagerPlayer(L"CFGManagerPlayer", nullptr, m_pVideoWnd->m_hWnd);
+			auto pFGManager = DNew CFGManagerPlayer(L"CFGManagerPlayer", nullptr, m_pVideoWnd->m_hWnd);
+			m_pGB = pFGManager;
 
-			if (m_pGB && bUseSmartSeek) {
-				// build graph for preview
-				m_pGB_preview = DNew CFGManagerPlayer(L"CFGManagerPlayer", nullptr, m_wndPreView.GetVideoHWND(), s.iSmartSeekVR+1);
+			if (m_pGB) {
+				pFGManager->SetUserAgent(s.strUserAgent);
+
+				if (bUseSmartSeek) {
+					// build graph for preview
+					auto pFGManager_preview = DNew CFGManagerPlayer(L"CFGManagerPlayer", nullptr, m_wndPreView.GetVideoHWND(), s.iSmartSeekVR + 1);
+					m_pGB_preview = pFGManager_preview;
+
+					if (m_pGB_preview) {
+						pFGManager_preview->SetUserAgent(s.strUserAgent);
+					}
+				}
 			}
 		}
 	} else if (OpenDVDData* pDVDData = dynamic_cast<OpenDVDData*>(pOMD)) {
@@ -14572,6 +14588,9 @@ void CMainFrame::CloseMediaPrivate()
 
 	m_bIsLiveOnline = false;
 
+	m_iDVDTitle = 0;
+	m_iDVDTitleForHistory = 0;
+
 	DLog(L"CMainFrame::CloseMediaPrivate() : end");
 }
 
@@ -16207,7 +16226,7 @@ void CMainFrame::ApplyExraRendererSettings()
 	}
 }
 
-bool CMainFrame::LoadSubtitle(const CExtraFileItem& subItem, ISubStream **actualStream)
+bool CMainFrame::LoadSubtitle(const CExtraFileItem& subItem, ISubStream **actualStream, bool bAutoLoad)
 {
 	CAppSettings& s = AfxGetAppSettings();
 
@@ -16230,6 +16249,9 @@ bool CMainFrame::LoadSubtitle(const CExtraFileItem& subItem, ISubStream **actual
 					if (actualStream != nullptr) {
 						*actualStream = m_pSubStreams.back();
 						s.fEnableSubtitles = true;
+					}
+					if (!bAutoLoad) {
+						m_wndPlaylistBar.AddSubtitleToCurrent(fname);
 					}
 
 					return true;
@@ -16278,6 +16300,10 @@ bool CMainFrame::LoadSubtitle(const CExtraFileItem& subItem, ISubStream **actual
 			*actualStream = r;
 
 			s.fEnableSubtitles = true;
+		}
+
+		if (!bAutoLoad) {
+			m_wndPlaylistBar.AddSubtitleToCurrent(fname);
 		}
 
 		if (subChangeNotifyThread.joinable() && !::PathIsURLW(fname)) {
@@ -17635,6 +17661,19 @@ void CMainFrame::CloseMedia(BOOL bNextIsOpened/* = FALSE*/)
 		m_fOpeningAborted = true;
 
 		if (m_pGB) {
+			if (!m_pAMOP) {
+				m_pAMOP = m_pGB;
+				if (!m_pAMOP) {
+					BeginEnumFilters(m_pGB, pEF, pBF)
+						if (m_pAMOP = pBF) {
+							break;
+						}
+					EndEnumFilters;
+				}
+			}
+			if (m_pAMOP) {
+				m_pAMOP->AbortOperation();
+			}
 			m_pGB->Abort();    // TODO: lock on graph objects somehow, this is not thread safe
 		}
 
@@ -19522,7 +19561,7 @@ CStringW GetCoverImgFromPath(CString fullfilename)
 
 	path.AddBackslash();
 
-	const std::vector<CStringW> coverNames = {
+	const CStringW coverNames[] = {
 		L"cover",
 		L"folder",
 		foldername,
@@ -20873,8 +20912,8 @@ void CMainFrame::SaveHistory()
 		}
 		historyFile.SaveSessionInfo(m_SessionInfo);
 	} else if (GetPlaybackMode() == PM_DVD && m_SessionInfo.DVDId) {
-		if (s.bRememberDVDPos) {
-			m_SessionInfo.DVDTitle = m_iDVDTitle;
+		if (s.bRememberDVDPos && m_iDVDTitleForHistory > 0) {
+			m_SessionInfo.DVDTitle = m_iDVDTitleForHistory;
 
 			CDVDStateStream stream;
 			stream.AddRef();

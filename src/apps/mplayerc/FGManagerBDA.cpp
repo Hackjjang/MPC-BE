@@ -264,7 +264,7 @@ static const AM_MEDIA_TYPE mt_Subtitle = {
 static CLSID CLSID_BDA_MPEG2_TIF =
 {0xFC772AB0, 0x0C7F, 0x11D3, {0x8F, 0xF2, 0x00, 0xA0, 0xC9, 0x22, 0x4C, 0xF4}};
 
-CFGManagerBDA::CFGManagerBDA(LPCTSTR pName, LPUNKNOWN pUnk, HWND hWnd)
+CFGManagerBDA::CFGManagerBDA(LPCWSTR pName, LPUNKNOWN pUnk, HWND hWnd)
 	: CFGManagerPlayer (pName, pUnk, hWnd)
 {
 	LOG (L"\nStarting session ------------------------------------------------->");
@@ -727,11 +727,11 @@ HRESULT CFGManagerBDA::CreateMicrosoftDemux(IBaseFilter* pReceiver, CComPtr<IBas
 			}
 
 			if (nType == m_nCurVideoType || nType == m_nCurAudioType) {
-				CheckNoLog (Connect (pPin, nullptr, true));
+				CheckNoLog (ConnectInternal (pPin, nullptr, true));
 				Stream.SetPin (pPin);
 				LOG (L"Graph completed for stream type %d.",nType);
 			} else {
-				CheckNoLog (Connect (pPin, nullptr, false));
+				CheckNoLog (ConnectInternal (pPin, nullptr, false));
 				Stream.SetPin (pPin);
 				LOG (L"Filter connected to Demux for media type %d.",nType);
 			}

@@ -1053,47 +1053,9 @@ BOOL CALLBACK EnumFindProcessWnd (HWND hwnd, LPARAM lParam)
 
 CMPCVideoDecFilter::CMPCVideoDecFilter(LPUNKNOWN lpunk, HRESULT* phr)
 	: CBaseVideoFilter(L"MPC - Video decoder", lpunk, phr, __uuidof(this))
-	, m_nThreadNumber(0)
 	, m_nDiscardMode(AVDISCARD_DEFAULT)
-	, m_nScanType(SCAN_AUTO)
-	, m_nARMode(2)
 	, m_nHwDecoder(SysVersion::IsWin8orLater() ? HWDec_D3D11 : HWDec_DXVA2)
-	, m_nDXVACheckCompatibility(1)
-	, m_nDXVA_SD(0)
-	, m_nSwRGBLevels(0)
-	, m_pAVCodec(nullptr)
-	, m_pAVCtx(nullptr)
-	, m_pFrame(nullptr)
-	, m_pParser(nullptr)
 	, m_CodecId(AV_CODEC_ID_NONE)
-	, m_bCalculateStopTime(false)
-	, m_bReorderBFrame(false)
-	, m_nBFramePos(0)
-	, m_bWaitKeyFrame(false)
-	, m_DXVADecoderGUID(GUID_NULL)
-	, m_nActiveCodecs(CODECS_ALL & ~CODEC_H264_MVC)
-	, m_rtAvrTimePerFrame(0)
-	, m_rtLastStart(INVALID_TIME)
-	, m_rtLastStop(0)
-	, m_rtStartCache(INVALID_TIME)
-	, m_bDXVACompatible(true)
-	, m_nARX(0)
-	, m_nARY(0)
-	, m_bUseDXVA(true)
-	, m_bUseD3D11(true)
-	, m_bUseFFmpeg(true)
-	, m_pDXVADecoder(nullptr)
-	, m_hDevice(INVALID_HANDLE_VALUE)
-	, m_bWaitingForKeyFrame(TRUE)
-	, m_bRVDropBFrameTimings(FALSE)
-	, m_dwSYNC(0)
-	, m_dwSYNC2(0)
-	, m_bDecodingStart(FALSE)
-	, m_dRate(1.0)
-	, m_pMSDKDecoder(nullptr)
-	, m_iMvcOutputMode(MVC_OUTPUT_Auto)
-	, m_bMvcSwapLR(false)
-	, m_MVC_Base_View_R_flag(FALSE)
 	, m_dxva_pix_fmt(AV_PIX_FMT_NONE)
 	, m_HWPixFmt(AV_PIX_FMT_NONE)
 {
@@ -1127,10 +1089,6 @@ CMPCVideoDecFilter::CMPCVideoDecFilter(LPUNKNOWN lpunk, HRESULT* phr)
 			m_fPixFmts[i] = true;
 		}
 	}
-
-	memset(&m_DDPixelFormat, 0, sizeof(m_DDPixelFormat));
-	memset(&m_VideoFilters, false, sizeof(m_VideoFilters));
-	m_VideoFilters[VDEC_UNCOMPRESSED] = true;
 
 #ifdef REGISTER_FILTER
 	CRegKey key;
@@ -1780,6 +1738,7 @@ void CMPCVideoDecFilter::CleanupFFmpeg()
 	av_buffer_unref(&m_HWDeviceCtx);
 
 	av_frame_free(&m_pFrame);
+	av_frame_free(&m_pHWFrame);
 
 	m_FormatConverter.Cleanup();
 
@@ -2107,13 +2066,6 @@ redo:
 
 	if (m_CodecId == AV_CODEC_ID_AV1 && (m_bUseDXVA || m_bUseD3D11 || m_bUseD3D11cb || m_bUseD3D12cb || m_bUseNVDEC)) {
 		m_pAVCodec = avcodec_find_decoder_by_name("av1");
-	} else if (m_CodecId == AV_CODEC_ID_VVC) {
-		if (CPUInfo::HaveSSE4()) {
-			// VVdeC crashes on older CPUs. need more info...
-			m_pAVCodec = avcodec_find_decoder_by_name("libvvdec");
-		} else {
-			m_pAVCodec = avcodec_find_decoder_by_name("vvc");
-		}
 	} else {
 		m_pAVCodec = avcodec_find_decoder(m_CodecId);
 	}
@@ -2232,6 +2184,8 @@ redo:
 
 	m_pFrame = av_frame_alloc();
 	CheckPointer(m_pFrame, E_POINTER);
+	m_pHWFrame = av_frame_alloc();
+	CheckPointer(m_pHWFrame, E_POINTER);
 
 	BITMAPINFOHEADER *pBMI = nullptr;
 	bool bInterlacedFieldPerSample = false;
@@ -3468,8 +3422,6 @@ HRESULT CMPCVideoDecFilter::FillAVPacket(AVPacket *avpkt, const BYTE *buffer, in
 
 HRESULT CMPCVideoDecFilter::DecodeInternal(AVPacket *avpkt, REFERENCE_TIME rtStartIn, REFERENCE_TIME rtStopIn, BOOL bPreroll/* = FALSE*/)
 {
-#define CLEAR_AND_CONTINUE { av_frame_unref(m_pFrame); av_frame_free(&hw_frame); continue; }
-
 	if (avpkt) {
 		if (m_bWaitingForKeyFrame) {
 			if (m_CodecId == AV_CODEC_ID_MPEG2VIDEO) {
@@ -3531,20 +3483,13 @@ HRESULT CMPCVideoDecFilter::DecodeInternal(AVPacket *avpkt, REFERENCE_TIME rtSta
 	}
 
 	for (;;) {
-		AVFrame* hw_frame = (m_HWPixFmt != AV_PIX_FMT_NONE) ? av_frame_alloc() : nullptr;
+		auto frame = (m_HWPixFmt == AV_PIX_FMT_NONE) ? m_pFrame : m_pHWFrame;
 
-		if (m_HWPixFmt == AV_PIX_FMT_NONE) {
-			ret = avcodec_receive_frame(m_pAVCtx, m_pFrame);
-		} else {
-			ret = avcodec_receive_frame(m_pAVCtx, hw_frame);
-		}
+		ret = avcodec_receive_frame(m_pAVCtx, frame);
 		if (ret < 0 && ret != AVERROR(EAGAIN)) {
-			av_frame_unref(m_pFrame);
-			av_frame_free(&hw_frame);
+			av_frame_unref(frame);
 			return S_FALSE;
 		}
-
-		auto frame = (m_HWPixFmt == AV_PIX_FMT_NONE) ? m_pFrame : hw_frame;
 
 		if (m_bWaitKeyFrame) {
 			if (m_bWaitingForKeyFrame && ret >= 0) {
@@ -3558,30 +3503,30 @@ HRESULT CMPCVideoDecFilter::DecodeInternal(AVPacket *avpkt, REFERENCE_TIME rtSta
 		}
 
 		if (ret < 0 || !frame->data[0]) {
-			av_frame_unref(m_pFrame);
-			av_frame_free(&hw_frame);
+			av_frame_unref(frame);
 			break;
 		}
 
 		if (m_HWPixFmt != AV_PIX_FMT_NONE) {
-			if (hw_frame->format != m_HWPixFmt) {
+			if (m_pHWFrame->format != m_HWPixFmt) {
 				DXVAState::ClearState();
 				m_HWPixFmt = AV_PIX_FMT_NONE;
 				m_bUseD3D11cb = m_bUseD3D12cb = m_bUseNVDEC = false;
 
-				m_pFrame->format = hw_frame->format;
-				m_pFrame->width = hw_frame->width;
-				m_pFrame->height = hw_frame->height;
+				m_pFrame->format = m_pHWFrame->format;
+				m_pFrame->width = m_pHWFrame->width;
+				m_pFrame->height = m_pHWFrame->height;
 				av_frame_get_buffer(m_pFrame, 32);
-				ret = av_frame_copy(m_pFrame, hw_frame);
+				ret = av_frame_copy(m_pFrame, m_pHWFrame);
 			}
 
 			if (ret < 0) {
-				CLEAR_AND_CONTINUE;
+				av_frame_unref(frame);
+				continue;
 			}
-			av_frame_copy_props(m_pFrame, hw_frame);
+			av_frame_copy_props(m_pFrame, m_pHWFrame);
 
-			if (hw_frame->format == m_HWPixFmt && !DXVAState::GetState()) {
+			if (m_pHWFrame->format == m_HWPixFmt && !DXVAState::GetState()) {
 				CString codec;
 				switch (m_CodecId) {
 					case AV_CODEC_ID_AV1:        codec = L"AV1";    break;
@@ -3593,7 +3538,7 @@ HRESULT CMPCVideoDecFilter::DecodeInternal(AVPacket *avpkt, REFERENCE_TIME rtSta
 					case AV_CODEC_ID_VP9:        codec = L"VP9";    break;
 				}
 
-				auto frames_ctx = (AVHWFramesContext*)hw_frame->hw_frames_ctx->data;
+				auto frames_ctx = reinterpret_cast<AVHWFramesContext*>(m_pHWFrame->hw_frames_ctx->data);
 
 				CString description = m_bUseD3D11cb ? L"D3D11 Copy-back" : (m_bUseD3D12cb ? L"D3D12 Copy-back" : L"NVDEC");
 				if (!codec.IsEmpty()) {
@@ -3665,10 +3610,12 @@ HRESULT CMPCVideoDecFilter::DecodeInternal(AVPacket *avpkt, REFERENCE_TIME rtSta
 
 		if (UseDXVA2()) {
 			hr = m_pDXVADecoder->DeliverFrame();
-			CLEAR_AND_CONTINUE;
+			av_frame_unref(frame);
+			continue;
 		} else if (UseD3D11()) {
 			hr = m_pD3D11Decoder->DeliverFrame();
-			CLEAR_AND_CONTINUE;
+			av_frame_unref(frame);
+			continue;
 		}
 
 		GetFrameTimeStamp(m_pFrame, rtStartIn, rtStopIn);
@@ -3681,7 +3628,8 @@ HRESULT CMPCVideoDecFilter::DecodeInternal(AVPacket *avpkt, REFERENCE_TIME rtSta
 		UpdateFrameTime(rtStartIn, rtStopIn);
 
 		if (bPreroll || rtStartIn < 0) {
-			CLEAR_AND_CONTINUE;
+			av_frame_unref(frame);
+			continue;
 		}
 
 		CComPtr<IMediaSample> pOut;
@@ -3693,16 +3641,17 @@ HRESULT CMPCVideoDecFilter::DecodeInternal(AVPacket *avpkt, REFERENCE_TIME rtSta
 		FixFrameSize(m_pAVCtx, w, h);
 
 		if (FAILED(hr = GetDeliveryBuffer(w, h, &pOut, GetFrameDuration(), &dxvaExtFormat)) || FAILED(hr = pOut->GetPointer(&pDataOut))) {
-			CLEAR_AND_CONTINUE;
+			av_frame_unref(frame);
+			continue;
 		}
 
-		if (hw_frame && hw_frame->hw_frames_ctx) {
-			auto frames_ctx = (AVHWFramesContext*)hw_frame->hw_frames_ctx->data;
+		if (m_HWPixFmt != AV_PIX_FMT_NONE && m_pHWFrame->hw_frames_ctx) {
+			auto frames_ctx = (AVHWFramesContext*)m_pHWFrame->hw_frames_ctx->data;
 
 			if (frames_ctx->format == AV_PIX_FMT_D3D11) {
 				auto device_hwctx = reinterpret_cast<AVD3D11VADeviceContext*>(frames_ctx->device_ctx->hwctx);
-				auto texture = reinterpret_cast<ID3D11Texture2D*>(hw_frame->data[0]);
-				auto index = reinterpret_cast<intptr_t>(hw_frame->data[1]);
+				auto texture = reinterpret_cast<ID3D11Texture2D*>(m_pHWFrame->data[0]);
+				auto index = reinterpret_cast<intptr_t>(m_pHWFrame->data[1]);
 
 				D3D11_TEXTURE2D_DESC inputTexDesc = {};
 				texture->GetDesc(&inputTexDesc);
@@ -3725,8 +3674,9 @@ HRESULT CMPCVideoDecFilter::DecodeInternal(AVPacket *avpkt, REFERENCE_TIME rtSta
 					texDesc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
 					hr = device_hwctx->device->CreateTexture2D(&texDesc, nullptr, &m_pStagingD3D11Texture2D);
 					if (FAILED(hr)) {
-						DLog(L"CMPCVideoDecFilter::DecodeInternal() : ID3D11Device::CreateTexture2D() failed : %s", HR2Str(hr));
-						CLEAR_AND_CONTINUE;
+						DLog(L"CMPCVideoDecFilter::DecodeInternal() : ID3D11Device::CreateTexture2D() failed : %s", HR2Str(hr));\
+						av_frame_unref(frame);
+						continue;
 					}
 				}
 
@@ -3738,7 +3688,8 @@ HRESULT CMPCVideoDecFilter::DecodeInternal(AVPacket *avpkt, REFERENCE_TIME rtSta
 				hr = device_hwctx->device_context->Map(m_pStagingD3D11Texture2D, 0, D3D11_MAP_READ, 0, &mappedResource);
 				if (FAILED(hr)) {
 					DLog(L"CMPCVideoDecFilter::DecodeInternal() : ID3D11DeviceContext::Map() failed : %s", HR2Str(hr));
-					CLEAR_AND_CONTINUE;
+					av_frame_unref(frame);
+					continue;
 				}
 
 				int codedbytes = 1;
@@ -3765,8 +3716,8 @@ HRESULT CMPCVideoDecFilter::DecodeInternal(AVPacket *avpkt, REFERENCE_TIME rtSta
 				av_image_fill_pointers(m_pFrame->data, frames_ctx->sw_format, texDesc.Height, reinterpret_cast<uint8_t*>(mappedResource.pData), m_pFrame->linesize);
 
 				m_pFrame->format = frames_ctx->sw_format;
-				m_pFrame->width  = hw_frame->width;
-				m_pFrame->height = hw_frame->height;
+				m_pFrame->width  = m_pHWFrame->width;
+				m_pFrame->height = m_pHWFrame->height;
 
 				m_FormatConverter.Converting(pDataOut, m_pFrame);
 
@@ -3775,13 +3726,14 @@ HRESULT CMPCVideoDecFilter::DecodeInternal(AVPacket *avpkt, REFERENCE_TIME rtSta
 				device_hwctx->unlock(device_hwctx->lock_ctx);
 			}
 			else if (frames_ctx->format == AV_PIX_FMT_D3D12) {
-				ret = d3d12va_direct_copy(hw_frame, m_pFrame, pDataOut,
+				ret = d3d12va_direct_copy(m_pHWFrame, m_pFrame, pDataOut,
 										  +[](void* ptr, AVFrame* frame, uint8_t* data) {
 					auto pFilter = static_cast<CMPCVideoDecFilter*>(ptr);
 					pFilter->m_FormatConverter.Converting(data, frame);
 				}, this);
 				if (ret < 0) {
-					CLEAR_AND_CONTINUE;
+					av_frame_unref(frame);
+					continue;
 				}
 			}
 			else if (frames_ctx->format == AV_PIX_FMT_CUDA && m_FormatConverter.DirectCopyPossible(frames_ctx->sw_format)) {
@@ -3792,7 +3744,8 @@ HRESULT CMPCVideoDecFilter::DecodeInternal(AVPacket *avpkt, REFERENCE_TIME rtSta
 				auto cuStatus = cuda_fns->cuCtxPushCurrent(cuda_hwctx->cuda_ctx);
 				if (cuStatus != CUDA_SUCCESS) {
 					DLog(L"CMPCVideoDecFilter::DecodeInternal() : Cuda cuCtxPushCurrent() failed");
-					CLEAR_AND_CONTINUE;
+					av_frame_unref(frame);
+					continue;
 				}
 				int linesize[4] = {};
 				av_image_fill_linesizes(linesize, frames_ctx->sw_format, m_FormatConverter.GetDstStride());
@@ -3801,7 +3754,7 @@ HRESULT CMPCVideoDecFilter::DecodeInternal(AVPacket *avpkt, REFERENCE_TIME rtSta
 				av_pix_fmt_get_chroma_sub_sample(frames_ctx->sw_format, &h_shift, &v_shift);
 
 				uint8_t* hwdata[4];
-				memcpy(hwdata, hw_frame->data, sizeof(hwdata)); // copy 4 pointers from 8 (AV_NUM_DATA_POINTERS)
+				memcpy(hwdata, m_pHWFrame->data, sizeof(hwdata)); // copy 4 pointers from 8 (AV_NUM_DATA_POINTERS)
 				if (m_FormatConverter.GetOutPixFormat() == PixFmt_YV24) {
 					std::swap(hwdata[1], hwdata[2]); // swap UV when YUV444P to YV24
 				}
@@ -3810,10 +3763,10 @@ HRESULT CMPCVideoDecFilter::DecodeInternal(AVPacket *avpkt, REFERENCE_TIME rtSta
 				for (size_t i = 0; i < std::size(hwdata) && hwdata[i]; i++) {
 					CUDA_MEMCPY2D cpy = {};
 
-					cpy.srcPitch      = hw_frame->linesize[i];
+					cpy.srcPitch      = m_pHWFrame->linesize[i];
 					cpy.dstPitch      = linesize[i];
 					cpy.WidthInBytes  = std::min(cpy.srcPitch, cpy.dstPitch);
-					cpy.Height        = hw_frame->height >> ((i == 0 || i == 3) ? 0 : v_shift);
+					cpy.Height        = m_pHWFrame->height >> ((i == 0 || i == 3) ? 0 : v_shift);
 
 					cpy.srcMemoryType = CU_MEMORYTYPE_DEVICE;
 					cpy.srcDevice     = reinterpret_cast<CUdeviceptr>(hwdata[i]);
@@ -3826,20 +3779,22 @@ HRESULT CMPCVideoDecFilter::DecodeInternal(AVPacket *avpkt, REFERENCE_TIME rtSta
 						break;
 					}
 
-					offset += linesize[i] * (hw_frame->height >> (i ? v_shift : 0));
+					offset += linesize[i] * (m_pHWFrame->height >> (i ? v_shift : 0));
 				}
 
 				if (cuStatus != CUDA_SUCCESS) {
 					DLog(L"CMPCVideoDecFilter::DecodeInternal() : Cuda cuMemcpy2DAsync() failed");
-					CLEAR_AND_CONTINUE;
+					av_frame_unref(frame);
+					continue;
 				}
 
 				cuda_fns->cuStreamSynchronize(cuda_hwctx->stream);
 				cuda_fns->cuCtxPopCurrent(nullptr);
 			} else {
-				ret = av_hwframe_transfer_data(m_pFrame, hw_frame, 0);
+				ret = av_hwframe_transfer_data(m_pFrame, m_pHWFrame, 0);
 				if (ret < 0) {
-					CLEAR_AND_CONTINUE;
+					av_frame_unref(frame);
+					continue;
 				}
 				m_FormatConverter.Converting(pDataOut, m_pFrame);
 			}
@@ -3882,15 +3837,12 @@ HRESULT CMPCVideoDecFilter::DecodeInternal(AVPacket *avpkt, REFERENCE_TIME rtSta
 
 		hr = m_pOutput->Deliver(pOut);
 
-		av_frame_unref(m_pFrame);
-		av_frame_free(&hw_frame);
+		av_frame_unref(frame);
 
 		m_bDecoderAcceptFormat = TRUE;
 	}
 
 	return S_OK;
-
-#undef CLEAR_AND_CONTINUE
 }
 
 HRESULT CMPCVideoDecFilter::ParseInternal(const BYTE *buffer, int buflen, REFERENCE_TIME rtStartIn, REFERENCE_TIME rtStopIn, BOOL bPreroll)

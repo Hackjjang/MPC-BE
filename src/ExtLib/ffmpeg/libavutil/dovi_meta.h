@@ -46,6 +46,7 @@
  * uint8_t  el_present_flag
  * uint8_t  bl_present_flag
  * uint8_t  dv_bl_signal_compatibility_id
+ * uint8_t  dv_md_compression, the compression method in use
  * @endcode
  *
  * @note The struct must be allocated with av_dovi_alloc() and
@@ -60,7 +61,15 @@ typedef struct AVDOVIDecoderConfigurationRecord {
     uint8_t el_present_flag;
     uint8_t bl_present_flag;
     uint8_t dv_bl_signal_compatibility_id;
+    uint8_t dv_md_compression;
 } AVDOVIDecoderConfigurationRecord;
+
+enum AVDOVICompression {
+    AV_DOVI_COMPRESSION_NONE     = 0,
+    AV_DOVI_COMPRESSION_LIMITED  = 1,
+    AV_DOVI_COMPRESSION_RESERVED = 2,
+    AV_DOVI_COMPRESSION_EXTENDED = 3,
+};
 
 /**
  * Allocate a AVDOVIDecoderConfigurationRecord structure and initialize its
@@ -91,6 +100,8 @@ typedef struct AVDOVIRpuDataHeader {
     uint8_t spatial_resampling_filter_flag;
     uint8_t el_spatial_resampling_filter_flag;
     uint8_t disable_residual_flag;
+    uint8_t ext_mapping_idc_0_4; /* extended base layer inverse mapping indicator */
+    uint8_t ext_mapping_idc_5_7; /* reserved */
 } AVDOVIRpuDataHeader;
 
 enum AVDOVIMappingMethod {

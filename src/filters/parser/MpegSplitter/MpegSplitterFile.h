@@ -61,6 +61,12 @@ class CMpegSplitterFile : public CBaseSplitterFileEx
 	};
 	std::map<DWORD, vvc_data> vvc_streams;
 
+	struct dtshd_data {
+		dtshdr h;
+		std::vector<BYTE> pData;
+	};
+	std::map<DWORD, dtshd_data> dtshd_streams;
+
 	template<class T, BYTE validCount = 5>
 	class CValidStream {
 		BYTE m_nValidStream = 0;
@@ -192,6 +198,7 @@ public:
 		H264,
 		MVC,
 		HEVC,
+		HEVC_DV_SECONDARY,
 		MPEG,
 		VC1,
 		OPUS,
