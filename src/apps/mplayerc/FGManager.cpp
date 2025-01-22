@@ -1,6 +1,6 @@
 /*
  * (C) 2003-2006 Gabest
- * (C) 2006-2024 see Authors.txt
+ * (C) 2006-2025 see Authors.txt
  *
  * This file is part of MPC-BE.
  *
@@ -495,25 +495,32 @@ HRESULT CFGManager::EnumSourceFilters(LPCWSTR lpcwstrFileName, CFGFilterList& fl
 		}
 	}
 
-	// hack for StreamBufferSource - we need override merit from registry.
-	if (ext == L".dvr-ms" || ext == L".wtv") {
-		BOOL bIsBlocked = FALSE;
-		for (const auto& pFGF : m_override) {
-			if (pFGF->GetCLSID() == CLSID_StreamBufferSource && pFGF->GetMerit() == MERIT64_DO_NOT_USE) {
-				bIsBlocked = TRUE;
-				break;
+	// external
+	{
+		// hack for StreamBufferSource - we need override merit from registry.
+		if (ext == L".dvr-ms" || ext == L".wtv") {
+			BOOL bIsBlocked = FALSE;
+			for (const auto& pFGF : m_override) {
+				if (pFGF->GetCLSID() == CLSID_StreamBufferSource && pFGF->GetMerit() == MERIT64_DO_NOT_USE) {
+					bIsBlocked = TRUE;
+					break;
+				}
+			}
+
+			if (!bIsBlocked) {
+				CFGFilter* pFGF = LookupFilterRegistry(CLSID_StreamBufferSource, m_override);
+				pFGF->SetMerit(MERIT64_DO_USE);
+				fl.Insert(pFGF, 9);
+			}
+		}
+		// add MPC Script Source
+		else if (ext == L".avs" || ext == L".vpy") {
+			CFGFilter* pFGF = LookupFilterRegistry(CLSID_MPCScriptSource, m_override);
+			if (pFGF) {
+				fl.Insert(pFGF, 9);
 			}
 		}
 
-		if (!bIsBlocked) {
-			CFGFilter* pFGF = LookupFilterRegistry(CLSID_StreamBufferSource, m_override);
-			pFGF->SetMerit(MERIT64_DO_USE);
-			fl.Insert(pFGF, 9);
-		}
-	}
-
-	// external
-	{
 		WCHAR buff[256] = {}, buff2[256] = {};
 		ULONG len, len2;
 
@@ -1197,7 +1204,6 @@ STDMETHODIMP CFGManager::RenderFile(LPCWSTR lpcwstrFileName, LPCWSTR lpcwstrPlay
 {
 	DLog(L"CFGManager::RenderFile() on thread: %u", GetCurrentThreadId());
 
-	m_bOpeningAborted = false;
 	std::unique_lock<std::mutex> lock(m_mutexRender);
 
 	CAutoLock cAutoLock(this);
@@ -2550,6 +2556,8 @@ CFGManagerCustom::CFGManagerCustom(LPCWSTR pName, LPUNKNOWN pUnk, HWND hWnd, boo
 		pFGF->AddType(MEDIATYPE_Audio, MEDIASUBTYPE_ATRAC3plus);
 		pFGF->AddType(MEDIATYPE_Audio, MEDIASUBTYPE_ATRAC9);
 		pFGF->AddType(MEDIATYPE_Audio, MEDIASUBTYPE_INTEL_MUSIC);
+		pFGF->AddType(MEDIATYPE_Audio, MEDIASUBTYPE_ON2VP7_AUDIO);
+		pFGF->AddType(MEDIATYPE_Audio, MEDIASUBTYPE_ON2VP6_AUDIO);
 		m_transform.emplace_back(pFGF);
 
 		// subtitles
@@ -2734,7 +2742,7 @@ CFGManagerCustom::CFGManagerCustom(LPCWSTR pName, LPUNKNOWN pUnk, HWND hWnd, boo
 	WORD merit_low = 1;
 
 	for (const auto& fo : s.m_ExternalFilters) {
-		if (fo->fDisabled || (fo->type == FilterOverride::EXTERNAL && !CPath(MakeFullPath(fo->path)).FileExists())) {
+		if (fo->fDisabled || (fo->type == FilterOverride::EXTERNAL && !::PathFileExistsW(MakeFullPath(fo->path)))) {
 			continue;
 		}
 
@@ -2797,6 +2805,7 @@ STDMETHODIMP CFGManagerCustom::AddFilter(IBaseFilter* pBF, LPCWSTR pName)
 		if (s.bAudioFilters) {
 			pASF->SetAudioFilter1(s.strAudioFilter1);
 		}
+		pASF->SetAudioFiltersNotForStereo(s.bAudioFiltersNotForStereo);
 	}
 
 	return hr;
@@ -2958,7 +2967,6 @@ public:
 
 STDMETHODIMP CFGManagerDVD::RenderFile(LPCWSTR lpcwstrFile, LPCWSTR lpcwstrPlayList)
 {
-	m_bOpeningAborted = false;
 	std::unique_lock<std::mutex> lock(m_mutexRender);
 
 	CAutoLock cAutoLock(this);

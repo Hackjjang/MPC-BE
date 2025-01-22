@@ -1,6 +1,6 @@
 /*
  * (C) 2003-2006 Gabest
- * (C) 2006-2024 see Authors.txt
+ * (C) 2006-2025 see Authors.txt
  *
  * This file is part of MPC-BE.
  *
@@ -441,28 +441,6 @@ CString CAppSettings::SelectedAudioRenderer() const
 	return strResult;
 }
 
-void CAppSettings::DeserializeHex(LPCWSTR strVal, BYTE* pBuffer, int nBufSize)
-{
-	long lRes;
-
-	for (int i = 0; i < nBufSize; i++) {
-		swscanf_s(strVal+(i*2), L"%02x", &lRes);
-		pBuffer[i] = (BYTE)lRes;
-	}
-}
-
-CStringW CAppSettings::SerializeHex(BYTE* pBuffer, int nBufSize) const
-{
-	CStringW str;
-	str.Preallocate(nBufSize * 2);
-
-	for (int i = 0; i < nBufSize; i++) {
-		str.AppendFormat(L"%02x", pBuffer[i]);
-	}
-
-	return str;
-}
-
 void CAppSettings::ResetSettings()
 {
 	iLanguage = -1;
@@ -647,6 +625,7 @@ void CAppSettings::ResetSettings()
 	iAudioTimeShift = 0;
 	bAudioFilters = false;
 	strAudioFilter1.Empty();
+	bAudioFiltersNotForStereo = false;
 
 	m_ExternalFilters.clear();
 
@@ -803,12 +782,13 @@ void CAppSettings::ResetSettings()
 
 	strLastOpenFilterDir.Empty();
 
-	bYoutubePageParser = true;
-	YoutubeFormat.fmt = 0;
-	YoutubeFormat.res = 720;
-	YoutubeFormat.fps60 = false;
-	YoutubeFormat.hdr = false;
-	strYoutubeAudioLang = CPPageYoutube::GetDefaultLanguageCode();
+	bYoutubePageParser   = true;
+	YoutubeFormat.vfmt   = Youtube::y_mp4_avc;
+	YoutubeFormat.res    = 720;
+	YoutubeFormat.fps60  = false;
+	YoutubeFormat.hdr    = false;
+	YoutubeFormat.afmt   = Youtube::y_mp4_aac;
+	strYoutubeAudioLang  = CPPageYoutube::GetDefaultLanguageCode();
 	bYoutubeLoadPlaylist = false;
 
 	bYDLEnable = true;
@@ -879,7 +859,7 @@ void CAppSettings::LoadSettings(bool bForce/* = false*/)
 	profile.ReadBool(IDS_R_SETTINGS, IDS_RS_REWIND, fRewind);
 	profile.ReadInt(IDS_R_SETTINGS, IDS_RS_VOLUME_STEP, nVolumeStep, 1, 10);
 	profile.ReadInt(IDS_R_SETTINGS, IDS_RS_SPEED_STEP, nSpeedStep);
-	nSpeedStep = discard(nSpeedStep, 0, { 5, 10, 20, 25, 50, 100 });
+	nSpeedStep = discard(nSpeedStep, 0, { 1, 5, 10, 20, 25, 50, 100 });
 	profile.ReadBool(IDS_R_SETTINGS, IDS_RS_SPEED_NOTRESET, bSpeedNotReset);
 
 	m_VRSettings.Load();
@@ -925,7 +905,6 @@ void CAppSettings::LoadSettings(bool bForce/* = false*/)
 	profile.ReadBool(IDS_R_SETTINGS, IDS_RS_USE_TIME_TOOLTIP, fUseTimeTooltip);
 	profile.ReadInt(IDS_R_SETTINGS, IDS_RS_TIME_TOOLTIP_POSITION, nTimeTooltipPosition, TIME_TOOLTIP_ABOVE_SEEKBAR, TIME_TOOLTIP_BELOW_SEEKBAR);
 
-	profile.ReadString(IDS_R_SETTINGS, IDS_RS_LAST_OPEN_FILE, strLastOpenFile);
 	// Last Open Dir
 	profile.ReadString(IDS_R_SETTINGS, IDS_RS_LAST_OPEN_DIR, strLastOpenDir);
 	// Last Saved Playlist Dir
@@ -1059,6 +1038,7 @@ void CAppSettings::LoadSettings(bool bForce/* = false*/)
 	} else {
 		strAudioFilter1.Empty();
 	}
+	profile.ReadBool(IDS_R_AUDIO, IDS_RS_AUDIOFILTERS_NOTFORSTEREO, bAudioFiltersNotForStereo);
 
 	{
 		m_ExternalFilters.clear();
@@ -1495,11 +1475,11 @@ void CAppSettings::LoadSettings(bool bForce/* = false*/)
 	// OnlineServices
 	profile.ReadBool(IDS_R_ONLINESERVICES, IDS_RS_YOUTUBE_PAGEPARSER, bYoutubePageParser);
 	str.Empty();
-	profile.ReadString(IDS_R_ONLINESERVICES, IDS_RS_YOUTUBE_FORMAT, str);
-	YoutubeFormat.fmt =
-		(str == L"WEBM") ? Youtube::y_webm_vp9
+	profile.ReadString(IDS_R_ONLINESERVICES, IDS_RS_YOUTUBE_VIDEOFORMAT, str);
+	YoutubeFormat.vfmt =
+		(str == L"VP9") ? Youtube::y_webm_vp9
 		: (str == L"AV1") ? Youtube::y_mp4_av1
-		: Youtube::y_mp4_avc;
+		: Youtube::y_mp4_avc; // "H264" or unknown
 	profile.ReadInt(IDS_R_ONLINESERVICES, IDS_RS_YOUTUBE_RESOLUTION, YoutubeFormat.res);
 	YoutubeFormat.res = discard(YoutubeFormat.res, 720, s_CommonVideoHeights);
 	profile.ReadBool(IDS_R_ONLINESERVICES, IDS_RS_YOUTUBE_60FPS, YoutubeFormat.fps60);
@@ -1508,6 +1488,11 @@ void CAppSettings::LoadSettings(bool bForce/* = false*/)
 	} else {
 		YoutubeFormat.hdr = false;
 	}
+	str.Empty();
+	profile.ReadString(IDS_R_ONLINESERVICES, IDS_RS_YOUTUBE_AUDIOFORMAT, str);
+	YoutubeFormat.afmt =
+		(str == L"OPUS") ? Youtube::y_webm_opus
+		: Youtube::y_mp4_aac; // "AAC" or unknown
 	profile.ReadString(IDS_R_ONLINESERVICES, IDS_RS_YOUTUBE_AUDIOLANGUAGE, strYoutubeAudioLang);
 	strYoutubeAudioLang.Trim();
 	profile.ReadBool(IDS_R_ONLINESERVICES, IDS_RS_YOUTUBE_LOAD_PLAYLIST, bYoutubeLoadPlaylist);
@@ -1587,6 +1572,11 @@ void CAppSettings::SaveSettings()
 	CMPlayerCApp* pApp = AfxGetMyApp();
 	ASSERT(pApp);
 	CProfile& profile = AfxGetProfile();
+
+	{
+		// remove problematic obsolete parameters
+		profile.DeleteValue(IDS_R_SETTINGS, IDS_RS_LAST_OPEN_FILE);
+	}
 
 	CString str;
 
@@ -1728,6 +1718,7 @@ void CAppSettings::SaveSettings()
 	profile.WriteInt(IDS_R_AUDIO, IDS_RS_AUDIOTIMESHIFT, iAudioTimeShift);
 	profile.WriteBool(IDS_R_AUDIO, IDS_RS_AUDIOFILTERS, bAudioFilters);
 	profile.WriteString(IDS_R_AUDIO, IDS_RS_AUDIOFILTER1, CStringW(strAudioFilter1));
+	profile.WriteBool(IDS_R_AUDIO, IDS_RS_AUDIOFILTERS_NOTFORSTEREO, bAudioFiltersNotForStereo);
 
 	profile.WriteInt(IDS_R_SETTINGS, IDS_RS_BUFFERDURATION, iBufferDuration);
 	profile.WriteInt(IDS_R_SETTINGS, IDS_RS_NETWORKTIMEOUT, iNetworkTimeout);
@@ -1749,7 +1740,6 @@ void CAppSettings::SaveSettings()
 	profile.WriteBool(IDS_R_SETTINGS, IDS_RS_USE_TIME_TOOLTIP, fUseTimeTooltip);
 	profile.WriteInt(IDS_R_SETTINGS, IDS_RS_TIME_TOOLTIP_POSITION, nTimeTooltipPosition);
 
-	profile.WriteString(IDS_R_SETTINGS, IDS_RS_LAST_OPEN_FILE, strLastOpenFile);
 	// Last Open Dir
 	profile.WriteString(IDS_R_SETTINGS, IDS_RS_LAST_OPEN_DIR, strLastOpenDir);
 	// Last Saved Playlist Dir
@@ -1995,13 +1985,16 @@ void CAppSettings::SaveSettings()
 
 	// OnlineServices
 	profile.WriteBool(IDS_R_ONLINESERVICES, IDS_RS_YOUTUBE_PAGEPARSER, bYoutubePageParser);
-	profile.WriteString(IDS_R_ONLINESERVICES, IDS_RS_YOUTUBE_FORMAT,
-		(YoutubeFormat.fmt == Youtube::y_webm_vp9) ? L"WEBM"
-		: (YoutubeFormat.fmt == Youtube::y_mp4_av1) ? L"AV1"
-		: L"MP4");
+	profile.WriteString(IDS_R_ONLINESERVICES, IDS_RS_YOUTUBE_VIDEOFORMAT,
+		(YoutubeFormat.vfmt == Youtube::y_webm_vp9) ? L"VP9"
+		: (YoutubeFormat.vfmt == Youtube::y_mp4_av1) ? L"AV1"
+		: L"H264");
 	profile.WriteInt(IDS_R_ONLINESERVICES, IDS_RS_YOUTUBE_RESOLUTION, YoutubeFormat.res);
 	profile.WriteBool(IDS_R_ONLINESERVICES, IDS_RS_YOUTUBE_60FPS, YoutubeFormat.fps60);
 	profile.WriteBool(IDS_R_ONLINESERVICES, IDS_RS_YOUTUBE_HDR, YoutubeFormat.hdr);
+	profile.WriteString(IDS_R_ONLINESERVICES, IDS_RS_YOUTUBE_AUDIOFORMAT,
+		(YoutubeFormat.afmt == Youtube::y_webm_opus) ? L"OPUS"
+		: L"AAC");
 	profile.WriteString(IDS_R_ONLINESERVICES, IDS_RS_YOUTUBE_AUDIOLANGUAGE, strYoutubeAudioLang);
 	profile.WriteBool(IDS_R_ONLINESERVICES, IDS_RS_YOUTUBE_LOAD_PLAYLIST, bYoutubeLoadPlaylist);
 	profile.WriteBool(IDS_R_ONLINESERVICES, IDS_RS_YDL_ENABLE, bYDLEnable);
@@ -2133,7 +2126,7 @@ int CAppSettings::GetMultiInst()
 
 engine_t CAppSettings::GetFileEngine(CString path)
 {
-	CString ext = CPath(path).GetExtension().MakeLower();
+	CStringW ext = GetFileExt(path).MakeLower();
 
 	if (!ext.IsEmpty()) {
 		for (auto& mfc : m_Formats) {
@@ -2477,32 +2470,14 @@ void CAppSettings::SaveFormats()
 	m_Formats.UpdateData(true);
 }
 
-extern BOOL AFXAPI AfxFullPath(LPTSTR lpszPathOut, LPCTSTR lpszFileIn);
-extern BOOL AFXAPI AfxComparePath(LPCTSTR lpszPath1, LPCTSTR lpszPath2);
-
 CStringW ParseFileName(const CStringW& param)
 {
 	if (param.Find(L':') < 0) {
 		// try to convert relative path to full path
-		CStringW fullPathName;
-		fullPathName.ReleaseBuffer(GetFullPathNameW(param, MAX_PATH, fullPathName.GetBuffer(MAX_PATH), nullptr));
+		CStringW fullPathName = GetFullCannonFilePath(param);
 
-		CFileStatus fs;
-		if (!fullPathName.IsEmpty() && CFileGetStatus(fullPathName, fs)) {
+		if (::PathFileExistsW(fullPathName)) {
 			return fullPathName;
-		}
-	} else if (param.GetLength() > MAX_PATH && !::PathIsURLW(param) && !::PathIsUNCW(param)) {
-		// trying to shorten a long local path
-		CStringW longpath = StartsWith(param, EXTENDED_PATH_PREFIX) ? param : EXTENDED_PATH_PREFIX + param;
-		auto length = GetShortPathNameW(longpath, nullptr, 0);
-		if (length > 0) {
-			CStringW shortPathName;
-			length = GetShortPathNameW(longpath, shortPathName.GetBuffer(length), length);
-			if (length > 0) {
-				shortPathName.ReleaseBuffer(length);
-				shortPathName.Delete(0, 4); // remove "\\?\" prefix
-				return shortPathName;
-			}
 		}
 	}
 

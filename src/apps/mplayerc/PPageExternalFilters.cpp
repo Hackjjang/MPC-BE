@@ -27,6 +27,7 @@
 #include "SelectMediaType.h"
 #include "FGFilter.h"
 #include "FakeFilterMapper2.h"
+#include "Misc.h"
 #include <wmcodecdsp.h>
 #include <moreuuids.h>
 #include "DSUtil/std_helper.h"
@@ -37,7 +38,11 @@
 
 bool IsSupportedExternalVideoRenderer(CLSID clsid)
 {
+#if 1
 	return clsid == CLSID_EnhancedVideoRenderer || clsid == CLSID_MPCVR || clsid == CLSID_DXR || clsid == CLSID_madVR;
+#else
+	return false;
+#endif
 }
 
 static const std::vector<GUID> s_MajorTypes = {
@@ -298,7 +303,7 @@ BOOL CPPageExternalFilters::OnInitDialog()
 			if (f->fTemporary) {
 				name += L" <temporary>";
 			}
-			if (!CPath(MakeFullPath(f->path)).FileExists()) {
+			if (!::PathFileExistsW(MakeFullPath(f->path))) {
 				name += L" <not found!>";
 			}
 		}
@@ -391,7 +396,7 @@ void CPPageExternalFilters::OnAddRegistered()
 			CString name = f->name;
 
 			if (f->type == FilterOverride::EXTERNAL) {
-				if (!CPath(MakeFullPath(f->path)).FileExists()) {
+				if (!::PathFileExistsW(MakeFullPath(f->path))) {
 					name += L" <not found!>";
 				}
 			}
@@ -765,11 +770,10 @@ void CPPageExternalFilters::OnDropFiles(HDROP hDropInfo)
 
 	UINT nFiles = ::DragQueryFileW(hDropInfo, (UINT)-1, nullptr, 0);
 	for (UINT iFile = 0; iFile < nFiles; iFile++) {
-		WCHAR szFileName[MAX_PATH];
-		::DragQueryFileW(hDropInfo, iFile, szFileName, MAX_PATH);
+		CString fn = GetDragQueryFileName(hDropInfo, iFile);
 
 		CFilterMapper2 fm2(false);
-		fm2.Register(szFileName);
+		fm2.Register(fn);
 
 		for (auto& f : fm2.m_filters) {
 			if (IsSupportedExternalVideoRenderer(f->clsid)) {

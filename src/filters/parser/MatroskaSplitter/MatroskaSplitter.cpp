@@ -577,6 +577,24 @@ HRESULT CMatroskaSplitterFilter::CreateOutputs(IAsyncReader* pAsyncReader)
 						}
 					}
 				}
+				else if (CodecID == "V_MPEGI/ISO/VVC") {
+					BITMAPINFOHEADER pbmi;
+					memset(&pbmi, 0, sizeof(BITMAPINFOHEADER));
+					pbmi.biSize        = sizeof(pbmi);
+					pbmi.biWidth       = (LONG)pTE->v.PixelWidth;
+					pbmi.biHeight      = (LONG)pTE->v.PixelHeight;
+					pbmi.biCompression = FCC('VVC1');
+					pbmi.biPlanes      = 1;
+					pbmi.biBitCount    = 24;
+
+					CSize aspect(pbmi.biWidth, pbmi.biHeight);
+					ReduceDim(aspect);
+					CreateMPEG2VISimple(&mt, &pbmi, 0, aspect, pTE->CodecPrivate.data(), pTE->CodecPrivate.size());
+
+					// TODO: parse VVCDecoderConfigurationRecord structure
+
+					mts.push_back(mt);
+				}
 				else {
 					DWORD fourcc = 0;
 					WORD bitdepth = 0;
@@ -1186,7 +1204,7 @@ HRESULT CMatroskaSplitterFilter::CreateOutputs(IAsyncReader* pAsyncReader)
 								}
 							}
 						}
-					} while (m_pBlock->NextBlock() && SUCCEEDED(hr) && !CheckRequest(nullptr) && !bIsParse);
+					} while (m_pBlock->NextBlock() && !CheckRequest(nullptr) && !bIsParse);
 
 					m_pBlock.reset();
 					m_pCluster.reset();
@@ -1275,7 +1293,7 @@ HRESULT CMatroskaSplitterFilter::CreateOutputs(IAsyncReader* pAsyncReader)
 							bIsParse = TRUE;
 							break;
 						}
-					} while (m_pBlock->NextBlock() && SUCCEEDED(hr) && !CheckRequest(nullptr) && !bIsParse);
+					} while (m_pBlock->NextBlock() && !CheckRequest(nullptr) && !bIsParse);
 
 					m_pBlock.reset();
 					m_pCluster.reset();
@@ -1909,10 +1927,7 @@ void CMatroskaSplitterFilter::InstallFonts()
 void CMatroskaSplitterFilter::SendVorbisHeaderSample()
 {
 	HRESULT hr;
-	for (const auto& item : m_pTrackEntryMap) {
-		DWORD TrackNumber = item.first;
-		TrackEntry* pTE   = item.second;
-
+	for (const auto& [TrackNumber, pTE] : m_pTrackEntryMap) {
 		CBaseSplitterOutputPin* pPin = GetOutputPin(TrackNumber);
 
 		if (!(pTE && pPin && pPin->IsConnected())) {
@@ -1923,8 +1938,8 @@ void CMatroskaSplitterFilter::SendVorbisHeaderSample()
 				&& pTE->CodecPrivate.size() > 0) {
 			BYTE* ptr = pTE->CodecPrivate.data();
 
-			std::list<int> sizes;
-			long last = 0;
+			std::vector<int> sizes;
+			int last = 0;
 			for (BYTE n = *ptr++; n > 0; n--) {
 				int size = 0;
 				do {
@@ -1937,7 +1952,7 @@ void CMatroskaSplitterFilter::SendVorbisHeaderSample()
 
 			hr = S_OK;
 
-			for (const long len : sizes) {
+			for (const auto& len : sizes) {
 
 				std::unique_ptr<CPacket> p(DNew CPacket());
 				p->TrackNumber	= (DWORD)pTE->TrackNumber;
@@ -2568,10 +2583,10 @@ HRESULT CMatroskaSplitterFilter::DeliverMatroskaPacket(std::unique_ptr<CMatroska
 
 			const BYTE marker = pData[size - 1];
 			if ((marker & 0xe0) == 0xc0) {
-				const BYTE nbytes = 1 + ((marker >> 3) & 0x3);
+				const BYTE nbytes = 1 + ((marker >> 3) & 0x3); // nbytes only accepts values from 1 to 4
 				BYTE n_frames = 1 + (marker & 0x7);
 				const size_t idx_sz = 2 + n_frames * nbytes;
-				if (size >= idx_sz && pData[size - idx_sz] == marker && nbytes >= 1 && nbytes <= 4) {
+				if (size >= idx_sz && pData[size - idx_sz] == marker) {
 					const BYTE *idx = pData + size + 1 - idx_sz;
 
 					while (n_frames--) {

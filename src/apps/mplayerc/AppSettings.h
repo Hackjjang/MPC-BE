@@ -1,6 +1,6 @@
 /*
  * (C) 2003-2006 Gabest
- * (C) 2006-2024 see Authors.txt
+ * (C) 2006-2025 see Authors.txt
  *
  * This file is part of MPC-BE.
  *
@@ -690,6 +690,7 @@ public:
 	int				iAudioTimeShift;
 	bool			bAudioFilters;
 	CStringA		strAudioFilter1;
+	bool			bAudioFiltersNotForStereo;
 
 	// External Filters
 	std::list<std::unique_ptr<FilterOverride>> m_ExternalFilters;
@@ -821,7 +822,7 @@ public:
 	bool			bPlaylistDetermineDuration;
 
 	// OTHER STATES
-	CString			strLastOpenFile;
+	CString			strLastOpenFile; // not saved
 	CString			strLastOpenDir;
 	CString			strLastSavedPlaylistDir;
 
@@ -837,9 +838,6 @@ public:
 	bool			ExclusiveFSAllowed() const;
 	CString			SelectedAudioRenderer() const;
 
-	void			DeserializeHex(LPCWSTR strVal, BYTE* pBuffer, int nBufSize);
-	CStringW		SerializeHex(BYTE* pBuffer, int nBufSize) const;
-
 	// list of temporary files
 	std::list<CString> slTMPFilesList;
 
@@ -848,10 +846,11 @@ public:
 	// youtube
 	bool			bYoutubePageParser;
 	struct {
-		int		fmt;
+		int		vfmt;
 		int		res;
 		bool	fps60;
 		bool	hdr;
+		int		afmt;
 	} YoutubeFormat;
 	CStringW		strYoutubeAudioLang;
 	bool			bYoutubeLoadPlaylist;

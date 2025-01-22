@@ -89,6 +89,20 @@
 #endif
 
 //---------------------------------------------------------------------------
+//Linux
+#if defined(__LINUX__) || defined(__linux__)
+    #ifndef LINUX
+        #define LINUX
+    #endif
+    #ifndef _LINUX
+        #define _LINUX
+    #endif
+    #ifndef __LINUX__
+        #define __LINUX__ 1
+    #endif
+#endif
+
+//---------------------------------------------------------------------------
 //MacOS Classic
 #if defined(macintosh)
     #ifndef MACOS
@@ -194,7 +208,7 @@
 //---------------------------------------------------------------------------
 //(-1) is known to be the MAX of an unsigned int but GCC complains about it
 #ifdef __cplusplus
-    #include <new> //for size_t
+    #include <cstddef> //for size_t
 #else /* __cplusplus */
     #include <stddef.h> //for size_t
 #endif /* __cplusplus */

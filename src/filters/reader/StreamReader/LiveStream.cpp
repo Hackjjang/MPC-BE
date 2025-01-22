@@ -1,5 +1,5 @@
 /*
- * (C) 2017-2024 see Authors.txt
+ * (C) 2017-2025 see Authors.txt
  *
  * This file is part of MPC-BE.
  *
@@ -649,6 +649,8 @@ bool CLiveStream::Load(const WCHAR* fnw)
 				m_subtype = MEDIASUBTYPE_MP4;
 			} else if (contentType == L"video/x-flv") {
 				m_subtype = MEDIASUBTYPE_FLV;
+			} else if (contentType.Find(L"audio/wav") == 0) {
+				m_subtype = MEDIASUBTYPE_WAVE;
 			} else if (contentType.Find(L"audio/") == 0) {
 				m_subtype = MEDIASUBTYPE_MPEG1Audio;
 			} else if (!bIcyFound) { // other ...
@@ -716,7 +718,11 @@ bool CLiveStream::Load(const WCHAR* fnw)
 	if (m_protocol == protocol::PR_HTTP && !m_len) {
 		BYTE buf[1024] = {};
 		DWORD dwSizeRead = 0;
-		if (HTTPRead(buf, sizeof(buf), dwSizeRead, http::readTimeout) == S_OK && dwSizeRead) {
+		if (HTTPRead(buf, sizeof(buf), dwSizeRead, http::readTimeout) != S_OK) {
+			return false;
+		}
+
+		if (dwSizeRead) {
 			Append(buf, dwSizeRead);
 		}
 	}

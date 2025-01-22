@@ -1,5 +1,5 @@
 /*
- * (C) 2014-2023 see Authors.txt
+ * (C) 2014-2024 see Authors.txt
  *
  * This file is part of MPC-BE.
  *
@@ -75,12 +75,6 @@ BOOL CAboutDlg::OnInitDialog()
 	m_MPCCompiler += L" (AVX2)";
 #elif (__AVX__)
 	m_MPCCompiler += L" (AVX)";
-#elif !defined(_M_X64)
-	#if (_M_IX86_FP == 2)
-		m_MPCCompiler += L" (SSE2)";
-	#elif (_M_IX86_FP == 1)
-		m_MPCCompiler += L" (SSE)";
-	#endif
 #endif
 
 	m_FFmpegCompiler	= GetFFmpegCompiler();

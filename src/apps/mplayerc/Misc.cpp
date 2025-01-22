@@ -1,5 +1,5 @@
 /*
- * (C) 2016-2023 see Authors.txt
+ * (C) 2016-2024 see Authors.txt
  *
  * This file is part of MPC-BE.
  *
@@ -21,6 +21,7 @@
 #include "stdafx.h"
 #include "Misc.h"
 #include "DSUtil/FileHandle.h"
+#include "DSUtil/SysVersion.h"
 
 bool SetPrivilege(LPCWSTR privilege, bool bEnable/* = true*/)
 {
@@ -338,6 +339,49 @@ HRESULT LoadResourceFile(UINT resid, BYTE** ppData, UINT& size)
 	}
 
 	return S_OK;
+}
+
+CStringW GetDragQueryFileName(HDROP hDrop, UINT iFile)
+{
+	CStringW fname;
+
+	if (iFile < UINT_MAX) {
+		UINT len = ::DragQueryFileW(hDrop, iFile, nullptr, 0);
+		if (len > 0) {
+			len = ::DragQueryFileW(hDrop, iFile, fname.GetBuffer(len), len+1);
+			fname.ReleaseBufferSetLength(len);
+		}
+	}
+
+	return fname;
+}
+
+bool LongPathsEnabled()
+{
+	bool bLongPathsEnabled = false;
+
+	if (SysVersion::IsWin10v1607orLater()) {
+		CRegKey regkey;
+		if (ERROR_SUCCESS == regkey.Open(HKEY_LOCAL_MACHINE, L"SYSTEM\\CurrentControlSet\\Control\\FileSystem", KEY_READ)) {
+			DWORD value;
+			if (ERROR_SUCCESS == regkey.QueryDWORDValue(L"LongPathsEnabled", value)) {
+				bLongPathsEnabled = (value == 1);
+			}
+			regkey.Close();
+		}
+	}
+
+	return bLongPathsEnabled;
+}
+
+void ConvertLongPath(CStringW& path)
+{
+	if (StartsWith(path, L"\\\\?\\")) {
+		static const bool bLongPathsEnabled = LongPathsEnabled();
+		if (bLongPathsEnabled) {
+			path = path.Mid(4);
+		}
+	}
 }
 
 WORD AssignedKeyToCmd(UINT keyValue)

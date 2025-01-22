@@ -1,7 +1,7 @@
 ﻿BEGIN DIALOGEX IDD_ABOUTBOX LINES 26
 3		"Informazioni"
 7		"MPC-BE"
-8		"Copyright © 2002-2024 vedi Authors.txt"
+8		"Copyright © 2002-2025 vedi Authors.txt"
 10		"Versione:"
 11		"Compilatore MPC-BE:"
 12		"Compilatore FFmpeg:"
@@ -202,7 +202,7 @@ BEGIN DIALOGEX IDD_PPAGECAPTURE LINES 22
 18		"Ricevitore"
 END
 
-BEGIN DIALOGEX IDD_PPAGECOLOR LINES 27
+BEGIN DIALOGEX IDD_PPAGECOLOR LINES 28
 5		"Controlli del colore (per EVR, madVR and MPC VR)"
 6		"Luminosità"
 7		"Contrasto"
@@ -210,9 +210,10 @@ BEGIN DIALOGEX IDD_PPAGECOLOR LINES 27
 9		"Saturazione"
 18		"Reimposta"
 20		"Gestione colore"
-21		"Tipo di ingresso:"
-23		"Luce ambiente:"
-25		"Intento di rendering:"
+21		"(per EVR-CP, superficie 10/16-bit)"
+22		"Tipo di ingresso:"
+24		"Luce ambiente:"
+26		"Intento di rendering:"
 END
 
 BEGIN DIALOGEX IDD_PPAGEDVD LINES 19
@@ -297,7 +298,7 @@ BEGIN DIALOGEX IDD_PPAGEFULLSCREEN LINES 34
 32		"Ripristino risoluzione all'uscita dal programma"
 END
 
-BEGIN DIALOGEX IDD_PPAGEINTERFACE LINES 55
+BEGIN DIALOGEX IDD_PPAGEINTERFACE LINES 56
 6		"Usa il tema scuro (predefinito)"
 7		"Luminosità:"
 9		"Imposta il colore dell'indicatore del suono:"
@@ -310,25 +311,25 @@ BEGIN DIALOGEX IDD_PPAGEINTERFACE LINES 55
 16		"G:"
 17		"B:"
 21		"Abilita menu scuro"
-22		"Abilita titolo scuro (Windows 11)"
-24		"Usa descrizione comando sul tempo:"
-26		"Usa l'anteprima nella ricerca"
-27		"Dimensioni relative alla larghezza dello schermo:"
-31		"In linea"
-32		"Usa marcatore capitoli"
-33		"Usa la flybar"
-34		"Dimensione carattere playlist:"
-37		"OSD"
-38		"Carattere:"
-42		"F"
-43		"Sfondo:"
-44		"G1"
-45		"G2"
-46		"Trasparente:"
-48		"Pixel bordo:"
-51		"Ombra"
-52		"Anti-aliasing"
-53		"Usa funzionalità barra delle applicazioni di Windows 7 (e versioni successive)."
+22		"Abilita titolo scuro (Windows 10 and above)"
+25		"Usa descrizione comando sul tempo:"
+27		"Usa l'anteprima nella ricerca"
+28		"Dimensioni relative alla larghezza dello schermo:"
+32		"In linea"
+33		"Usa marcatore capitoli"
+34		"Usa la flybar"
+35		"Dimensione carattere playlist:"
+38		"OSD"
+39		"Carattere:"
+43		"F"
+44		"Sfondo:"
+45		"G1"
+46		"G2"
+47		"Trasparente:"
+49		"Pixel bordo:"
+52		"Ombra"
+53		"Anti-aliasing"
+54		"Usa funzionalità barra delle applicazioni di Windows 7 (e versioni successive)."
 END
 
 BEGIN DIALOGEX IDD_PPAGEINTERNALFILTERS LINES 22
@@ -441,7 +442,7 @@ BEGIN DIALOGEX IDD_PPAGEPLAYER LINES 49
 48		"sec."
 END
 
-BEGIN DIALOGEX IDD_PPAGESOUNDPROCESSING LINES 37
+BEGIN DIALOGEX IDD_PPAGESOUNDPROCESSING LINES 40
 5		"Mixer canali"
 6		"Miscela i canali in:"
 8		"Richiedi stereo dal decodificatore"
@@ -451,13 +452,15 @@ BEGIN DIALOGEX IDD_PPAGESOUNDPROCESSING LINES 37
 18		"Potenzia l'audio"
 24		"Filtri FFmpeg"
 25		"Preimpostazioni"
-28		"Formato di uscita del campione:"
-29		"Int16"
-30		"Int24"
-31		"Int32"
-32		"Float"
-33		"Spostamento audio (ms):"
-36		"Predefinito"
+26		"Non usare per sorgenti stereo e mono"
+30		"Formato di uscita del campione:"
+31		"Int16"
+32		"Int24"
+33		"Int32"
+34		"Float"
+35		"Spostamento audio (ms):"
+38		"Piccoli altoparlanti stereo"
+39		"Predefinito"
 END
 
 BEGIN DIALOGEX IDD_PPAGESUBRENDERING LINES 30
@@ -592,21 +595,22 @@ BEGIN DIALOGEX IDD_PPAGEWINDOWSIZE LINES 28
 27		"Aggancia ai bordi del desktop"
 END
 
-BEGIN DIALOGEX IDD_PPAGEYOUTUBE LINES 29
+BEGIN DIALOGEX IDD_PPAGEYOUTUBE LINES 31
 5		"YouTube"
 6		"Usa l'analizzatore di pagine web integrato"
-7		"formato preferito:"
+7		"Formato video preferito:"
 10		"60 fps"
 11		"HDR"
-12		"Lingua preferita per la traccia audio:"
-14		"Carica playlist"
-16		"youtube-dl, yt-dlp"
-17		"File eseguibile:"
-19		"Massima altezza video:"
-21		"Seleziona fps massimi o bitrate"
-22		"Indirizzo AceStream:"
-24		"Indirizzo MatriX (TorrServer):"
-27		"User agent:"
+12		"Formato audio preferito:"
+14		"Lingua preferita per la traccia audio:"
+16		"Carica playlist"
+18		"youtube-dl, yt-dlp"
+19		"File eseguibile:"
+21		"Massima altezza video:"
+23		"Seleziona fps massimi o bitrate"
+24		"Indirizzo AceStream:"
+26		"Indirizzo MatriX (TorrServer):"
+29		"User agent:"
 END
 
 BEGIN DIALOGEX IDD_SAVEIMAGEDIALOGTEMPL LINES 9
@@ -721,7 +725,7 @@ BEGIN MENU IDR_MAINFRAME LINES 138
 47		"S&chermo intero"
 48		"&Zoom"
 53		"Automatico"
-56		"&Lingua"
+56		"&Lingua (Language)"
 58		"Impostazioni renderer"
 60		"&Test tearing"
 61		"&Visualizza statistiche"
@@ -835,7 +839,7 @@ BEGIN MENU IDR_POPUP LINES 130
 89		"Cattura"
 90		"Editor shader"
 91		"Navigazione"
-92		"&Lingua"
+92		"&Lingua (Language)"
 93		"Profili vista"
 95		"Ridotta"
 96		"Compatta"
@@ -889,7 +893,7 @@ BEGIN MENU IDR_POPUPMAIN LINES 166
 37		"Cattura"
 38		"Editor shader"
 39		"Navigazione"
-40		"&Lingua"
+40		"&Lingua (Language)"
 41		"Profili vista"
 43		"Ridotta"
 44		"Compatta"
@@ -2035,8 +2039,8 @@ STRING IDS_UPDATE_ERROR_DATA		"Il server di aggiornamento fornisce dati errati.\
 STRING IDS_USING_NEWER_VERSION		"Stai già utilizzando l'ultima versione %s"
 STRING IDS_VDF_AR_MODE		"Leggi AR dallo stream"
 STRING IDS_VDF_AUTO		"Auto"
-STRING IDS_VDF_COLOR_FMT_CONVERSION		"Conversione formato"
-STRING IDS_VDF_COLOR_OUTPUT_FORMATS		"Formati di uscita:"
+STRING IDS_VDF_COLOR_CONVERT_TO_RGB		"Converti in RGB"
+STRING IDS_VDF_COLOR_OUTPUT_FORMATS		"Formati di uscita"
 STRING IDS_VDF_COLOR_PRESET		"Profili:"
 STRING IDS_VDF_COLOR_RGB_LEVELS		"Livelli di uscita RGB:"
 STRING IDS_VDF_COLOR_STANDARD		"Standard:"

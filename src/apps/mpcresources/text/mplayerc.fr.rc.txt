@@ -1,7 +1,7 @@
 ﻿BEGIN DIALOGEX IDD_ABOUTBOX LINES 26
 3		"A propos"
 7		"MPC-BE"
-8		"Copyright © 2002-2024 voir le fichier Authors.txt"
+8		"Copyright © 2002-2025 voir le fichier Authors.txt"
 10		"Version :"
 11		"Compilateur MPC-BE :"
 12		"Compilateur FFmpeg :"
@@ -202,7 +202,7 @@ BEGIN DIALOGEX IDD_PPAGECAPTURE LINES 22
 18		"Récepteur"
 END
 
-BEGIN DIALOGEX IDD_PPAGECOLOR LINES 27
+BEGIN DIALOGEX IDD_PPAGECOLOR LINES 28
 5		"Contrôle des couleurs (pour EVR, madVR, et MPC VR)"
 6		"Luminosité"
 7		"Contraste"
@@ -210,9 +210,10 @@ BEGIN DIALOGEX IDD_PPAGECOLOR LINES 27
 9		"Saturation"
 18		"Réinitialiser"
 20		"Gestion des couleurs"
-21		"Type d'entrée :"
-23		"Lumière ambiante :"
-25		"Intention de rendu :"
+21		"(for EVR-CP, surface 10/16-bit)"
+22		"Type d'entrée :"
+24		"Lumière ambiante :"
+26		"Intention de rendu :"
 END
 
 BEGIN DIALOGEX IDD_PPAGEDVD LINES 19
@@ -297,7 +298,7 @@ BEGIN DIALOGEX IDD_PPAGEFULLSCREEN LINES 34
 32		"Restaurer la résolution après la fermeture"
 END
 
-BEGIN DIALOGEX IDD_PPAGEINTERFACE LINES 55
+BEGIN DIALOGEX IDD_PPAGEINTERFACE LINES 56
 6		"Utiliser le thème sombre (par défaut)"
 7		"Luminosité :"
 9		"Réglage de la couleur de l'indicateur sonore :"
@@ -310,25 +311,25 @@ BEGIN DIALOGEX IDD_PPAGEINTERFACE LINES 55
 16		"G:"
 17		"B:"
 21		"Utiliser le menu sombre"
-22		"Utiliser la barre de titre sombre (Windows 11)"
-24		"Utiliser l'info-bulle temporelle :"
-26		"Utiliser l'aperçu dans la recherche"
-27		"Taille par rapport à la largeur de l'écran :"
-31		"Online"
-32		"Utiliser le marqueur de chapitres"
-33		"Utiliser la barre volante"
-34		"Taille de la police de la Playlist:"
-37		"OSD"
-38		"Police :"
-42		"F"
-43		"Arrière-plan :"
-44		"G1"
-45		"G2"
-46		"Transparent:"
-48		"Taille de bordure :"
-51		"Ombre "
-52		"Anti-aliasing"
-53		"Utiliser les fonctionnalités de la barre des tâches de Windows 7 (et supérieur)"
+22		"Utiliser la barre de titre sombre (Windows 10 and above)"
+25		"Utiliser l'info-bulle temporelle :"
+27		"Utiliser l'aperçu dans la recherche"
+28		"Taille par rapport à la largeur de l'écran :"
+32		"Online"
+33		"Utiliser le marqueur de chapitres"
+34		"Utiliser la barre volante"
+35		"Taille de la police de la Playlist:"
+38		"OSD"
+39		"Police :"
+43		"F"
+44		"Arrière-plan :"
+45		"G1"
+46		"G2"
+47		"Transparent:"
+49		"Taille de bordure :"
+52		"Ombre "
+53		"Anti-aliasing"
+54		"Utiliser les fonctionnalités de la barre des tâches de Windows 7 (et supérieur)"
 END
 
 BEGIN DIALOGEX IDD_PPAGEINTERNALFILTERS LINES 22
@@ -441,7 +442,7 @@ BEGIN DIALOGEX IDD_PPAGEPLAYER LINES 49
 48		"sec."
 END
 
-BEGIN DIALOGEX IDD_PPAGESOUNDPROCESSING LINES 37
+BEGIN DIALOGEX IDD_PPAGESOUNDPROCESSING LINES 40
 5		"Mélangeur de canaux"
 6		"Mixer les canaux en :"
 8		"Demander la stéréo au décodeur"
@@ -451,13 +452,15 @@ BEGIN DIALOGEX IDD_PPAGESOUNDPROCESSING LINES 37
 18		"Booster le son"
 24		"Filtres FFmpeg"
 25		"Préréglages"
-28		"Format de sortie audio :"
-29		"Int16"
-30		"Int24"
-31		"Int32"
-32		"Float"
-33		"Décalage audio (en ms) :"
-36		"Par défaut"
+26		"Don't use for stereo and mono sources"
+30		"Format de sortie audio :"
+31		"Int16"
+32		"Int24"
+33		"Int32"
+34		"Float"
+35		"Décalage audio (en ms) :"
+38		"Small stereo speakers"
+39		"Par défaut"
 END
 
 BEGIN DIALOGEX IDD_PPAGESUBRENDERING LINES 30
@@ -592,21 +595,22 @@ BEGIN DIALOGEX IDD_PPAGEWINDOWSIZE LINES 28
 27		"Ancrer aux bords du bureau"
 END
 
-BEGIN DIALOGEX IDD_PPAGEYOUTUBE LINES 29
+BEGIN DIALOGEX IDD_PPAGEYOUTUBE LINES 31
 5		"YouTube"
 6		"Utilisez l'analyseur de pages Web intégré"
-7		"Format préféré :"
+7		"Preferred video format:"
 10		"60 fps"
 11		"HDR"
-12		"Langue préférée de la piste audio:"
-14		"Charger la Playlist"
-16		"youtube-dl, yt-dlp"
-17		"Fichier exécutable :"
-19		"Hauteur max de la vidéo :"
-21		"Selectionner le fps ou bitrate max"
-22		"Adresse AceStream :"
-24		"Adresse MatriX (TorrServer) :"
-27		"Agent utilisateur :"
+12		"Preferred audio format:"
+14		"Langue préférée de la piste audio:"
+16		"Charger la Playlist"
+18		"youtube-dl, yt-dlp"
+19		"Fichier exécutable :"
+21		"Hauteur max de la vidéo :"
+23		"Selectionner le fps ou bitrate max"
+24		"Adresse AceStream :"
+26		"Adresse MatriX (TorrServer) :"
+29		"Agent utilisateur :"
 END
 
 BEGIN DIALOGEX IDD_SAVEIMAGEDIALOGTEMPL LINES 9
@@ -2035,8 +2039,8 @@ STRING IDS_UPDATE_ERROR_DATA		"Le serveur de mise à jour donne des données err
 STRING IDS_USING_NEWER_VERSION		"Vous utilisez déjà la dernière version %s."
 STRING IDS_VDF_AR_MODE		"Lire le ratio d'affichage dans le fichier"
 STRING IDS_VDF_AUTO		"Auto"
-STRING IDS_VDF_COLOR_FMT_CONVERSION		"Format de conversion"
-STRING IDS_VDF_COLOR_OUTPUT_FORMATS		"Formats de sortie :"
+STRING IDS_VDF_COLOR_CONVERT_TO_RGB		"Convert to RGB"
+STRING IDS_VDF_COLOR_OUTPUT_FORMATS		"Formats de sortie "
 STRING IDS_VDF_COLOR_PRESET		"Presélection :"
 STRING IDS_VDF_COLOR_RGB_LEVELS		"Niveaux de sortie RGB :"
 STRING IDS_VDF_COLOR_STANDARD		"Standard:"

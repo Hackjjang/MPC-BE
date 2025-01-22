@@ -1,7 +1,7 @@
 ﻿BEGIN DIALOGEX IDD_ABOUTBOX LINES 26
 3		"关于"
 7		"MPC-BE"
-8		"版权所有 © 2002-2024 请查看 Authors.txt"
+8		"版权所有 © 2002-2025 请查看 Authors.txt"
 10		"版本:"
 11		"MPC-BE 编译器:"
 12		"FFmpeg 编译器:"
@@ -202,7 +202,7 @@ BEGIN DIALOGEX IDD_PPAGECAPTURE LINES 22
 18		"接收设备"
 END
 
-BEGIN DIALOGEX IDD_PPAGECOLOR LINES 27
+BEGIN DIALOGEX IDD_PPAGECOLOR LINES 28
 5		"色彩控制 (用于 EVR、madVR 和 MPC VR)"
 6		"亮度"
 7		"对比度"
@@ -210,9 +210,10 @@ BEGIN DIALOGEX IDD_PPAGECOLOR LINES 27
 9		"饱和度"
 18		"重置"
 20		"色彩管理"
-21		"输入类型:"
-23		"环境光线:"
-25		"渲染意图:"
+21		"(EVR-CP为10-bit或16-bit)"
+22		"输入类型:"
+24		"环境光线:"
+26		"渲染意图:"
 END
 
 BEGIN DIALOGEX IDD_PPAGEDVD LINES 19
@@ -297,7 +298,7 @@ BEGIN DIALOGEX IDD_PPAGEFULLSCREEN LINES 34
 32		"退出后恢复默认分辨率"
 END
 
-BEGIN DIALOGEX IDD_PPAGEINTERFACE LINES 55
+BEGIN DIALOGEX IDD_PPAGEINTERFACE LINES 56
 6		"使用暗黑主题 (默认)"
 7		"亮度:"
 9		"设置声音控制条颜色:"
@@ -310,25 +311,25 @@ BEGIN DIALOGEX IDD_PPAGEINTERFACE LINES 55
 16		"绿:"
 17		"蓝:"
 21		"使用暗黑菜单"
-22		"使用暗黑标题 (Windows 11)"
-24		"使用时间工具提示:"
-26		"搜索时显示预览"
-27		"相对于屏幕宽度的缩略图大小:"
-31		"在线视频"
-32		"显示章节标记"
-33		"全屏模式时启用悬浮工具条"
-34		"播放列表字体大小:"
-37		"屏幕显示"
-38		"字体:"
-42		"F"
-43		"背景:"
-44		"G1"
-45		"G2"
-46		"透明:"
-48		"边框大小:"
-51		"阴影"
-52		"抗锯齿"
-53		"使用 Windows 7 (或更高版本) 任务栏功能"
+22		"使用暗黑标题 (Windows 10及以上版本)"
+25		"使用时间工具提示:"
+27		"搜索时显示预览"
+28		"相对于屏幕宽度的缩略图大小:"
+32		"在线视频"
+33		"显示章节标记"
+34		"全屏模式时启用悬浮工具条"
+35		"播放列表字体大小:"
+38		"屏幕显示"
+39		"字体:"
+43		"F"
+44		"背景:"
+45		"G1"
+46		"G2"
+47		"透明:"
+49		"边框大小:"
+52		"阴影"
+53		"抗锯齿"
+54		"使用 Windows 7 (或更高版本) 任务栏功能"
 END
 
 BEGIN DIALOGEX IDD_PPAGEINTERNALFILTERS LINES 22
@@ -441,7 +442,7 @@ BEGIN DIALOGEX IDD_PPAGEPLAYER LINES 49
 48		"秒"
 END
 
-BEGIN DIALOGEX IDD_PPAGESOUNDPROCESSING LINES 37
+BEGIN DIALOGEX IDD_PPAGESOUNDPROCESSING LINES 40
 5		"声道合成"
 6		"混合声道至:"
 8		"要求解码器输出 2.0 立体声"
@@ -451,13 +452,15 @@ BEGIN DIALOGEX IDD_PPAGESOUNDPROCESSING LINES 37
 18		"音频增强"
 24		"FFmpeg 过滤器"
 25		"预设"
-28		"输出采样格式:"
-29		"Int16"
-30		"Int24"
-31		"Int32"
-32		"浮点"
-33		"音频延迟时间 (毫秒):"
-36		"默认值"
+26		"音源为单声道或立体声时禁用"
+30		"输出采样格式:"
+31		"Int16"
+32		"Int24"
+33		"Int32"
+34		"浮点"
+35		"音频延迟时间 (毫秒):"
+38		"小型立体声扬声器"
+39		"默认值"
 END
 
 BEGIN DIALOGEX IDD_PPAGESUBRENDERING LINES 30
@@ -592,21 +595,22 @@ BEGIN DIALOGEX IDD_PPAGEWINDOWSIZE LINES 28
 27		"吸附对齐至桌面边缘"
 END
 
-BEGIN DIALOGEX IDD_PPAGEYOUTUBE LINES 29
+BEGIN DIALOGEX IDD_PPAGEYOUTUBE LINES 31
 5		"YouTube"
 6		"使用内置网页分析器"
-7		"首选格式:"
+7		"首选视频格式:"
 10		"60 fps"
 11		"HDR"
-12		"首选音轨语言:"
-14		"加载播放列表"
-16		"youtube-dl, yt-dlp"
-17		"可执行的文件:"
-19		"最大视频高度:"
-21		"选择最大帧率或比特率"
-22		"AceStream 链接:"
-24		"MatriX (TorrServer) 链接:"
-27		"用户代理:"
+12		"首选音频格式:"
+14		"首选音轨语言:"
+16		"加载播放列表"
+18		"youtube-dl, yt-dlp"
+19		"可执行的文件:"
+21		"最大视频高度:"
+23		"选择最大帧率或比特率"
+24		"AceStream 链接:"
+26		"MatriX (TorrServer) 链接:"
+29		"用户代理:"
 END
 
 BEGIN DIALOGEX IDD_SAVEIMAGEDIALOGTEMPL LINES 9
@@ -2035,8 +2039,8 @@ STRING IDS_UPDATE_ERROR_DATA		"更新服务器返回了错误数据。\n\n请稍
 STRING IDS_USING_NEWER_VERSION		"您当前使用的版本，%s 已是最新的版本。"
 STRING IDS_VDF_AR_MODE		"从数据流中读取高宽比"
 STRING IDS_VDF_AUTO		"自动"
-STRING IDS_VDF_COLOR_FMT_CONVERSION		"格式转换"
-STRING IDS_VDF_COLOR_OUTPUT_FORMATS		"输出格式:"
+STRING IDS_VDF_COLOR_CONVERT_TO_RGB		"转换为 RGB"
+STRING IDS_VDF_COLOR_OUTPUT_FORMATS		"输出格式"
 STRING IDS_VDF_COLOR_PRESET		"预设:"
 STRING IDS_VDF_COLOR_RGB_LEVELS		"RGB 输出级别:"
 STRING IDS_VDF_COLOR_STANDARD		"标准:"

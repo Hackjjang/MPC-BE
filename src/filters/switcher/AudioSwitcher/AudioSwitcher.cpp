@@ -35,6 +35,11 @@ extern "C" {
 }
 #include "AudioSwitcher.h"
 
+// {0000FFFE-0000-0010-8000-00AA00389B71}
+// Invalid media subtype from "AVI/WAV File Source" for AVI files
+// that have audio track parameters written in WAVEFORMATEXTENSIBLE structure.
+DEFINE_MEDIATYPE_GUID(MEDIASUBTYPE_WAVEFORMATEXTENSIBLE, WAVE_FORMAT_EXTENSIBLE);
+
 #ifdef REGISTER_FILTER
 
 const AMOVIESETUP_MEDIATYPE sudPinTypesIn[] = {
@@ -175,9 +180,17 @@ HRESULT CAudioSwitcherFilter::CheckMediaType(const CMediaType* pmt)
 						return S_OK;
 					}
 			}
-		} else if (pmt->subtype == MEDIASUBTYPE_IEEE_FLOAT && (bps == 32 || bps == 64)
-				&& (wFormatTag == WAVE_FORMAT_IEEE_FLOAT || wFormatTag == WAVE_FORMAT_EXTENSIBLE)) {
-			return S_OK;
+		}
+		else if (pmt->subtype == MEDIASUBTYPE_IEEE_FLOAT) {
+			if ((bps == 32 || bps == 64) && (wFormatTag == WAVE_FORMAT_IEEE_FLOAT || wFormatTag == WAVE_FORMAT_EXTENSIBLE)) {
+				return S_OK;
+			}
+		}
+		else if (pmt->subtype == MEDIASUBTYPE_WAVEFORMATEXTENSIBLE && wFormatTag == WAVE_FORMAT_EXTENSIBLE) {
+			GUID& SubFormat = ((WAVEFORMATEXTENSIBLE*)pmt->pbFormat)->SubFormat;
+			if (SubFormat == KSDATAFORMAT_SUBTYPE_PCM || SubFormat == KSDATAFORMAT_SUBTYPE_IEEE_FLOAT) {
+				return S_OK;
+			}
 		}
 	}
 
@@ -257,6 +270,13 @@ HRESULT CAudioSwitcherFilter::Transform(IMediaSample* pIn, IMediaSample* pOut)
 	}
 	else if (audio_samples < 0) {
 		return E_FAIL;
+	}
+
+	bool bAFilters;
+	if (audio_channels <= 2 && m_bAudioFiltersDisableForStereo) {
+		bAFilters = false;
+	} else {
+		bAFilters = (m_afilters.size() > 0);
 	}
 
 	const WAVEFORMATEX* output_wfe = (WAVEFORMATEX*)pOutPin->CurrentMediaType().pbFormat;
@@ -344,7 +364,7 @@ HRESULT CAudioSwitcherFilter::Transform(IMediaSample* pIn, IMediaSample* pOut)
 		}
 	}
 
-	if (m_afilters.size()) {
+	if (bAFilters) {
 		hr = S_FALSE;
 		if (!m_AudioFilter.IsInitialized()) {
 			hr = m_AudioFilter.Initialize(
@@ -415,7 +435,7 @@ void CAudioSwitcherFilter::TransformMediaType(CMediaType& mt, const bool bForce1
 {
 	if (mt.majortype == MEDIATYPE_Audio
 			&& mt.formattype == FORMAT_WaveFormatEx
-			&& (mt.subtype == MEDIASUBTYPE_PCM || mt.subtype == MEDIASUBTYPE_IEEE_FLOAT)) {
+			&& (mt.subtype == MEDIASUBTYPE_PCM || mt.subtype == MEDIASUBTYPE_IEEE_FLOAT || mt.subtype == MEDIASUBTYPE_WAVEFORMATEXTENSIBLE)) {
 
 		WAVEFORMATEX* wfe = (WAVEFORMATEX*)mt.pbFormat;
 		WAVEFORMATEXTENSIBLE* wfex = (WAVEFORMATEXTENSIBLE*)wfe;
@@ -424,15 +444,16 @@ void CAudioSwitcherFilter::TransformMediaType(CMediaType& mt, const bool bForce1
 		if (sampleformat == SAMPLE_FMT_NONE) {
 			return; // skip spdif/bitstream formats
 		}
-		if (m_bAutoVolumeControl || m_afilters.size()) {
+
+		const auto input_channels = wfe->nChannels;
+		const auto input_layout = (wfe->wFormatTag == WAVE_FORMAT_EXTENSIBLE && wfe->nChannels == CountBits(wfex->dwChannelMask)) ? wfex->dwChannelMask : GetDefChannelMask(wfe->nChannels);
+
+		if (m_bAutoVolumeControl || (m_afilters.size() && (input_channels > 2 || !m_bAudioFiltersDisableForStereo))) {
 			sampleformat = SAMPLE_FMT_FLT; // this transformations change the sample format to float
 		}
 
 		WORD  channels;
 		DWORD layout;
-
-		const auto input_channels = wfe->nChannels;
-		const auto input_layout = (wfe->wFormatTag == WAVE_FORMAT_EXTENSIBLE && wfe->nChannels == CountBits(wfex->dwChannelMask)) ? wfex->dwChannelMask : GetDefChannelMask(wfe->nChannels);
 		if (m_bMixer) {
 			channels = channel_mode[m_nMixerLayout].channels;
 			layout = channel_mode[m_nMixerLayout].ch_layout;
@@ -748,6 +769,12 @@ STDMETHODIMP_(int) CAudioSwitcherFilter::GetAudioFilterState()
 	} else {
 		return m_afilters.size() ? -2 : -1;
 	}
+}
+
+STDMETHODIMP CAudioSwitcherFilter::SetAudioFiltersNotForStereo(bool bDisableForStereo)
+{
+	m_bAudioFiltersDisableForStereo = bDisableForStereo;
+	return S_OK;
 }
 
 // IAMStreamSelect

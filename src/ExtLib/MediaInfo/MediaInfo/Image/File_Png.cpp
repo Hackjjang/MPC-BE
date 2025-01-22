@@ -90,10 +90,12 @@ namespace Elements
     const int32u IHDR=0x49484452;
     const int32u PLTE=0x506C5445;
     const int32u cICP=0x63494350;
+    const int32u cLLI=0x634C4C49;
     const int32u cLLi=0x634C4C69;
     const int32u gAMA=0x67414D41;
     const int32u iCCP=0x69434350;
     const int32u iTXt=0x69545874;
+    const int32u mDCV=0x6D444356;
     const int32u mDCv=0x6D444376;
     const int32u pHYs=0x70485973;
     const int32u sBIT=0x73424954;
@@ -255,10 +257,12 @@ void File_Png::Data_Parse()
         CASE_INFO(IHDR,                                         "Image header");
         CASE_INFO(PLTE,                                         "Palette table");
         CASE_INFO(cICP,                                         "Coding-independent code points");
+        CASE_INFO(cLLI,                                         "Content Light Level Information");
         CASE_INFO(cLLi,                                         "Content Light Level Information");
         CASE_INFO(gAMA,                                         "Gamma");
         CASE_INFO(iCCP,                                         "Embedded ICC profile");
         CASE_INFO(iTXt,                                         "International textual data");
+        CASE_INFO(mDCV,                                         "Mastering Display Color Volume");
         CASE_INFO(mDCv,                                         "Mastering Display Color Volume");
         CASE_INFO(pHYs,                                         "Physical pixel dimensions");
         CASE_INFO(sBIT,                                         "Significant bits");
@@ -373,7 +377,7 @@ void File_Png::cICP()
 }
 
 //---------------------------------------------------------------------------
-void File_Png::cLLi()
+void File_Png::cLLI()
 {
     //Parsing
     Ztring MaxCLL, MaxFALL;
@@ -448,12 +452,13 @@ void File_Png::iCCP()
             size_t UncompressedData_NewMaxSize=strm.total_out*4;
             int8u* UncompressedData_New=new int8u[UncompressedData_NewMaxSize];
             memcpy(UncompressedData_New, strm.next_out-strm.total_out, strm.total_out);
-            delete[] strm.next_out; strm.next_out=UncompressedData_New;
+            delete[](strm.next_out - strm.total_out); strm.next_out=UncompressedData_New;
             strm.next_out=strm.next_out+strm.total_out;
             strm.avail_out=UncompressedData_NewMaxSize-strm.total_out;
         }
         auto Buffer=(const char*)strm.next_out-strm.total_out;
         auto Buffer_Size=(size_t)strm.total_out;
+        inflateEnd(&strm);
         #if defined(MEDIAINFO_ICC_YES)
             File_Icc ICC_Parser;
             ICC_Parser.StreamKind=StreamKind_Last;
@@ -462,6 +467,7 @@ void File_Png::iCCP()
             Open_Buffer_Continue(&ICC_Parser, (const int8u*)Buffer, Buffer_Size);
             Open_Buffer_Finalize(&ICC_Parser);
             Merge(ICC_Parser, StreamKind_Last, 0, 0);
+            delete[] Buffer;
         #else
             Skip_XX(Element_Size-Element_Offset,                "ICC profile");
         #endif
@@ -471,7 +477,7 @@ void File_Png::iCCP()
 }
 
 //---------------------------------------------------------------------------
-void File_Png::mDCv()
+void File_Png::mDCV()
 {
     Ztring MasteringDisplay_ColorPrimaries, MasteringDisplay_Luminance;
     Get_MasteringDisplayColorVolume(MasteringDisplay_ColorPrimaries, MasteringDisplay_Luminance);
@@ -612,16 +618,19 @@ void File_Png::Textual(bitset8 Method)
                 size_t UncompressedData_NewMaxSize=strm.total_out*4;
                 int8u* UncompressedData_New=new int8u[UncompressedData_NewMaxSize];
                 memcpy(UncompressedData_New, strm.next_out-strm.total_out, strm.total_out);
-                delete[] strm.next_out; strm.next_out=UncompressedData_New;
+                delete[](strm.next_out - strm.total_out); strm.next_out=UncompressedData_New;
                 strm.next_out=strm.next_out+strm.total_out;
                 strm.avail_out=UncompressedData_NewMaxSize-strm.total_out;
             }
             auto Buffer=(const char*)strm.next_out-strm.total_out;
             auto Buffer_Size=(size_t)strm.total_out;
+            inflateEnd(&strm);
             if (Method[IsUTF8])
                 Text.From_UTF8(Buffer, Buffer_Size);
             else
                 Text.From_ISO_8859_1(Buffer, Buffer_Size);
+            inflateEnd(&strm);
+            delete[](strm.next_out - strm.total_out);
         }
         Skip_XX(Element_Size-Element_Offset,                    "(Compressed)");
         if (!Text.empty())

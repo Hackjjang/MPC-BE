@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
@@ -127,6 +127,8 @@
     <ClInclude Include="Mpeg2Def.h" />
     <ClInclude Include="NullRenderers.h" />
     <ClInclude Include="Packet.h" />
+    <ClInclude Include="pixconv\pixconv_sse2_templates.h" />
+    <ClInclude Include="pixconv\yuv420_nv12_unscaled.h" />
     <ClInclude Include="PixelUtils.h" />
     <ClInclude Include="PixelUtils_AviSynth.h" />
     <ClInclude Include="PixelUtils_VirtualDub.h" />

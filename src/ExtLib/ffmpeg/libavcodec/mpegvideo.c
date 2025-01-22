@@ -41,7 +41,7 @@
 #include "mpegutils.h"
 #include "mpegvideo.h"
 #include "mpegvideodata.h"
-#include "refstruct.h"
+#include "libavutil/refstruct.h"
 
 static void dct_unquantize_mpeg1_intra_c(MpegEncContext *s,
                                    int16_t *block, int n, int qscale)
@@ -110,8 +110,7 @@ static void dct_unquantize_mpeg2_intra_c(MpegEncContext *s,
     if (s->q_scale_type) qscale = ff_mpeg2_non_linear_qscale[qscale];
     else                 qscale <<= 1;
 
-    if(s->alternate_scan) nCoeffs= 63;
-    else nCoeffs= s->block_last_index[n];
+    nCoeffs= s->block_last_index[n];
 
     block[0] *= n < 4 ? s->y_dc_scale : s->c_dc_scale;
     quant_matrix = s->intra_matrix;
@@ -141,8 +140,7 @@ static void dct_unquantize_mpeg2_intra_bitexact(MpegEncContext *s,
     if (s->q_scale_type) qscale = ff_mpeg2_non_linear_qscale[qscale];
     else                 qscale <<= 1;
 
-    if(s->alternate_scan) nCoeffs= 63;
-    else nCoeffs= s->block_last_index[n];
+    nCoeffs= s->block_last_index[n];
 
     block[0] *= n < 4 ? s->y_dc_scale : s->c_dc_scale;
     sum += block[0];
@@ -175,8 +173,7 @@ static void dct_unquantize_mpeg2_inter_c(MpegEncContext *s,
     if (s->q_scale_type) qscale = ff_mpeg2_non_linear_qscale[qscale];
     else                 qscale <<= 1;
 
-    if(s->alternate_scan) nCoeffs= 63;
-    else nCoeffs= s->block_last_index[n];
+    nCoeffs= s->block_last_index[n];
 
     quant_matrix = s->inter_matrix;
     for(i=0; i<=nCoeffs; i++) {
@@ -502,11 +499,11 @@ void ff_mpv_common_defaults(MpegEncContext *s)
 
 static void free_buffer_pools(BufferPoolContext *pools)
 {
-    ff_refstruct_pool_uninit(&pools->mbskip_table_pool);
-    ff_refstruct_pool_uninit(&pools->qscale_table_pool);
-    ff_refstruct_pool_uninit(&pools->mb_type_pool);
-    ff_refstruct_pool_uninit(&pools->motion_val_pool);
-    ff_refstruct_pool_uninit(&pools->ref_index_pool);
+    av_refstruct_pool_uninit(&pools->mbskip_table_pool);
+    av_refstruct_pool_uninit(&pools->qscale_table_pool);
+    av_refstruct_pool_uninit(&pools->mb_type_pool);
+    av_refstruct_pool_uninit(&pools->motion_val_pool);
+    av_refstruct_pool_uninit(&pools->ref_index_pool);
     pools->alloc_mb_height = pools->alloc_mb_width = pools->alloc_mb_stride = 0;
 }
 
@@ -560,7 +557,7 @@ int ff_mpv_init_context_frame(MpegEncContext *s)
     s->mb_index2xy[s->mb_height * s->mb_width] = (s->mb_height - 1) * s->mb_stride + s->mb_width; // FIXME really needed?
 
 #define ALLOC_POOL(name, size, flags) do { \
-    pools->name ##_pool = ff_refstruct_pool_alloc((size), (flags)); \
+    pools->name ##_pool = av_refstruct_pool_alloc((size), (flags)); \
     if (!pools->name ##_pool) \
         return AVERROR(ENOMEM); \
 } while (0)
@@ -581,7 +578,7 @@ int ff_mpv_init_context_frame(MpegEncContext *s)
         }
         if (s->codec_id == AV_CODEC_ID_MPEG4) {
             ALLOC_POOL(mbskip_table, mb_array_size + 2,
-                       !s->encoding ? FF_REFSTRUCT_POOL_FLAG_ZERO_EVERY_TIME : 0);
+                       !s->encoding ? AV_REFSTRUCT_POOL_FLAG_ZERO_EVERY_TIME : 0);
             if (!s->encoding) {
                 /* cbp, pred_dir */
                 if (!(s->cbp_table      = av_mallocz(mb_array_size)) ||
@@ -629,7 +626,7 @@ int ff_mpv_init_context_frame(MpegEncContext *s)
         /* FIXME: The output of H.263 with OBMC depends upon
          * the earlier content of the buffer; therefore we set
          * the flags to always reset returned buffers here. */
-        ALLOC_POOL(motion_val, mv_size, FF_REFSTRUCT_POOL_FLAG_ZERO_EVERY_TIME);
+        ALLOC_POOL(motion_val, mv_size, AV_REFSTRUCT_POOL_FLAG_ZERO_EVERY_TIME);
         ALLOC_POOL(ref_index, ref_index_size, 0);
     }
 #undef ALLOC_POOL

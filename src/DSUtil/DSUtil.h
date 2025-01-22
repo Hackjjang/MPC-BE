@@ -120,9 +120,9 @@ extern HRESULT			LoadExternalFilter(LPCWSTR path, REFCLSID clsid, IBaseFilter** 
 extern HRESULT			LoadExternalPropertyPage(IPersist* pP, REFCLSID clsid, IPropertyPage** ppPP);
 extern void				UnloadExternalObjects();
 
-extern CString			MakeFullPath(LPCWSTR path);
+extern CStringW			MakeFullPath(LPCWSTR path);
 // simple file system path detector
-extern bool				IsLikelyFilePath(const CString &str);
+extern bool				IsLikelyFilePath(const CStringW &str);
 
 extern GUID				GUIDFromCString(CString str);
 extern HRESULT			GUIDFromCString(CString str, GUID& guid);
@@ -136,7 +136,8 @@ extern void				RegisterSourceFilter(const CLSID& clsid, const GUID& subtype2, LP
 extern void				RegisterSourceFilter(const CLSID& clsid, const GUID& subtype2, const std::list<CString>& chkbytes, LPCWSTR ext = nullptr, ...);
 extern void				UnRegisterSourceFilter(const GUID& subtype);
 
-extern CString			GetDXVAMode(const GUID& guidDecoder);
+extern CStringW			GetDXVAModeString(const GUID& guidDecoder);
+extern CStringW			GetDXVAModeStringAndName(const GUID& guidDecoder);
 
 extern void				TraceFilterInfo(IBaseFilter* pBF);
 extern void				TracePinInfo(IPin* pPin);
@@ -156,6 +157,7 @@ extern CStringA			VobSubDefHeader(int w, int h, CStringA palette = "");
 extern void				CorrectWaveFormatEx(CMediaType& mt);
 
 extern inline const LONGLONG GetPerfCounter();
+
 
 class CPinInfo : public PIN_INFO
 {

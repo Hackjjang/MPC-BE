@@ -67,6 +67,7 @@ void ff_dxva2_hevc_fill_picture_parameters(const AVCodecContext *avctx, AVDXVACo
 // ==> End patch MPC
 {
     const HEVCContext *h = avctx->priv_data;
+    const HEVCLayerContext *l = &h->layers[h->cur_layer];
     const HEVCFrame *current_picture = h->cur_frame;
     const HEVCPPS *pps = h->pps;
     const HEVCSPS *sps = pps->sps;
@@ -204,9 +205,9 @@ void ff_dxva2_hevc_fill_picture_parameters(const AVCodecContext *avctx, AVDXVACo
     // fill RefPicList from the DPB
     for (i = 0, j = 0; i < FF_ARRAY_ELEMS(pp->RefPicList); i++) {
         const HEVCFrame *frame = NULL;
-        while (!frame && j < FF_ARRAY_ELEMS(h->DPB)) {
-            if (&h->DPB[j] != current_picture && (h->DPB[j].flags & (HEVC_FRAME_FLAG_LONG_REF | HEVC_FRAME_FLAG_SHORT_REF)))
-                frame = &h->DPB[j];
+        while (!frame && j < FF_ARRAY_ELEMS(l->DPB)) {
+            if (&l->DPB[j] != current_picture && (l->DPB[j].flags & (HEVC_FRAME_FLAG_LONG_REF | HEVC_FRAME_FLAG_SHORT_REF)))
+                frame = &l->DPB[j];
             j++;
         }
 
@@ -289,7 +290,7 @@ static int commit_bitstream_and_slice_buffer(AVCodecContext *avctx,
     const HEVCFrame *current_picture = h->cur_frame;
     struct hevc_dxva2_picture_context *ctx_pic = current_picture->hwaccel_picture_private;
     DXVA_Slice_HEVC_Short *slice = NULL;
-    void     *dxva_data_ptr;
+    void     *dxva_data_ptr = NULL;
     uint8_t  *dxva_data, *current, *end;
     unsigned dxva_size;
     void     *slice_data;
@@ -318,6 +319,9 @@ static int commit_bitstream_and_slice_buffer(AVCodecContext *avctx,
             return -1;
     }
 #endif
+
+    if (!dxva_data_ptr)
+        return -1;
 
     dxva_data = dxva_data_ptr;
     current = dxva_data;

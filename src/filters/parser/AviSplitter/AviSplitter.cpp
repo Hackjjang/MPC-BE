@@ -1,6 +1,6 @@
 /*
  * (C) 2003-2006 Gabest
- * (C) 2006-2023 see Authors.txt
+ * (C) 2006-2024 see Authors.txt
  *
  * This file is part of MPC-BE.
  *
@@ -474,7 +474,7 @@ HRESULT CAviSplitterFilter::CreateOutputs(IAsyncReader* pAsyncReader)
 				continue;
 			}
 
-			if (pwfe->wFormatTag == 0x706D) {
+			if (pwfe->wFormatTag == WAVE_FORMAT_FAAD_AAC) {
 				pwfe->wFormatTag = WAVE_FORMAT_RAW_AAC1;
 			}
 
@@ -609,7 +609,7 @@ HRESULT CAviSplitterFilter::ReIndex(__int64 end, UINT64& Size, DWORD TrackNumber
 		return E_FAIL;
 	}
 
-	while (S_OK == hr && m_pFile->GetPos() < end && SUCCEEDED(hr) && !m_fAbort) {
+	while (S_OK == hr && m_pFile->GetPos() < end && !m_fAbort) {
 		__int64 pos = m_pFile->GetPos();
 
 		DWORD id = 0, size;

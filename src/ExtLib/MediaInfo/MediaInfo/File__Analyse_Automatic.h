@@ -1501,6 +1501,7 @@ enum text
     Text_Events_PaintOn,
     Text_Lines_Count,
     Text_Lines_MaxCountPerEvent,
+    Text_Lines_MaxCharacterCount,
     Text_FirstDisplay_Delay_Frames,
     Text_FirstDisplay_Type,
 };
@@ -1537,8 +1538,10 @@ enum other
     Other_Format_Profile,
     Other_Format_Compression,
     Other_Format_Settings,
+    Other_Format_Settings_Wrapping,
     Other_Format_AdditionalFeatures,
     Other_MuxingMode,
+    Other_MuxingMode_MoreInfo,
     Other_CodecID,
     Other_CodecID_String,
     Other_CodecID_Info,

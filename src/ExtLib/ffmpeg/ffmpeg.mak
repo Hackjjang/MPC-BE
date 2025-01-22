@@ -31,7 +31,7 @@ LIB_LIBSWSCALE     = $(OBJ_DIR)libswscale.a
 TARGET_LIB         = $(TARGET_LIB_DIR)/ffmpeg.lib
 ARSCRIPT           = $(OBJ_DIR)script.ar
 
-# Compiler and yasm flags
+# Compiler and NASM flags
 CFLAGS = -I. -I.. -Icompat/atomics/win32 -Icompat/windows \
 	   -Ilibavcodec \
 	   -I$(ZLIB_DIR) -I$(SPEEX_DIR) -I$(SOXR_DIR) -I$(DAV1_DIR) -I$(FFNVCODEC_DIR) -I$(UAVS3D_DIR) -I$(VVDEC_DIR) \
@@ -40,19 +40,19 @@ CFLAGS = -I. -I.. -Icompat/atomics/win32 -Icompat/windows \
 	   -D_WIN32_WINNT=0x0601 -DWINVER=0x0601 \
 	   -fomit-frame-pointer -std=c17 \
 	   -fno-common -fno-ident -mthreads -Wno-discarded-qualifiers
-YASMFLAGS = -I. -Pconfig.asm
+NASMFLAGS = -I. -Pconfig.asm
 
 ifeq ($(64BIT),yes)
 	GCC_PREFIX  = x86_64-w64-mingw32-
 	TARGET_OS   = x86_64-w64-mingw32
 	CFLAGS     += -DWIN64 -D_WIN64 -DARCH_X86_64 -DPIC
 	OPTFLAGS    = -m64 -fno-leading-underscore
-	YASMFLAGS  += -f win32 -m amd64 -DWIN64=1 -DARCH_X86_32=0 -DARCH_X86_64=1 -DPIC
+	NASMFLAGS  += -f win64 -DWIN64=1 -DARCH_X86_32=0 -DARCH_X86_64=1 -DPIC
 else
 	TARGET_OS   = i686-w64-mingw32
-	CFLAGS     += -DWIN32 -D_WIN32 -DARCH_X86_32
+	CFLAGS     += -DWIN32 -D_WIN32 -DARCH_X86_32 -Wno-incompatible-pointer-types
 	OPTFLAGS    = -m32 -march=i686 -msse -msse2 -mfpmath=sse -mstackrealign
-	YASMFLAGS  += -f win32 -m x86 -DWIN32=1 -DARCH_X86_32=1 -DARCH_X86_64=0 -DPREFIX
+	NASMFLAGS  += -f win32 -DWIN32=1 -DARCH_X86_32=1 -DARCH_X86_64=0 -DPREFIX
 endif
 
 ifeq ($(DEBUG),yes)
@@ -67,10 +67,12 @@ OBJ_DIRS = $(OBJ_DIR) \
 	$(OBJ_DIR)libavcodec \
 	$(OBJ_DIR)libavcodec/bsf \
 	$(OBJ_DIR)libavcodec/aac \
+	$(OBJ_DIR)libavcodec/opus \
 	$(OBJ_DIR)libavcodec/hevc \
 	$(OBJ_DIR)libavcodec/vvc \
 	$(OBJ_DIR)libavcodec/x86 \
 	$(OBJ_DIR)libavcodec/x86/h26x \
+	$(OBJ_DIR)libavcodec/x86/hevc \
 	$(OBJ_DIR)libavcodec/x86/vvc \
 	$(OBJ_DIR)libavfilter \
 	$(OBJ_DIR)libavfilter/x86 \
@@ -239,6 +241,7 @@ SRCS_LC = \
 	libavcodec/elsdec.c \
 	libavcodec/encode.c \
 	libavcodec/error_resilience.c \
+	libavcodec/executor.c \
 	libavcodec/exif.c \
 	libavcodec/faandct.c \
 	libavcodec/faanidct.c \
@@ -330,6 +333,7 @@ SRCS_LC = \
 	libavcodec/lagarith.c \
 	libavcodec/lagarithrac.c \
 	libavcodec/latm_parser.c \
+	libavcodec/lcevcdec.c \
 	libavcodec/libdav1d.c \
 	libavcodec/libfdk-aacdec.c \
 	libavcodec/libspeexdec.c \
@@ -437,17 +441,9 @@ SRCS_LC_B = \
 	libavcodec/nvdec_mpeg12.c \
 	libavcodec/nvdec_vc1.c \
 	libavcodec/nvdec_vp9.c \
+	libavcodec/on2avc.c \
+	libavcodec/on2avcdata.c \
 	libavcodec/options.c \
-	libavcodec/opus_celt.c \
-	libavcodec/opus_parse.c \
-	libavcodec/opus_parser.c \
-	libavcodec/opus_pvq.c \
-	libavcodec/opus_rc.c \
-	libavcodec/opus_silk.c \
-	libavcodec/opusdec.c \
-	libavcodec/opusdec_celt.c \
-	libavcodec/opusdsp.c \
-	libavcodec/opustab.c \
 	libavcodec/packet.c \
 	libavcodec/parser.c \
 	libavcodec/parsers.c \
@@ -475,7 +471,6 @@ SRCS_LC_B = \
 	libavcodec/rangecoder.c \
 	libavcodec/raw.c \
 	libavcodec/rawdec.c \
-	libavcodec/refstruct.c \
 	libavcodec/rl.c \
 	libavcodec/rpza.c \
 	libavcodec/rv10.c \
@@ -587,6 +582,20 @@ SRCS_LC_B = \
 	libavcodec/xvididct.c \
 	libavcodec/zlib_wrapper.c \
 	\
+	libavcodec/opus/celt.c \
+	libavcodec/opus/dec.c \
+	libavcodec/opus/dec_celt.c \
+	libavcodec/opus/dsp.c \
+	libavcodec/opus/parse.c \
+	libavcodec/opus/parser.c \
+	libavcodec/opus/pvq.c \
+	libavcodec/opus/rc.c \
+	libavcodec/opus/silk.c \
+	libavcodec/opus/dec.c \
+	libavcodec/opus/dec_celt.c \
+	libavcodec/opus/dsp.c \
+	libavcodec/opus/tab.c \
+	\
 	libavcodec/vvc/dec.c \
 	libavcodec/vvc/dsp.c \
 	libavcodec/vvc/cabac.c \
@@ -624,7 +633,6 @@ SRCS_LC_B = \
 	libavcodec/x86/h264dsp_init.c \
 	libavcodec/x86/hevc_idct_intrinsic.c \
 	libavcodec/x86/hevc_intra_intrinsic.c \
-	libavcodec/x86/hevcdsp_init.c \
 	libavcodec/x86/h264_qpel.c \
 	libavcodec/x86/hpeldsp_init.c \
 	libavcodec/x86/huffyuvdsp_init.c \
@@ -667,7 +675,9 @@ SRCS_LC_B = \
 	\
 	libavcodec/x86/h26x/h2656dsp.c \
 	\
-	libavcodec/x86/vvc/vvcdsp_init.c
+	libavcodec/x86/hevc/dsp_init.c \
+	\
+	libavcodec/x86/vvc/dsp_init.c
 
 SRCS_LC_BSF = \
 	libavcodec/bsf/aac_adtstoasc.c \
@@ -719,6 +729,7 @@ SRCS_LU = \
 	libavutil/bprint.c \
 	libavutil/buffer.c \
 	libavutil/channel_layout.c \
+	libavutil/container_fifo.c \
 	libavutil/cpu.c \
 	libavutil/crc.c \
 	libavutil/csp.c \
@@ -761,6 +772,7 @@ SRCS_LU = \
 	libavutil/pixdesc.c \
 	libavutil/random_seed.c \
 	libavutil/rational.c \
+	libavutil/refstruct.c \
 	libavutil/reverse.c \
 	libavutil/samplefmt.c \
 	libavutil/sha.c \
@@ -803,11 +815,15 @@ SRCS_LR = \
 
 SRCS_LS = \
 	libswscale/alphablend.c \
+	libswscale/cms.c \
+	libswscale/csputils.c \
 	libswscale/gamma.c \
+	libswscale/graph.c \
 	libswscale/half2float.c \
 	libswscale/hscale.c \
 	libswscale/hscale_fast_bilinear.c \
 	libswscale/input.c \
+	libswscale/lut3d.c \
 	libswscale/options.c \
 	libswscale/output.c \
 	libswscale/rgb2rgb.c \
@@ -824,8 +840,8 @@ SRCS_LS = \
 	libswscale/x86/swscale.c \
 	libswscale/x86/yuv2rgb.c
 
-# Yasm objects
-SRCS_YASM_LC = \
+# Asm objects
+SRCS_ASM_LC = \
 	libavcodec/x86/aacpsdsp.asm \
 	libavcodec/x86/ac3dsp.asm \
 	libavcodec/x86/ac3dsp_downmix.asm \
@@ -854,12 +870,6 @@ SRCS_YASM_LC = \
 	libavcodec/x86/h264_qpel_8bit.asm \
 	libavcodec/x86/h264_weight.asm \
 	libavcodec/x86/h264_weight_10bit.asm \
-	libavcodec/x86/hevc_add_res.asm \
-	libavcodec/x86/hevc_deblock.asm \
-	libavcodec/x86/hevc_idct.asm \
-	libavcodec/x86/hevc_mc.asm \
-	libavcodec/x86/hevc_sao.asm \
-	libavcodec/x86/hevc_sao_10bit.asm \
 	libavcodec/x86/hpeldsp.asm \
 	libavcodec/x86/huffyuvdsp.asm \
 	libavcodec/x86/idctdsp.asm \
@@ -906,13 +916,22 @@ SRCS_YASM_LC = \
 	\
 	libavcodec/x86/h26x/h2656_inter.asm \
 	\
-	libavcodec/x86/vvc/vvc_alf.asm \
-	libavcodec/x86/vvc/vvc_mc.asm \
-	libavcodec/x86/vvc/vvc_sad.asm
+	libavcodec/x86/hevc/add_res.asm \
+	libavcodec/x86/hevc/deblock.asm \
+	libavcodec/x86/hevc/idct.asm \
+	libavcodec/x86/hevc/mc.asm \
+	libavcodec/x86/hevc/sao.asm \
+	libavcodec/x86/hevc/sao_10bit.asm \
+	\
+	libavcodec/x86/vvc/alf.asm \
+	libavcodec/x86/vvc/dmvr.asm \
+	libavcodec/x86/vvc/mc.asm \
+	libavcodec/x86/vvc/of.asm \
+	libavcodec/x86/vvc/sad.asm
 
-SRCS_YASM_LF = 
+SRCS_ASM_LF = 
 
-SRCS_YASM_LU = \
+SRCS_ASM_LU = \
 	libavutil/x86/cpuid.asm \
 	libavutil/x86/emms.asm \
 	libavutil/x86/fixed_dsp.asm \
@@ -921,12 +940,12 @@ SRCS_YASM_LU = \
 	libavutil/x86/lls.asm \
 	libavutil/x86/tx_float.asm
 
-SRCS_YASM_LR = \
+SRCS_ASM_LR = \
 	libswresample/x86/audio_convert.asm \
 	libswresample/x86/rematrix.asm \
 	libswresample/x86/resample.asm
 
-SRCS_YASM_LS = \
+SRCS_ASM_LS = \
 	libswscale/x86/input.asm \
 	libswscale/x86/output.asm \
 	libswscale/x86/range_convert.asm \
@@ -938,7 +957,7 @@ SRCS_YASM_LS = \
 
 OBJS_LC = \
 	$(SRCS_LC:%.c=$(OBJ_DIR)%.o) \
-	$(SRCS_YASM_LC:%.asm=$(OBJ_DIR)%.o)
+	$(SRCS_ASM_LC:%.asm=$(OBJ_DIR)%.o)
 
 OBJS_LC_B = \
 	$(SRCS_LC_B:%.c=$(OBJ_DIR)%.o)
@@ -948,19 +967,19 @@ OBJS_LC_BSF = \
 
 OBJS_LF = \
 	$(SRCS_LF:%.c=$(OBJ_DIR)%.o) \
-	$(SRCS_YASM_LF:%.asm=$(OBJ_DIR)%.o)
+	$(SRCS_ASM_LF:%.asm=$(OBJ_DIR)%.o)
 
 OBJS_LU = \
 	$(SRCS_LU:%.c=$(OBJ_DIR)%.o) \
-	$(SRCS_YASM_LU:%.asm=$(OBJ_DIR)%.o)
+	$(SRCS_ASM_LU:%.asm=$(OBJ_DIR)%.o)
 
 OBJS_LR = \
 	$(SRCS_LR:%.c=$(OBJ_DIR)%.o) \
-	$(SRCS_YASM_LR:%.asm=$(OBJ_DIR)%.o)
+	$(SRCS_ASM_LR:%.asm=$(OBJ_DIR)%.o)
 
 OBJS_LS = \
 	$(SRCS_LS:%.c=$(OBJ_DIR)%.o) \
-	$(SRCS_YASM_LS:%.asm=$(OBJ_DIR)%.o)
+	$(SRCS_ASM_LS:%.asm=$(OBJ_DIR)%.o)
 
 # Commands
 $(OBJ_DIR)%.o: %.c
@@ -969,7 +988,7 @@ $(OBJ_DIR)%.o: %.c
 
 $(OBJ_DIR)%.o: %.asm
 	@echo $<
-	@yasm $(YASMFLAGS) -I$(<D)/ -o $@ $<
+	@nasm $(NASMFLAGS) -I$(<D)/ -o $@ $<
 
 $(LIB_LIBAVCODEC): $(OBJS_LC)
 	@echo $@

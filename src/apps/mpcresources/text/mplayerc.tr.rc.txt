@@ -1,7 +1,7 @@
 ﻿BEGIN DIALOGEX IDD_ABOUTBOX LINES 26
 3		"Hakkında"
 7		"MPC-BE"
-8		"Telif Hakkı © 2002-2024, Authors.txt dosyasına bakınız"
+8		"Telif Hakkı © 2002-2025, Authors.txt dosyasına bakınız"
 10		"Sürüm :"
 11		"MPC-BE Derleyici :"
 12		"FFmpeg Derleyici :"
@@ -202,7 +202,7 @@ BEGIN DIALOGEX IDD_PPAGECAPTURE LINES 22
 18		"Alıcı"
 END
 
-BEGIN DIALOGEX IDD_PPAGECOLOR LINES 27
+BEGIN DIALOGEX IDD_PPAGECOLOR LINES 28
 5		"Renk kontrolleri (GVİ, madVR ve MPC Vİ)"
 6		"Parlaklık"
 7		"Karşıtlık"
@@ -210,9 +210,10 @@ BEGIN DIALOGEX IDD_PPAGECOLOR LINES 27
 9		"Doygunluk"
 18		"Sıfırla"
 20		"Renk Yönetimi"
-21		"Girdi biçimi:"
-23		"Ortam Işığı:"
-25		"Oluşturma Amacı:"
+21		"(GVİ-ÖS için, 10/16-bit yüzey)"
+22		"Girdi biçimi:"
+24		"Ortam Işığı:"
+26		"Oluşturma Amacı:"
 END
 
 BEGIN DIALOGEX IDD_PPAGEDVD LINES 19
@@ -297,7 +298,7 @@ BEGIN DIALOGEX IDD_PPAGEFULLSCREEN LINES 34
 32		"Çıkışta çözünürlüğü geri al"
 END
 
-BEGIN DIALOGEX IDD_PPAGEINTERFACE LINES 55
+BEGIN DIALOGEX IDD_PPAGEINTERFACE LINES 56
 6		"'Koyu' arayüzü kullan (varsayılan)"
 7		"Parlaklık :"
 9		"Ses göstergesi renk ayarı:"
@@ -310,25 +311,25 @@ BEGIN DIALOGEX IDD_PPAGEINTERFACE LINES 55
 16		"G:"
 17		"B:"
 21		"Koyu menüyü etkinleştir"
-22		"Koyu başlığı etkinleştir (Windows 11)"
-24		"Süre bilgi ipucunu göster:"
-26		"Arama Çubuğu üzerinde ön izleme resmi göster"
-27		"Ekran genişliğine göre boyut:"
-31		"Çevrim içi"
-32		"Bölüm işaretlerini göster"
-33		"Şeffaf Çubuğu göster"
-34		"Oynatma listesi yazı tipi boyutu:"
-37		"OSD"
-38		"Yazı tipi:"
-42		"F"
-43		"Arka plan:"
-44		"G1"
-45		"G2"
-46		"Şeffaflık:"
-48		"Kenar Genişliği:"
-51		"Gölge"
-52		"Kenar yumuşatma"
-53		"Windows 7 (ve üzeri) Görev çubuğu özelliklerini kullan"
+22		"Koyu başlığı etkinleştir (Windows 10 ve üzeri)"
+25		"Süre bilgi ipucunu göster:"
+27		"Arama Çubuğu üzerinde ön izleme resmi göster"
+28		"Ekran genişliğine göre boyut:"
+32		"Çevrim içi"
+33		"Bölüm işaretlerini göster"
+34		"Şeffaf Çubuğu göster"
+35		"Oynatma listesi yazı tipi boyutu:"
+38		"OSD"
+39		"Yazı tipi:"
+43		"F"
+44		"Arka plan:"
+45		"G1"
+46		"G2"
+47		"Şeffaflık:"
+49		"Kenar Genişliği:"
+52		"Gölge"
+53		"Kenar yumuşatma"
+54		"Windows 7 (ve üzeri) Görev çubuğu özelliklerini kullan"
 END
 
 BEGIN DIALOGEX IDD_PPAGEINTERNALFILTERS LINES 22
@@ -441,7 +442,7 @@ BEGIN DIALOGEX IDD_PPAGEPLAYER LINES 49
 48		"sn."
 END
 
-BEGIN DIALOGEX IDD_PPAGESOUNDPROCESSING LINES 37
+BEGIN DIALOGEX IDD_PPAGESOUNDPROCESSING LINES 40
 5		"Kanal karıştırıcı"
 6		"Kanalları karıştır:"
 8		"Çözücüden stereo iste"
@@ -451,13 +452,15 @@ BEGIN DIALOGEX IDD_PPAGESOUNDPROCESSING LINES 37
 18		"Sesi güçlendir"
 24		"FFmpeg filtreleri"
 25		"Ön ayarlar"
-28		"Çıktı örnekleme biçimi:"
-29		"Int16"
-30		"Int24"
-31		"Int32"
-32		"Float"
-33		"Ses zaman kaydırma (ms):"
-36		"Varsayılan"
+26		"Stereo ve mono kaynaklar için kullanma"
+30		"Çıktı örnekleme biçimi:"
+31		"Int16"
+32		"Int24"
+33		"Int32"
+34		"Float"
+35		"Ses zaman kaydırma (ms):"
+38		"Küçük stereo hoparlörler"
+39		"Varsayılan"
 END
 
 BEGIN DIALOGEX IDD_PPAGESUBRENDERING LINES 30
@@ -592,21 +595,22 @@ BEGIN DIALOGEX IDD_PPAGEWINDOWSIZE LINES 28
 27		"Masaüstü kenarlarına yapış"
 END
 
-BEGIN DIALOGEX IDD_PPAGEYOUTUBE LINES 29
+BEGIN DIALOGEX IDD_PPAGEYOUTUBE LINES 31
 5		"YouTube"
 6		"Yerleşik web sayfası ayrıştırıcısını kullan"
-7		"Tercih edilen biçim:"
+7		"Tercih edilen video biçimi:"
 10		"60 fps"
 11		"HDR"
-12		"Tercih edilen ses parçası dili:"
-14		"Oynatma listesi yükle"
-16		"youtube-dl, yt-dlp"
-17		"Çalıştırılabilir dosya:"
-19		"Maks. video yüksekliği:"
-21		"Maksimum fps ya da bit hızı seç"
-22		"AceStream adresi:"
-24		"MatriX (TorrServer) adresi:"
-27		"Kullanıcı aracısı:"
+12		"Tercih edilen ses biçimi:"
+14		"Tercih edilen ses parçası dili:"
+16		"Oynatma listesi yükle"
+18		"youtube-dl, yt-dlp"
+19		"Çalıştırılabilir dosya:"
+21		"Maks. video yüksekliği:"
+23		"Maksimum fps ya da bit hızı seç"
+24		"AceStream adresi:"
+26		"MatriX (TorrServer) adresi:"
+29		"Kullanıcı aracısı:"
 END
 
 BEGIN DIALOGEX IDD_SAVEIMAGEDIALOGTEMPL LINES 9
@@ -2035,8 +2039,8 @@ STRING IDS_UPDATE_ERROR_DATA		"Güncelleştirme sunucusu yanlış veri veriyor.\
 STRING IDS_USING_NEWER_VERSION		"Zaten son sürümü kullanıyorsunuz: %s."
 STRING IDS_VDF_AR_MODE		"EBO bilgisini akıştan oku"
 STRING IDS_VDF_AUTO		"Oto"
-STRING IDS_VDF_COLOR_FMT_CONVERSION		"Biçim dönüşümü"
-STRING IDS_VDF_COLOR_OUTPUT_FORMATS		"Çıkış biçimleri:"
+STRING IDS_VDF_COLOR_CONVERT_TO_RGB		"RGB'ye dönüştür"
+STRING IDS_VDF_COLOR_OUTPUT_FORMATS		"Çıkış biçimleri"
 STRING IDS_VDF_COLOR_PRESET		"Önayar:"
 STRING IDS_VDF_COLOR_RGB_LEVELS		"RGB çıkış düzeyleri:"
 STRING IDS_VDF_COLOR_STANDARD		"Standart:"

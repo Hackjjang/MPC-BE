@@ -1,7 +1,7 @@
 ﻿BEGIN DIALOGEX IDD_ABOUTBOX LINES 26
 3		"О программе"
 7		"MPC-BE"
-8		"Copyright © 2002-2024, смотрите файл Authors.txt"
+8		"Copyright © 2002-2025, смотрите файл Authors.txt"
 10		"Версия :"
 11		"Компилятор MPC-BE :"
 12		"Компилятор FFmpeg :"
@@ -202,7 +202,7 @@ BEGIN DIALOGEX IDD_PPAGECAPTURE LINES 22
 18		"Приемник"
 END
 
-BEGIN DIALOGEX IDD_PPAGECOLOR LINES 27
+BEGIN DIALOGEX IDD_PPAGECOLOR LINES 28
 5		"Управление цветом (для EVR, madVR и MPC VR)"
 6		"Яркость"
 7		"Контрастность"
@@ -210,9 +210,10 @@ BEGIN DIALOGEX IDD_PPAGECOLOR LINES 27
 9		"Насыщенность"
 18		"Сброс"
 20		"Управление цветом"
-21		"Тип входа:"
-23		"Окружающий свет:"
-25		"Метод пересчета:"
+21		"(для EVR-CP, поверхность 10/16-бит)"
+22		"Тип входа:"
+24		"Окружающий свет:"
+26		"Метод пересчета:"
 END
 
 BEGIN DIALOGEX IDD_PPAGEDVD LINES 19
@@ -297,7 +298,7 @@ BEGIN DIALOGEX IDD_PPAGEFULLSCREEN LINES 34
 32		"Восстанавливать разрешение после выхода из программы"
 END
 
-BEGIN DIALOGEX IDD_PPAGEINTERFACE LINES 55
+BEGIN DIALOGEX IDD_PPAGEINTERFACE LINES 56
 6		"Использовать ""тёмную"" тему оформления (по умолчанию)"
 7		"Яркость :"
 9		"Настройка цвета индикатора громкости:"
@@ -310,25 +311,25 @@ BEGIN DIALOGEX IDD_PPAGEINTERFACE LINES 55
 16		"G:"
 17		"B:"
 21		"Использовать тёмное меню"
-22		"Использовать тёмный заголовок (Windows 11)"
-24		"Показывать время"
-26		"Использовать предпросмотр при поиске видеофрагмента"
-27		"Размер относительно размера экрана:"
-31		"Онлайн"
-32		"Использовать маркер для чаптеров"
-33		"Показать панель управления поверх видео"
-34		"Размер шрифта плейлиста:"
-37		"OSD"
-38		"Шрифт:"
-42		"F"
-43		"Фон:"
-44		"G1"
-45		"G2"
-46		"Прозрачность:"
-48		"Бордюр:"
-51		"Тень"
-52		"Сглаживание"
-53		"Использовать возможности таскбара Windows 7 (и выше)"
+22		"Использовать тёмный заголовок (Windows 10 и выше)"
+25		"Показывать время"
+27		"Использовать предпросмотр при поиске видеофрагмента"
+28		"Размер относительно размера экрана:"
+32		"Онлайн"
+33		"Использовать маркер для чаптеров"
+34		"Показать панель управления поверх видео"
+35		"Размер шрифта плейлиста:"
+38		"OSD"
+39		"Шрифт:"
+43		"F"
+44		"Фон:"
+45		"G1"
+46		"G2"
+47		"Прозрачность:"
+49		"Бордюр:"
+52		"Тень"
+53		"Сглаживание"
+54		"Использовать возможности таскбара Windows 7 (и выше)"
 END
 
 BEGIN DIALOGEX IDD_PPAGEINTERNALFILTERS LINES 22
@@ -441,7 +442,7 @@ BEGIN DIALOGEX IDD_PPAGEPLAYER LINES 49
 48		"сек."
 END
 
-BEGIN DIALOGEX IDD_PPAGESOUNDPROCESSING LINES 37
+BEGIN DIALOGEX IDD_PPAGESOUNDPROCESSING LINES 40
 5		"Микшер каналов"
 6		"Микшировать каналы в:"
 8		"Запросить стерео у декодера"
@@ -451,13 +452,15 @@ BEGIN DIALOGEX IDD_PPAGESOUNDPROCESSING LINES 37
 18		"Повышать громкость"
 24		"Фильтры FFmpeg"
 25		"Пресеты"
-28		"Формат вывода:"
-29		"Int16"
-30		"Int24"
-31		"Int32"
-32		"Float"
-33		"Смещение звука (в мс):"
-36		"По умолчанию"
+26		"Не использовать для стерео и моно источников"
+30		"Формат вывода:"
+31		"Int16"
+32		"Int24"
+33		"Int32"
+34		"Float"
+35		"Смещение звука (в мс):"
+38		"Небольшие стерео колонки"
+39		"По умолчанию"
 END
 
 BEGIN DIALOGEX IDD_PPAGESUBRENDERING LINES 30
@@ -592,21 +595,22 @@ BEGIN DIALOGEX IDD_PPAGEWINDOWSIZE LINES 28
 27		"Прилипать к границам экрана"
 END
 
-BEGIN DIALOGEX IDD_PPAGEYOUTUBE LINES 29
+BEGIN DIALOGEX IDD_PPAGEYOUTUBE LINES 31
 5		"YouTube"
 6		"Использовать встроенный парсер веб-страниц"
-7		"Предпочитаемый формат просмотра:"
+7		"Предпочитаемый формат видео:"
 10		"60 fps"
 11		"HDR"
-12		"Предпочитаемый язык аудиодорожки:"
-14		"Загружать плейлист"
-16		"youtube-dl, yt-dlp"
-17		"Исполняемый файл:"
-19		"Максимальная высота видео:"
-21		"Выбрать максимальную частоту кадров или битрейт"
-22		"AceStream address:"
-24		"MatriX (TorrServer) address:"
-27		"User agent:"
+12		"Предпочитаемый формат аудио:"
+14		"Предпочитаемый язык аудиодорожки:"
+16		"Загружать плейлист"
+18		"youtube-dl, yt-dlp"
+19		"Исполняемый файл:"
+21		"Максимальная высота видео:"
+23		"Выбрать максимальную частоту кадров или битрейт"
+24		"AceStream address:"
+26		"MatriX (TorrServer) address:"
+29		"User agent:"
 END
 
 BEGIN DIALOGEX IDD_SAVEIMAGEDIALOGTEMPL LINES 9
@@ -2035,8 +2039,8 @@ STRING IDS_UPDATE_ERROR_DATA		"Сервер обновлений выдает н
 STRING IDS_USING_NEWER_VERSION		"Вы используете последнюю версию %s."
 STRING IDS_VDF_AR_MODE		"Считывать соотношение сторон из потока"
 STRING IDS_VDF_AUTO		"Авто"
-STRING IDS_VDF_COLOR_FMT_CONVERSION		"Преобразование форматов"
-STRING IDS_VDF_COLOR_OUTPUT_FORMATS		"Выходные форматы:"
+STRING IDS_VDF_COLOR_CONVERT_TO_RGB		"Преобразовать в RGB"
+STRING IDS_VDF_COLOR_OUTPUT_FORMATS		"Выходные форматы"
 STRING IDS_VDF_COLOR_PRESET		"Пресет:"
 STRING IDS_VDF_COLOR_RGB_LEVELS		"Выходные уровни RGB:"
 STRING IDS_VDF_COLOR_STANDARD		"Стандарт:"

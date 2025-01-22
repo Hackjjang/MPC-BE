@@ -1,7 +1,7 @@
 ﻿BEGIN DIALOGEX IDD_ABOUTBOX LINES 26
 3		"バージョン情報"
 7		"MPC-BE"
-8		"Copyright © 2002-2024 (Authors.txt ファイルを参照)"
+8		"Copyright © 2002-2025 (Authors.txt ファイルを参照)"
 10		"バージョン :"
 11		"MPC-BE コンパイラ :"
 12		"FFmpeg コンパイラ :"
@@ -202,7 +202,7 @@ BEGIN DIALOGEX IDD_PPAGECAPTURE LINES 22
 18		"受信機"
 END
 
-BEGIN DIALOGEX IDD_PPAGECOLOR LINES 27
+BEGIN DIALOGEX IDD_PPAGECOLOR LINES 28
 5		"カラー コントロール (EVR、madVR および MPC VR 用)"
 6		"明るさ"
 7		"コントラスト"
@@ -210,9 +210,10 @@ BEGIN DIALOGEX IDD_PPAGECOLOR LINES 27
 9		"彩度"
 18		"リセット"
 20		"色管理"
-21		"入力タイプ:"
-23		"環境光:"
-25		"レンダリングの目的:"
+21		"(EVR-CP、サーフェス 10/16-bit 用)"
+22		"入力タイプ:"
+24		"環境光:"
+26		"レンダリングの目的:"
 END
 
 BEGIN DIALOGEX IDD_PPAGEDVD LINES 19
@@ -297,7 +298,7 @@ BEGIN DIALOGEX IDD_PPAGEFULLSCREEN LINES 34
 32		"プログラム終了時に解像度を元に戻す"
 END
 
-BEGIN DIALOGEX IDD_PPAGEINTERFACE LINES 55
+BEGIN DIALOGEX IDD_PPAGEINTERFACE LINES 56
 6		"ダーク テーマを使用する (既定)"
 7		"明るさ :"
 9		"音量調節の色設定:"
@@ -310,25 +311,25 @@ BEGIN DIALOGEX IDD_PPAGEINTERFACE LINES 55
 16		"緑:"
 17		"青:"
 21		"メニューに適用する"
-22		"タイトルに適用する (Windows 11)"
-24		"タイム ツールヒントを使用する:"
-26		"検索でプレビュー機能を使用する"
-27		"画面横幅に対するサイズ:"
-31		"オンライン"
-32		"チャプター マーカーを使用する"
-33		"フライ バーを使用する"
-34		"プレイリスト フォント サイズ:"
-37		"OSD"
-38		"フォント:"
-42		"F"
-43		"背景:"
-44		"G1"
-45		"G2"
-46		"透過度:"
-48		"境界線サイズ:"
-51		"影"
-52		"アンチエイリアス"
-53		"Windows 7 (とそれ以降) のタスク バーの機能を使用する"
+22		"タイトルに適用する (Windows 10 以降)"
+25		"タイム ツールヒントを使用する:"
+27		"検索でプレビュー機能を使用する"
+28		"画面横幅に対するサイズ:"
+32		"オンライン"
+33		"チャプター マーカーを使用する"
+34		"フライ バーを使用する"
+35		"プレイリスト フォント サイズ:"
+38		"OSD"
+39		"フォント:"
+43		"F"
+44		"背景:"
+45		"G1"
+46		"G2"
+47		"透過度:"
+49		"境界線サイズ:"
+52		"影"
+53		"アンチエイリアス"
+54		"Windows 7 (とそれ以降) のタスク バーの機能を使用する"
 END
 
 BEGIN DIALOGEX IDD_PPAGEINTERNALFILTERS LINES 22
@@ -441,7 +442,7 @@ BEGIN DIALOGEX IDD_PPAGEPLAYER LINES 49
 48		"秒"
 END
 
-BEGIN DIALOGEX IDD_PPAGESOUNDPROCESSING LINES 37
+BEGIN DIALOGEX IDD_PPAGESOUNDPROCESSING LINES 40
 5		"チャンネル ミキサー"
 6		"チャンネルをミックス:"
 8		"デコーダーからステレオを要求する"
@@ -451,13 +452,15 @@ BEGIN DIALOGEX IDD_PPAGESOUNDPROCESSING LINES 37
 18		"音声のブースト"
 24		"FFmpeg フィルター"
 25		"プリセット"
-28		"出力サンプル形式:"
-29		"Int16"
-30		"Int24"
-31		"Int32"
-32		"Float"
-33		"音声のタイム シフト (ミリ秒):"
-36		"既定"
+26		"ステレオとモノラルの音源には使用しない"
+30		"出力サンプル形式:"
+31		"Int16"
+32		"Int24"
+33		"Int32"
+34		"Float"
+35		"音声のタイム シフト (ミリ秒):"
+38		"小型ステレオ スピーカー"
+39		"既定"
 END
 
 BEGIN DIALOGEX IDD_PPAGESUBRENDERING LINES 30
@@ -592,21 +595,22 @@ BEGIN DIALOGEX IDD_PPAGEWINDOWSIZE LINES 28
 27		"デスクトップの端にスナップさせる"
 END
 
-BEGIN DIALOGEX IDD_PPAGEYOUTUBE LINES 29
+BEGIN DIALOGEX IDD_PPAGEYOUTUBE LINES 31
 5		"YouTube"
 6		"内蔵のウェブ ページ パーサーを使用する"
-7		"お好みの形式:"
+7		"お好みの動画形式:"
 10		"60 fps"
 11		"HDR"
-12		"お好みの音声トラック言語:"
-14		"プレイリストを読み込む"
-16		"youtube-dl, yt-dlp"
-17		"実行可能ファイル:"
-19		"動画の最大縦幅:"
-21		"最大 fps またはビットレートを選択する"
-22		"AceStream アドレス:"
-24		"MatriX (TorrServer) アドレス:"
-27		"ユーザー エージェント:"
+12		"お好みの音声形式:"
+14		"お好みの音声トラック言語:"
+16		"プレイリストを読み込む"
+18		"youtube-dl, yt-dlp"
+19		"実行可能ファイル:"
+21		"動画の最大縦幅:"
+23		"最大 fps またはビットレートを選択する"
+24		"AceStream アドレス:"
+26		"MatriX (TorrServer) アドレス:"
+29		"ユーザー エージェント:"
 END
 
 BEGIN DIALOGEX IDD_SAVEIMAGEDIALOGTEMPL LINES 9
@@ -2035,8 +2039,8 @@ STRING IDS_UPDATE_ERROR_DATA		"更新サーバーが間違ったデータを提�
 STRING IDS_USING_NEWER_VERSION		"既に最新版の %s を使用しています。"
 STRING IDS_VDF_AR_MODE		"ストリームから縦横比を読み取る"
 STRING IDS_VDF_AUTO		"自動"
-STRING IDS_VDF_COLOR_FMT_CONVERSION		"形式変換"
-STRING IDS_VDF_COLOR_OUTPUT_FORMATS		"出力形式:"
+STRING IDS_VDF_COLOR_CONVERT_TO_RGB		"RGB に変換"
+STRING IDS_VDF_COLOR_OUTPUT_FORMATS		"出力形式"
 STRING IDS_VDF_COLOR_PRESET		"プリセット:"
 STRING IDS_VDF_COLOR_RGB_LEVELS		"RGB 出力レベル:"
 STRING IDS_VDF_COLOR_STANDARD		"標準:"

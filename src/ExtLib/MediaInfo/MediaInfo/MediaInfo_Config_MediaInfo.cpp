@@ -864,7 +864,7 @@ Ztring MediaInfo_Config_MediaInfo::Option (const String &Option, const String &V
     }
     else if (Option_Lower==__T("file_demux_rate"))
     {
-        #if MEDIAINFO_DEMUX
+        #if 1 //MEDIAINFO_DEMUX
             Demux_Rate_Set(Ztring(Value).To_float64());
             return Ztring();
         #else //MEDIAINFO_DEMUX
@@ -2455,7 +2455,7 @@ bool MediaInfo_Config_MediaInfo::Demux_SplitAudioBlocks_Get()
 #endif //MEDIAINFO_DEMUX
 
 //---------------------------------------------------------------------------
-#if MEDIAINFO_DEMUX
+#if 1 //MEDIAINFO_DEMUX
 void MediaInfo_Config_MediaInfo::Demux_Rate_Set (float64 NewValue)
 {
     CriticalSectionLocker CSL(CS);
@@ -3129,6 +3129,30 @@ void MediaInfo_Config_MediaInfo::Event_Send (File__Analyze* Source, const int8u*
                 int8u* OriginalContent=new int8u[New->OriginalContent_Size];
                 std::memcpy(OriginalContent, Old->OriginalContent, New->OriginalContent_Size*sizeof(int8u));
                 New->OriginalContent=OriginalContent;
+            }
+        }
+        if (((*EventCode) & 0x00FFFFFF) == ((MediaInfo_Event_DvDif_Change << 8) | 0) && Data_Size == sizeof(MediaInfo_Event_DvDif_Change_0))
+        {
+            MediaInfo_Event_DvDif_Change_0* Old = (MediaInfo_Event_DvDif_Change_0*)Data_Content;
+            MediaInfo_Event_DvDif_Change_0* New = (MediaInfo_Event_DvDif_Change_0*)Event->Data_Content;
+            if (New->MoreData)
+            {
+                auto MoreData_Size = sizeof(size_t) + *((size_t*)New->MoreData);
+                int8u* MoreData = new int8u[MoreData_Size];
+                std::memcpy(MoreData, Old->MoreData, MoreData_Size * sizeof(int8u));
+                New->MoreData = MoreData;
+            }
+        }
+        if (((*EventCode) & 0x00FFFFFF) == ((MediaInfo_Event_DvDif_Analysis_Frame << 8) | 1) && Data_Size == sizeof(MediaInfo_Event_DvDif_Analysis_Frame_0))
+        {
+            MediaInfo_Event_DvDif_Analysis_Frame_1* Old = (MediaInfo_Event_DvDif_Analysis_Frame_1*)Data_Content;
+            MediaInfo_Event_DvDif_Analysis_Frame_1* New = (MediaInfo_Event_DvDif_Analysis_Frame_1*)Event->Data_Content;
+            if (New->MoreData)
+            {
+                auto MoreData_Size = sizeof(size_t) + *((size_t*)New->MoreData);
+                int8u* MoreData = new int8u[MoreData_Size];
+                std::memcpy(MoreData, Old->MoreData, MoreData_Size * sizeof(int8u));
+                New->MoreData = MoreData;
             }
         }
     }

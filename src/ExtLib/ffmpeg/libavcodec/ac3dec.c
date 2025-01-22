@@ -199,7 +199,6 @@ static void ac3_downmix(AVCodecContext *avctx)
         av_channel_layout_uninit(&avctx->ch_layout);
         avctx->ch_layout = (AVChannelLayout)AV_CHANNEL_LAYOUT_STEREO;
     }
-    s->downmixed = 1;
 }
 
 /**
@@ -241,6 +240,7 @@ static av_cold int ac3_decode_init(AVCodecContext *avctx)
         avctx->sample_fmt = AV_SAMPLE_FMT_FLTP;
 
     ac3_downmix(avctx);
+    s->downmixed = 1;
 
     for (i = 0; i < AC3_MAX_CHANNELS; i++) {
         s->xcfptr[i] = s->transform_coeffs[i];
@@ -1609,8 +1609,22 @@ dependent_frame:
 
         s->loro_center_mix_level   = gain_levels[s->  center_mix_level];
         s->loro_surround_mix_level = gain_levels[s->surround_mix_level];
-        s->ltrt_center_mix_level   = LEVEL_MINUS_3DB;
-        s->ltrt_surround_mix_level = LEVEL_MINUS_3DB;
+        s->ltrt_center_mix_level   = gain_levels[s->  center_mix_level_ltrt];
+        s->ltrt_surround_mix_level = gain_levels[s->surround_mix_level_ltrt];
+        switch (s->preferred_downmix) {
+        case AC3_DMIXMOD_LTRT:
+            s->preferred_stereo_downmix = AV_DOWNMIX_TYPE_LTRT;
+            break;
+        case AC3_DMIXMOD_LORO:
+            s->preferred_stereo_downmix = AV_DOWNMIX_TYPE_LORO;
+            break;
+        case AC3_DMIXMOD_DPLII:
+            s->preferred_stereo_downmix = AV_DOWNMIX_TYPE_DPLII;
+            break;
+        default:
+            s->preferred_stereo_downmix = AV_DOWNMIX_TYPE_UNKNOWN;
+            break;
+        }
         /* set downmixing coefficients if needed */
         if (s->channels != s->out_channels && !((s->output_mode & AC3_OUTPUT_LFEON) &&
                 s->fbw_channels == s->out_channels)) {

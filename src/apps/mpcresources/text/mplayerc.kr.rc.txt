@@ -1,7 +1,7 @@
 ﻿BEGIN DIALOGEX IDD_ABOUTBOX LINES 26
 3		"정보"
 7		"MPC-BE"
-8		"Copyright © 2002-2024 'Authors.txt' 참조"
+8		"Copyright © 2002-2025 'Authors.txt' 참조"
 10		"버전 :"
 11		"MPC-BE 컴파일러 :"
 12		"FFmpeg 컴파일러 :"
@@ -202,7 +202,7 @@ BEGIN DIALOGEX IDD_PPAGECAPTURE LINES 22
 18		"수신기"
 END
 
-BEGIN DIALOGEX IDD_PPAGECOLOR LINES 27
+BEGIN DIALOGEX IDD_PPAGECOLOR LINES 28
 5		"색 제어(EVR, madVR 및 MPC VR용)"
 6		"명도"
 7		"대비"
@@ -210,9 +210,10 @@ BEGIN DIALOGEX IDD_PPAGECOLOR LINES 27
 9		"채도"
 18		"초기화"
 20		"색 관리"
-21		"입력 형식 :"
-23		"주변광 :"
-25		"렌더링 의도 :"
+21		"(for EVR-CP, surface 10/16-bit)"
+22		"입력 형식 :"
+24		"주변광 :"
+26		"렌더링 의도 :"
 END
 
 BEGIN DIALOGEX IDD_PPAGEDVD LINES 19
@@ -297,7 +298,7 @@ BEGIN DIALOGEX IDD_PPAGEFULLSCREEN LINES 34
 32		"종료 후, 해상도 복원"
 END
 
-BEGIN DIALOGEX IDD_PPAGEINTERFACE LINES 55
+BEGIN DIALOGEX IDD_PPAGEINTERFACE LINES 56
 6		"다크 테마 사용(기본값)"
 7		"명도 :"
 9		"음량 조절 색 설정 :"
@@ -311,24 +312,24 @@ BEGIN DIALOGEX IDD_PPAGEINTERFACE LINES 55
 17		"B :"
 21		"다크 메뉴 활성화"
 22		"다크 타이틀 활성화(윈도11)"
-24		"시간 툴팁 사용 :"
-26		"탐색 표시줄에서 미리 보기 사용"
-27		"화면 너비 대비 크기 :"
-31		"Online"
-32		"챕터 구분 표기 사용"
-33		"플라이바 사용"
-34		"재생 목록 글자 크기 :"
-37		"화면 표시"
-38		"화면 표시 글꼴 :"
-42		"F"
-43		"배경 :"
-44		"G1"
-45		"G2"
-46		"투명도 :"
-48		"경계 크기 :"
-51		"그림자"
-52		"위신호 제거"
-53		"(윈도7 이상) 작업 표시줄 기능 사용"
+25		"시간 툴팁 사용 :"
+27		"탐색 표시줄에서 미리 보기 사용"
+28		"화면 너비 대비 크기 :"
+32		"Online"
+33		"챕터 구분 표기 사용"
+34		"플라이바 사용"
+35		"재생 목록 글자 크기 :"
+38		"화면 표시"
+39		"화면 표시 글꼴 :"
+43		"F"
+44		"배경 :"
+45		"G1"
+46		"G2"
+47		"투명도 :"
+49		"경계 크기 :"
+52		"그림자"
+53		"위신호 제거"
+54		"(윈도7 이상) 작업 표시줄 기능 사용"
 END
 
 BEGIN DIALOGEX IDD_PPAGEINTERNALFILTERS LINES 22
@@ -441,7 +442,7 @@ BEGIN DIALOGEX IDD_PPAGEPLAYER LINES 49
 48		"초"
 END
 
-BEGIN DIALOGEX IDD_PPAGESOUNDPROCESSING LINES 37
+BEGIN DIALOGEX IDD_PPAGESOUNDPROCESSING LINES 40
 5		"채널 믹서"
 6		"채널 혼합 :"
 8		"디코어에서 스테레오 요청"
@@ -451,13 +452,15 @@ BEGIN DIALOGEX IDD_PPAGESOUNDPROCESSING LINES 37
 18		"음량 증폭"
 24		"FFmpeg 필터"
 25		"사전 설정"
-28		"출력 포본화 형식 :"
-29		"Int16"
-30		"Int24"
-31		"Int32"
-32		"Float"
-33		"오디오 시간 조절(밀리초) :"
-36		"기본값"
+26		"스테레오 및 모노 소스에 사용 금지"
+30		"출력 포본화 형식 :"
+31		"Int16"
+32		"Int24"
+33		"Int32"
+34		"Float"
+35		"오디오 시간 조절(밀리초) :"
+38		"소형 스테레오 스피커"
+39		"기본값"
 END
 
 BEGIN DIALOGEX IDD_PPAGESUBRENDERING LINES 30
@@ -513,7 +516,7 @@ BEGIN DIALOGEX IDD_PPAGESUBTITLES LINES 16
 10		"외부 자막 우선"
 12		"내장 자막 불러오지 않음"
 13		"수정 감지 후 자막 자동 다시 불러오기"
-15		"하위 동기화 사용"
+15		"자막 싱크 수정 기능 사용"
 END
 
 BEGIN DIALOGEX IDD_PPAGESYNC LINES 26
@@ -592,21 +595,22 @@ BEGIN DIALOGEX IDD_PPAGEWINDOWSIZE LINES 28
 27		"바탕화면 가장자리에 맞추기"
 END
 
-BEGIN DIALOGEX IDD_PPAGEYOUTUBE LINES 29
+BEGIN DIALOGEX IDD_PPAGEYOUTUBE LINES 31
 5		"유튜브"
 6		"내장된 웹 페이지 파서 사용"
-7		"우선 형식 :"
+7		"Preferred video format:"
 10		"60fps"
 11		"HDR"
-12		"선호하는 오디오 트랙 언어 :"
-14		"재생 목록 열기"
-16		"youtube-dl, yt-dlp"
-17		"실행 파일 :"
-19		"최대 영상 높이 :"
-21		"최대 fps 또는 비트 전송률 선택"
-22		"AceStream 주소 :"
-24		"MatriX(TorrServer) 주소 :"
-27		"사용자 에이전트 :"
+12		"Preferred audio format:"
+14		"선호하는 오디오 트랙 언어 :"
+16		"재생 목록 열기"
+18		"youtube-dl, yt-dlp"
+19		"실행 파일 :"
+21		"최대 영상 높이 :"
+23		"최대 fps 또는 비트 전송률 선택"
+24		"AceStream 주소 :"
+26		"MatriX(TorrServer) 주소 :"
+29		"사용자 에이전트 :"
 END
 
 BEGIN DIALOGEX IDD_SAVEIMAGEDIALOGTEMPL LINES 9
@@ -721,7 +725,7 @@ BEGIN MENU IDR_MAINFRAME LINES 138
 47		"전체 화면(&L)"
 48		"확대/축소(&Z)"
 53		"자동 맞춤"
-56		"언어(&L)"
+56		"언어(&Language)"
 58		"렌더러 설정"
 60		"잔상 테스트(&T)"
 61		"디스플레이 상태(&D)"
@@ -835,7 +839,7 @@ BEGIN MENU IDR_POPUP LINES 130
 89		"캡처"
 90		"셰이더 편집기"
 91		"내비게이션"
-92		"언어(&L)"
+92		"언어(&Language)"
 93		"사전 설정(&P)..."
 95		"최소(&M)"
 96		"단순(&C)"
@@ -889,7 +893,7 @@ BEGIN MENU IDR_POPUPMAIN LINES 166
 37		"캡처"
 38		"셰이더 편집기"
 39		"내비게이션"
-40		"언어(&L)"
+40		"언어(&Language)"
 41		"사전 설정(&P)..."
 43		"최소(&M)"
 44		"단순(&C)"
@@ -1350,7 +1354,7 @@ STRING IDS_BDA_ERROR_CONNECT_TUNER_REC		"튜너와 리시버에 연결할 수 �
 STRING IDS_BDA_ERROR_CREATE_RECEIVER		"리시버를 만들 수 없습니다."
 STRING IDS_BDA_ERROR_CREATE_TUNER		"튜너를 만들 수 없습니다."
 STRING IDS_BDA_ERROR_DEMULTIPLEXER		"디멀티플렉서를 만들 수 없습니다."
-STRING IDS_BLOCK_EXTERNAL_VR		"You can not add %s as external filter.\nYou should select your preferred video renderer on the Video settings page."
+STRING IDS_BLOCK_EXTERNAL_VR		"%s을(를) 외부 필터로 추가할 수 없습니다.\n비디오 설정 페이지에서 원하는 비디오 렌더러를 선택해야 합니다."
 STRING IDS_BRIGHTNESS_DEC		"밝기 감소"
 STRING IDS_BRIGHTNESS_INC		"밝기 증가"
 STRING IDS_CANCEL		"취소"
@@ -1440,9 +1444,9 @@ STRING IDS_DESC_EVR_CP		"EVR과 다름없지만, 자막 및 후처리를 위해 
 STRING IDS_DESC_EVR_SYNC		"EVR(CP)와 다름없지만, 스킵되거나 중복된 영상 프레임을 제거하기 위한 디스플레이 주사율과 비디오 프레임율을 동기화해주는 여러 옵션 제공"
 STRING IDS_DESC_HAALI_VR		"VMR-9과 다름없지만, 고등 차수 보간을 사용합니다."
 STRING IDS_DESC_MADVR		"고품질 렌더러, D3D9 이상을 지원하는 GPU 필요."
-STRING IDS_DESC_MPC_VR		"Video renderer with support for Direct3D 11."
+STRING IDS_DESC_MPC_VR		"Direct3D 11을 지원하는 비디오 렌더러입니다."
 STRING IDS_DESC_NULLVR_ANY		"모든 비디오 형식의 샘플을 출력하지 않습니다. 비디오를 출력하지 않으면서 CPU가 작동하도록 할 때 사용합니다."
-STRING IDS_DESC_NULLVR_UNCOMP		"일반적인 Null 렌더러와 다름없지만 압축되지 않은 형식만을 연결합니다."
+STRING IDS_DESC_NULLVR_UNCOMP		"렌더라이저가 정상 상태인 경우, 연결 상태에 따라 아무런 제한도 없습니다."
 STRING IDS_DISABLE_ALL_FILTERS		"모든 필터 사용 안 함(&D)"
 STRING IDS_DISABLE_DXVA_FILTERS		"DXVA 필터 사용 안 함"
 STRING IDS_DISABLE_FFMPEG_FILTERS		"FFMpeg 필터 사용 안 함"
@@ -2035,8 +2039,8 @@ STRING IDS_UPDATE_ERROR_DATA		"업데이트 서버 데이터에 오류가 있습
 STRING IDS_USING_NEWER_VERSION		"이미 최신 버전 %s 사용 중입니다."
 STRING IDS_VDF_AR_MODE		"스트림으로부터 AR 읽기"
 STRING IDS_VDF_AUTO		"자동"
-STRING IDS_VDF_COLOR_FMT_CONVERSION		"형식 변환"
-STRING IDS_VDF_COLOR_OUTPUT_FORMATS		"출력 형식 :"
+STRING IDS_VDF_COLOR_CONVERT_TO_RGB		"Convert to RGB"
+STRING IDS_VDF_COLOR_OUTPUT_FORMATS		"출력 형식 "
 STRING IDS_VDF_COLOR_PRESET		"사전 설정 :"
 STRING IDS_VDF_COLOR_RGB_LEVELS		"RGB 출력 레벨 :"
 STRING IDS_VDF_COLOR_STANDARD		"표준 :"

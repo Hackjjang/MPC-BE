@@ -1,6 +1,6 @@
 /*
  * (C) 2003-2006 Gabest
- * (C) 2006-2023 see Authors.txt
+ * (C) 2006-2024 see Authors.txt
  *
  * This file is part of MPC-BE.
  *
@@ -21,10 +21,11 @@
 
 #pragma once
 
-#include <afxwin.h>
 #include <ExtLib/ui/ResizableLib/ResizableDialog.h>
 
+//
 // COpenDlg dialog
+//
 
 class COpenDlg : public CResizableDialog
 {
@@ -59,39 +60,4 @@ public:
 	afx_msg void OnBnClickedOk();
 	afx_msg void OnUpdateDub(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateOk(CCmdUI* pCmdUI);
-};
-
-// COpenFileDlg
-
-class COpenFileDlg : public CFileDialog
-{
-	DECLARE_DYNAMIC(COpenFileDlg)
-
-private:
-	WCHAR* m_buff;
-	WCHAR* m_InitialDir;
-	std::vector<CString>& m_mask;
-
-public:
-	COpenFileDlg(std::vector<CString>& mask, bool fAllowDirSelection,
-				 LPCWSTR lpszDefExt = nullptr,
-				 LPCWSTR lpszFileName = nullptr,
-				 DWORD dwFlags = OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT,
-				 LPCWSTR lpszFilter = nullptr,
-				 CWnd* pParentWnd = nullptr);
-	virtual ~COpenFileDlg();
-
-	static bool m_fAllowDirSelection;
-	static WNDPROC m_wndProc;
-	static LRESULT CALLBACK WindowProcNew(HWND hwnd,UINT message, WPARAM wParam, LPARAM lParam);
-
-	virtual BOOL OnInitDialog();
-
-protected:
-	DECLARE_MESSAGE_MAP()
-	virtual BOOL OnNotify(WPARAM wParam, LPARAM lParam, LRESULT* pResult);
-	virtual BOOL OnIncludeItem(OFNOTIFYEX* pOFNEx, LRESULT* pResult);
-
-public:
-	afx_msg void OnDestroy();
 };

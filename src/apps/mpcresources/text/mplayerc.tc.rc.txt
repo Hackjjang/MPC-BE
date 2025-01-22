@@ -1,7 +1,7 @@
 ﻿BEGIN DIALOGEX IDD_ABOUTBOX LINES 26
 3		"關於"
 7		"MPC-BE"
-8		"Copyright © 2002-2024 詳見 Authors.txt 檔案"
+8		"Copyright © 2002-2025 詳見 Authors.txt 檔案"
 10		"版本："
 11		"MPC-BE 編譯器："
 12		"FFmpeg 編譯器："
@@ -202,7 +202,7 @@ BEGIN DIALOGEX IDD_PPAGECAPTURE LINES 22
 18		"接收器"
 END
 
-BEGIN DIALOGEX IDD_PPAGECOLOR LINES 27
+BEGIN DIALOGEX IDD_PPAGECOLOR LINES 28
 5		"色彩控制項（EVR 、 madVR 及 MPC VR）"
 6		"亮度"
 7		"對比"
@@ -210,9 +210,10 @@ BEGIN DIALOGEX IDD_PPAGECOLOR LINES 27
 9		"飽和度"
 18		"重設"
 20		"色彩管理"
-21		"輸入類型："
-23		"環境光："
-25		"色彩對應方式："
+21		"（適用於 EVR-CP，10/16-bit 繪圖頁）"
+22		"輸入類型："
+24		"環境光："
+26		"色彩對應方式："
 END
 
 BEGIN DIALOGEX IDD_PPAGEDVD LINES 19
@@ -297,8 +298,8 @@ BEGIN DIALOGEX IDD_PPAGEFULLSCREEN LINES 34
 32		"離開後回復解析度"
 END
 
-BEGIN DIALOGEX IDD_PPAGEINTERFACE LINES 55
-6		"使用暗黑主題（預設）"
+BEGIN DIALOGEX IDD_PPAGEINTERFACE LINES 56
+6		"使用暗色主題（預設）"
 7		"亮度："
 9		"設定音量控制器色彩："
 10		"填充："
@@ -310,25 +311,25 @@ BEGIN DIALOGEX IDD_PPAGEINTERFACE LINES 55
 16		"G:"
 17		"B:"
 21		"啟用暗色選單"
-22		"啟用暗色標題列（Windows 11）"
-24		"使用時間工具提示："
-26		"搜尋列顯示預覽縮圖"
-27		"相對於螢幕寬度的縮圖大小："
-31		"線上影片"
-32		"搜尋列顯示章節標籤"
-33		"使用浮動工具列（flybar）"
-34		"播放清單字型大小"
-37		"OSD"
-38		"字型："
-42		"F"
-43		"背景："
-44		"G1"
-45		"G2"
-46		"透明度："
-48		"外框大小："
-51		"陰影"
-52		"去鋸齒"
-53		"使用 Windows 7 （或以上）工作列功能"
+22		"啟用暗色標題列（Windows 10 及以上）"
+25		"使用時間工具提示："
+27		"搜尋列顯示預覽縮圖"
+28		"相對於螢幕寬度的縮圖大小："
+32		"線上影片"
+33		"搜尋列顯示章節標籤"
+34		"使用浮動工具列（flybar）"
+35		"播放清單字型大小"
+38		"OSD"
+39		"字型："
+43		"F"
+44		"背景："
+45		"G1"
+46		"G2"
+47		"透明度："
+49		"外框大小："
+52		"陰影"
+53		"去鋸齒"
+54		"使用 Windows 7 （或以上）工作列功能"
 END
 
 BEGIN DIALOGEX IDD_PPAGEINTERNALFILTERS LINES 22
@@ -441,7 +442,7 @@ BEGIN DIALOGEX IDD_PPAGEPLAYER LINES 49
 48		"秒"
 END
 
-BEGIN DIALOGEX IDD_PPAGESOUNDPROCESSING LINES 37
+BEGIN DIALOGEX IDD_PPAGESOUNDPROCESSING LINES 40
 5		"聲道混音"
 6		"混合聲道為："
 8		"要求解碼器輸出 2.0 立體聲"
@@ -451,13 +452,15 @@ BEGIN DIALOGEX IDD_PPAGESOUNDPROCESSING LINES 37
 18		"音訊增強"
 24		"FFmpeg 濾波器"
 25		"預設集"
-28		"輸出取樣格式："
-29		"Int16"
-30		"Int24"
-31		"Int32"
-32		"浮點"
-33		"平移音訊時間 (ms)："
-36		"預設值"
+26		"來源是 2.0 立體聲或單聲道時停用"
+30		"輸出取樣格式："
+31		"Int16"
+32		"Int24"
+33		"Int32"
+34		"浮點"
+35		"平移音訊時間 (ms)："
+38		"小型立體聲喇叭"
+39		"預設值"
 END
 
 BEGIN DIALOGEX IDD_PPAGESUBRENDERING LINES 30
@@ -592,21 +595,22 @@ BEGIN DIALOGEX IDD_PPAGEWINDOWSIZE LINES 28
 27		"貼齊到桌面邊緣"
 END
 
-BEGIN DIALOGEX IDD_PPAGEYOUTUBE LINES 29
+BEGIN DIALOGEX IDD_PPAGEYOUTUBE LINES 31
 5		"YouTube"
 6		"使用內部網頁剖析器"
-7		"偏好格式："
+7		"偏好視訊格式："
 10		"60 fps"
 11		"HDR"
-12		"偏好音軌語言："
-14		"載入播放清單"
-16		"youtube-dl, yt-dlp"
-17		"執行檔："
-19		"最大影片高度："
-21		"選擇最高影格率或位元率"
-22		"AceStream 位址："
-24		"MatriX (TorrServer) 位址："
-27		"使用者代理字串︰"
+12		"偏好音訊格式："
+14		"偏好音軌語言："
+16		"載入播放清單"
+18		"youtube-dl, yt-dlp"
+19		"執行檔："
+21		"最大影片高度："
+23		"選擇最高影格率或位元率"
+24		"AceStream 位址："
+26		"MatriX (TorrServer) 位址："
+29		"使用者代理字串︰"
 END
 
 BEGIN DIALOGEX IDD_SAVEIMAGEDIALOGTEMPL LINES 9
@@ -2035,7 +2039,7 @@ STRING IDS_UPDATE_ERROR_DATA		"更新伺服器資料錯誤。\n\n請稍後再試
 STRING IDS_USING_NEWER_VERSION		"您已經使用最新的穩定版本 %s"
 STRING IDS_VDF_AR_MODE		"從串流中讀取長寬比例"
 STRING IDS_VDF_AUTO		"自動"
-STRING IDS_VDF_COLOR_FMT_CONVERSION		"格式轉換"
+STRING IDS_VDF_COLOR_CONVERT_TO_RGB		"轉換為 RGB"
 STRING IDS_VDF_COLOR_OUTPUT_FORMATS		"輸出格式："
 STRING IDS_VDF_COLOR_PRESET		"先期設定："
 STRING IDS_VDF_COLOR_RGB_LEVELS		"RGB 輸出層級："

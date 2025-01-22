@@ -8,7 +8,9 @@ on:
       - '**.md'
       - '**.cmd'
       - '**.bat'
-      - '**.vcxproj.filters'
+      - '**.manifest.conf'
+      - '**.manifest.template'
+      - include/Version.h
   pull_request:
     paths-ignore:
       - .github/workflows/main.yml
@@ -17,10 +19,13 @@ on:
       - '**.cmd'
       - '**.bat'
       - '**.vcxproj.filters'
+      - '**.manifest.conf'
+      - '**.manifest.template'
+      - include/Version.h
 
 jobs:
   build:
-    runs-on: windows-2022
+    runs-on: windows-2019
     timeout-minutes: 60
 
     steps:
@@ -32,7 +37,7 @@ jobs:
 
       - name: Prepare MSYS
         run: |
-          curl -sSL https://github.com/Aleksoid1978/MSYS/raw/main/MSYS_MinGW-w64_GCC_1320_x86-x64.7z -o MSYS.7z
+          curl -sSL https://github.com/Aleksoid1978/MSYS/raw/main/MSYS_MinGW-w64_GCC_1421_x86-x64.7z -o MSYS.7z
           7z x MSYS.7z -oC:\\MSYS
           echo '@ECHO OFF' > environments.bat
           echo 'SET "MPCBE_MSYS=C:\\MSYS"' >> environments.bat
@@ -43,6 +48,11 @@ jobs:
       - name: Clean
         run: |
           .\\build.bat Clean All NoWait
+        shell: pwsh
+
+      - name: Select Windows SDK 10.0.22621.0
+        run: |
+          (Get-Content .\\src\\platform.props) | ForEach-Object { $_ -replace ">10.0<", ">10.0.22621.0<" } | Set-Content .\\src\\platform.props
         shell: pwsh
 
       - name: Build MPC-BE

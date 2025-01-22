@@ -181,6 +181,10 @@ namespace YoutubeDL
 						return true;
 					};
 
+					CStringA liveStatus;
+					getJsonValue(d, "live_status", liveStatus);
+					bool bIsLive = liveStatus == "is_live";
+
 					for (const auto& format : formats->GetArray()) {
 						CStringA protocol;
 						if (!GetAndCheckProtocol(format, protocol)) {
@@ -192,7 +196,10 @@ namespace YoutubeDL
 						}
 						CStringA vcodec;
 						if (!getJsonValue(format, "vcodec", vcodec) || vcodec == "none") {
-							continue;
+							CStringA video_ext;
+							if (!getJsonValue(format, "video_ext", video_ext) || video_ext == "none") {
+								continue;
+							}
 						}
 
 						int height = 0;
@@ -211,6 +218,9 @@ namespace YoutubeDL
 
 							profile->format = Youtube::yformat::y_mp4_other;
 							if (EndsWith(protocol, "m3u8") || EndsWith(protocol, "m3u8_native")) {
+								if (bIsLive && acodec == "none") {
+									continue;
+								}
 								profile->format = Youtube::yformat::y_stream;
 							} else if (ext == L"mp4") {
 								if (StartsWith(vcodec, "avc1")) {
@@ -278,11 +288,15 @@ namespace YoutubeDL
 						}
 						CStringA vcodec;
 						if (!getJsonValue(format, "vcodec", vcodec) || vcodec != "none") {
-							continue;
+							if (!getJsonValue(format, "video_ext", vcodec) || vcodec == "none") {
+								continue;
+							}
 						}
 						CStringA acodec;
 						if (!getJsonValue(format, "acodec", acodec) || acodec == "none") {
-							continue;
+							if (!getJsonValue(format, "audio_ext", acodec) || acodec == "none") {
+								continue;
+							}
 						}
 						CStringA format_id;
 						if (getJsonValue(format, "format_id", format_id) && EndsWith(format_id, "-drc")) {
@@ -345,15 +359,15 @@ namespace YoutubeDL
 									maxVideofps = std::max(maxVideofps, fps);
 
 									if (bMaxQuality) {
-										bestUrl = url;
-										bVideoOnly = false;
-
 										CStringA acodec;
-										if (getJsonValue(format, "acodec", acodec)) {
-											if (acodec == "none") {
-												bVideoOnly = true;
-											}
+										getJsonValue(format, "acodec", acodec);
+
+										if (bIsLive && acodec == "none" && (EndsWith(protocol, "m3u8") || EndsWith(protocol, "m3u8_native"))) {
+											continue;
 										}
+
+										bVideoOnly = acodec == "none";
+										bestUrl = url;
 									}
 								}
 							}

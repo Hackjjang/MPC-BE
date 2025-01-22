@@ -1,7 +1,7 @@
 ﻿BEGIN DIALOGEX IDD_ABOUTBOX LINES 26
 3		"Sobre"
 7		"MPC-BE"
-8		"Copyright © 2002-2024 - veja o arquivo Authors.txt"
+8		"Copyright © 2002-2025 - veja o arquivo Authors.txt"
 10		"Versão :"
 11		"Compilador MPC-BE :"
 12		"Compilador FFmpeg :"
@@ -202,7 +202,7 @@ BEGIN DIALOGEX IDD_PPAGECAPTURE LINES 22
 18		"Receptor"
 END
 
-BEGIN DIALOGEX IDD_PPAGECOLOR LINES 27
+BEGIN DIALOGEX IDD_PPAGECOLOR LINES 28
 5		"Controles de cor (para EVR, madVR e MPC VR)"
 6		"Brilho"
 7		"Contraste"
@@ -210,9 +210,10 @@ BEGIN DIALOGEX IDD_PPAGECOLOR LINES 27
 9		"Saturação"
 18		"Resetar"
 20		"Gerência de cor"
-21		"Tipo de entrada:"
-23		"Luz ambiente:"
-25		"Tentar renderização:"
+21		"(for EVR-CP, surface 10/16-bit)"
+22		"Tipo de entrada:"
+24		"Luz ambiente:"
+26		"Tentar renderização:"
 END
 
 BEGIN DIALOGEX IDD_PPAGEDVD LINES 19
@@ -297,7 +298,7 @@ BEGIN DIALOGEX IDD_PPAGEFULLSCREEN LINES 34
 32		"Restaurar resolução ao sair do programa"
 END
 
-BEGIN DIALOGEX IDD_PPAGEINTERFACE LINES 55
+BEGIN DIALOGEX IDD_PPAGEINTERFACE LINES 56
 6		"Usar tema ""escuro"" (padrão)"
 7		"Brilho:"
 9		"Configurar cor do indicador de som:"
@@ -310,25 +311,25 @@ BEGIN DIALOGEX IDD_PPAGEINTERFACE LINES 55
 16		"G:"
 17		"B:"
 21		"Ativar menu escuro"
-22		"Enable dark title (Windows 11)"
-24		"Usar dica de tempo:"
-26		"Usar prévia na busca"
-27		"Tamanho relativo à largura da tela:"
-31		"Online"
-32		"Usar marcador de capítulos"
-33		"Usar barra de voar"
-34		"Tamanho da fonte da lista de reprodução:"
-37		"OSD"
-38		"Fonte:"
-42		"F"
-43		"Fundo:"
-44		"G1"
-45		"G2"
-46		"Transparente:"
-48		"Tam.da borda:"
-51		"Sombra"
-52		"Anti-aliasing"
-53		"Usar recursos da barra de tarefas do Windows 7 (e superior)"
+22		"Enable dark title (Windows 10 and above)"
+25		"Usar dica de tempo:"
+27		"Usar prévia na busca"
+28		"Tamanho relativo à largura da tela:"
+32		"Online"
+33		"Usar marcador de capítulos"
+34		"Usar barra de voar"
+35		"Tamanho da fonte da lista de reprodução:"
+38		"OSD"
+39		"Fonte:"
+43		"F"
+44		"Fundo:"
+45		"G1"
+46		"G2"
+47		"Transparente:"
+49		"Tam.da borda:"
+52		"Sombra"
+53		"Anti-aliasing"
+54		"Usar recursos da barra de tarefas do Windows 7 (e superior)"
 END
 
 BEGIN DIALOGEX IDD_PPAGEINTERNALFILTERS LINES 22
@@ -441,7 +442,7 @@ BEGIN DIALOGEX IDD_PPAGEPLAYER LINES 49
 48		"sec."
 END
 
-BEGIN DIALOGEX IDD_PPAGESOUNDPROCESSING LINES 37
+BEGIN DIALOGEX IDD_PPAGESOUNDPROCESSING LINES 40
 5		"Mixagem de canais"
 6		"Misturar canais para:"
 8		"Solicitar estéreo do decodificador"
@@ -451,13 +452,15 @@ BEGIN DIALOGEX IDD_PPAGESOUNDPROCESSING LINES 37
 18		"Aumentar áudio"
 24		"Filtros FFmpeg"
 25		"Presets"
-28		"Formato de amostra de saída:"
-29		"Int16"
-30		"Int24"
-31		"Int32"
-32		"Float"
-33		"Deslocar tempo de áudio (ms):"
-36		"Padrão"
+26		"Don't use for stereo and mono sources"
+30		"Formato de amostra de saída:"
+31		"Int16"
+32		"Int24"
+33		"Int32"
+34		"Float"
+35		"Deslocar tempo de áudio (ms):"
+38		"Small stereo speakers"
+39		"Padrão"
 END
 
 BEGIN DIALOGEX IDD_PPAGESUBRENDERING LINES 30
@@ -592,21 +595,22 @@ BEGIN DIALOGEX IDD_PPAGEWINDOWSIZE LINES 28
 27		"Ajustar às bordas da área de trabalho"
 END
 
-BEGIN DIALOGEX IDD_PPAGEYOUTUBE LINES 29
+BEGIN DIALOGEX IDD_PPAGEYOUTUBE LINES 31
 5		"YouTube"
 6		"Usar analisador de página da web integrado"
-7		"Formato preferido:"
+7		"Preferred video format:"
 10		"60 fps"
 11		"HDR"
-12		"Preferred audio track language:"
-14		"Carregar lista-reprodução"
-16		"youtube-dl, yt-dlp"
-17		"Arquivo executável:"
-19		"Altura máxima do vídeo:"
-21		"Selecionar fps máximo ou taxa de bits"
-22		"Endereço AceStream:"
-24		"Endereço MatriX (TorrServer):"
-27		"User agent:"
+12		"Preferred audio format:"
+14		"Preferred audio track language:"
+16		"Carregar lista-reprodução"
+18		"youtube-dl, yt-dlp"
+19		"Arquivo executável:"
+21		"Altura máxima do vídeo:"
+23		"Selecionar fps máximo ou taxa de bits"
+24		"Endereço AceStream:"
+26		"Endereço MatriX (TorrServer):"
+29		"User agent:"
 END
 
 BEGIN DIALOGEX IDD_SAVEIMAGEDIALOGTEMPL LINES 9
@@ -2035,8 +2039,8 @@ STRING IDS_UPDATE_ERROR_DATA		"The update server gives the wrong data.\n\nPlease
 STRING IDS_USING_NEWER_VERSION		"Você já está usando a versão mais recente %s."
 STRING IDS_VDF_AR_MODE		"Ler AR do fluxo"
 STRING IDS_VDF_AUTO		"Auto"
-STRING IDS_VDF_COLOR_FMT_CONVERSION		"Conversão de formato"
-STRING IDS_VDF_COLOR_OUTPUT_FORMATS		"Formatos de saída:"
+STRING IDS_VDF_COLOR_CONVERT_TO_RGB		"Convert to RGB"
+STRING IDS_VDF_COLOR_OUTPUT_FORMATS		"Formatos de saída"
 STRING IDS_VDF_COLOR_PRESET		"Ajustar:"
 STRING IDS_VDF_COLOR_RGB_LEVELS		"Níveis de saída RGB:"
 STRING IDS_VDF_COLOR_STANDARD		"Padrão:"

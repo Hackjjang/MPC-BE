@@ -1560,7 +1560,6 @@ bool File__Analyze::Open_Buffer_Continue_Loop ()
 
     //Parsing specific
     Read_Buffer_AfterParsing();
-    Merge_Conformance();
 
     //Jumping to the end of the file if needed
     if (!IsSub && !EOF_AlreadyDetected && Config->ParseSpeed<1 && Count_Get(Stream_General))
@@ -1942,6 +1941,7 @@ bool File__Analyze::Buffer_Parse()
         return false; //Wait for more data
 
     Buffer_TotalBytes_LastSynched=Buffer_TotalBytes+Buffer_Offset;
+    Merge_Conformance();
 
     return true;
 }
@@ -2103,7 +2103,8 @@ bool File__Analyze::FileHeader_Begin_0x000001()
 bool File__Analyze::FileHeader_Begin_XML(XMLDocument &Document)
 {
     //Element_Size
-    if (Buffer_Size<32 || (!IsSub && File_Size>16*1024*1024))
+    //IMF Composition Playlist documents can be larger than 16 MB
+    if (Buffer_Size<32 || (!IsSub && File_Size>64*1024*1024))
     {
         Reject();
         return false; //XML files are not expected to be so big

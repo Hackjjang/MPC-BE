@@ -1,7 +1,7 @@
 ﻿BEGIN DIALOGEX IDD_ABOUTBOX LINES 26
 3		"About"
 7		"MPC-BE"
-8		"Copyright © 2002-2024 see Authors.txt"
+8		"Copyright © 2002-2025 see Authors.txt"
 10		"Version :"
 11		"MPC-BE Compiler :"
 12		"FFmpeg Compiler :"
@@ -202,7 +202,7 @@ BEGIN DIALOGEX IDD_PPAGECAPTURE LINES 22
 18		"Receiver"
 END
 
-BEGIN DIALOGEX IDD_PPAGECOLOR LINES 27
+BEGIN DIALOGEX IDD_PPAGECOLOR LINES 28
 5		"Color controls (for EVR, madVR and MPC VR)"
 6		"Brightness"
 7		"Contrast"
@@ -210,9 +210,10 @@ BEGIN DIALOGEX IDD_PPAGECOLOR LINES 27
 9		"Saturation"
 18		"Reset"
 20		"Color Management"
-21		"Input type:"
-23		"Ambient Light:"
-25		"Rendering Intent:"
+21		"(for EVR-CP, surface 10/16-bit)"
+22		"Input type:"
+24		"Ambient Light:"
+26		"Rendering Intent:"
 END
 
 BEGIN DIALOGEX IDD_PPAGEDVD LINES 19
@@ -297,7 +298,7 @@ BEGIN DIALOGEX IDD_PPAGEFULLSCREEN LINES 34
 32		"Restore resolution on program exit"
 END
 
-BEGIN DIALOGEX IDD_PPAGEINTERFACE LINES 55
+BEGIN DIALOGEX IDD_PPAGEINTERFACE LINES 56
 6		"Use the ""dark"" theme (default)"
 7		"Brightness :"
 9		"Setting the color of the indicator of sound:"
@@ -310,25 +311,25 @@ BEGIN DIALOGEX IDD_PPAGEINTERFACE LINES 55
 16		"G:"
 17		"B:"
 21		"Enable dark menu"
-22		"Enable dark title (Windows 11)"
-24		"Use time tooltip:"
-26		"Use the preview in the search"
-27		"Size relative to screen width:"
-31		"Online"
-32		"Use chapters marker"
-33		"Use flybar"
-34		"Playlist font size:"
-37		"OSD"
-38		"Font:"
-42		"F"
-43		"Background:"
-44		"G1"
-45		"G2"
-46		"Transparent:"
-48		"Border Size:"
-51		"Shadow"
-52		"Anti-aliasing"
-53		"Use Windows 7 (and above) Taskbar features"
+22		"Enable dark title (Windows 10 and above)"
+25		"Use time tooltip:"
+27		"Use the preview in the search"
+28		"Size relative to screen width:"
+32		"Online"
+33		"Use chapters marker"
+34		"Use flybar"
+35		"Playlist font size:"
+38		"OSD"
+39		"Font:"
+43		"F"
+44		"Background:"
+45		"G1"
+46		"G2"
+47		"Transparent:"
+49		"Border Size:"
+52		"Shadow"
+53		"Anti-aliasing"
+54		"Use Windows 7 (and above) Taskbar features"
 END
 
 BEGIN DIALOGEX IDD_PPAGEINTERNALFILTERS LINES 22
@@ -441,7 +442,7 @@ BEGIN DIALOGEX IDD_PPAGEPLAYER LINES 49
 48		"sec."
 END
 
-BEGIN DIALOGEX IDD_PPAGESOUNDPROCESSING LINES 37
+BEGIN DIALOGEX IDD_PPAGESOUNDPROCESSING LINES 40
 5		"Channel Mixer"
 6		"Mix channels to:"
 8		"Request stereo from the decoder"
@@ -451,13 +452,15 @@ BEGIN DIALOGEX IDD_PPAGESOUNDPROCESSING LINES 37
 18		"Boost audio"
 24		"FFmpeg filters"
 25		"Presets"
-28		"Output sample format:"
-29		"Int16"
-30		"Int24"
-31		"Int32"
-32		"Float"
-33		"Audio time shift (ms):"
-36		"Default"
+26		"Don't use for stereo and mono sources"
+30		"Output sample format:"
+31		"Int16"
+32		"Int24"
+33		"Int32"
+34		"Float"
+35		"Audio time shift (ms):"
+38		"Small stereo speakers"
+39		"Default"
 END
 
 BEGIN DIALOGEX IDD_PPAGESUBRENDERING LINES 30
@@ -592,21 +595,22 @@ BEGIN DIALOGEX IDD_PPAGEWINDOWSIZE LINES 28
 27		"Snap to desktop edges"
 END
 
-BEGIN DIALOGEX IDD_PPAGEYOUTUBE LINES 29
+BEGIN DIALOGEX IDD_PPAGEYOUTUBE LINES 31
 5		"YouTube"
 6		"Use the built-in web page parser"
-7		"Preferred format:"
+7		"Preferred video format:"
 10		"60 fps"
 11		"HDR"
-12		"Preferred audio track language:"
-14		"Load playlist"
-16		"youtube-dl, yt-dlp"
-17		"Executable file:"
-19		"Max video height:"
-21		"Select max fps or bitrate"
-22		"AceStream address:"
-24		"MatriX (TorrServer) address:"
-27		"User agent:"
+12		"Preferred audio format:"
+14		"Preferred audio track language:"
+16		"Load playlist"
+18		"youtube-dl, yt-dlp"
+19		"Executable file:"
+21		"Max video height:"
+23		"Select max fps or bitrate"
+24		"AceStream address:"
+26		"MatriX (TorrServer) address:"
+29		"User agent:"
 END
 
 BEGIN DIALOGEX IDD_SAVEIMAGEDIALOGTEMPL LINES 9
@@ -2035,8 +2039,8 @@ STRING IDS_UPDATE_ERROR_DATA		"The update server gives the wrong data.\n\nPlease
 STRING IDS_USING_NEWER_VERSION		"You are already using the latest version %s."
 STRING IDS_VDF_AR_MODE		"Read AR from stream"
 STRING IDS_VDF_AUTO		"Auto"
-STRING IDS_VDF_COLOR_FMT_CONVERSION		"Format conversion"
-STRING IDS_VDF_COLOR_OUTPUT_FORMATS		"Output formats:"
+STRING IDS_VDF_COLOR_CONVERT_TO_RGB		"Convert to RGB"
+STRING IDS_VDF_COLOR_OUTPUT_FORMATS		"Output formats"
 STRING IDS_VDF_COLOR_PRESET		"Preset:"
 STRING IDS_VDF_COLOR_RGB_LEVELS		"RGB output levels:"
 STRING IDS_VDF_COLOR_STANDARD		"Standard:"

@@ -31,7 +31,7 @@
 extern "C" {
 	#include <ExtLib/ffmpeg/libavcodec/defs.h>
 	#include <ExtLib/ffmpeg/libswscale/swscale.h>
-	#include <ExtLib/ffmpeg/libswscale/swscale_internal.h>
+	#include <ExtLib/ffmpeg/libavutil/pixdesc.h>
 }
 #pragma warning(pop)
 
@@ -251,7 +251,13 @@ void CFormatConverter::UpdateSWSContext()
 				dstRange = 1;
 			}
 
-			if (isAnyRGB(m_pSwsContext->srcFormat) || isAnyRGB(m_pSwsContext->dstFormat)) {
+			auto isAnyRGB = [](enum AVPixelFormat pix_fmt) {
+				const AVPixFmtDescriptor* desc = av_pix_fmt_desc_get(pix_fmt);
+				ASSERT(desc);
+				return (desc->flags & AV_PIX_FMT_FLAG_RGB) || pix_fmt == AV_PIX_FMT_MONOBLACK || pix_fmt == AV_PIX_FMT_MONOWHITE;
+			};
+
+			if (isAnyRGB(m_FProps.avpixfmt) || isAnyRGB(s_sw_formats[m_out_pixfmt].av_pix_fmt)) {
 				// SWS_CS_* does not fully comply with the AVCOL_SPC_*, but it is well handled in the libswscale.
 				inv_tbl = (int *)sws_getCoefficients(m_FProps.colorspace);
 			}
@@ -405,7 +411,7 @@ void CFormatConverter::UpdateOutput2(DWORD biCompression, LONG biWidth, LONG biH
 
 void CFormatConverter::SetOptions(int rgblevels)
 {
-	m_dstRGBRange = rgblevels == 1 ? 0 : 1;
+	m_dstRGBRange = (rgblevels == 1) ? 0 : 1;
 
 	UpdateSWSContext();
 }

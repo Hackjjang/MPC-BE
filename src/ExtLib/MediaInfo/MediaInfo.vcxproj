@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
@@ -125,6 +125,7 @@
     <ClInclude Include="MediaInfo\Multiple\File_DcpPkl.h" />
     <ClInclude Include="MediaInfo\Multiple\File_HdsF4m.h" />
     <ClInclude Include="MediaInfo\Multiple\File_MiXml.h" />
+    <ClInclude Include="MediaInfo\Multiple\File_Mxf_Automated.h" />
     <ClInclude Include="MediaInfo\Multiple\File_Nsv.h" />
     <ClInclude Include="MediaInfo\Multiple\File_Pmp.h" />
     <ClInclude Include="MediaInfo\Multiple\File_Ptx.h" />
@@ -137,6 +138,8 @@
     <ClInclude Include="MediaInfo\Tag\File_PropertyList.h" />
     <ClInclude Include="MediaInfo\Tag\File_Xmp.h" />
     <ClInclude Include="MediaInfo\Text\File_AribStdB24B37.h" />
+    <ClInclude Include="MediaInfo\Text\File_Pac.h" />
+    <ClInclude Include="MediaInfo\Text\File_Pac_Codepages.h" />
     <ClInclude Include="MediaInfo\Text\File_Pdf.h" />
     <ClInclude Include="MediaInfo\Text\File_Sdp.h" />
     <ClInclude Include="MediaInfo\Text\File_SubRip.h" />
@@ -426,6 +429,7 @@
     <ClCompile Include="MediaInfo\Tag\File_PropertyList.cpp" />
     <ClCompile Include="MediaInfo\Tag\File_Xmp.cpp" />
     <ClCompile Include="MediaInfo\Text\File_AribStdB24B37.cpp" />
+    <ClCompile Include="MediaInfo\Text\File_Pac.cpp" />
     <ClCompile Include="MediaInfo\Text\File_Pdf.cpp" />
     <ClCompile Include="MediaInfo\Text\File_Sdp.cpp" />
     <ClCompile Include="MediaInfo\Text\File_SubRip.cpp" />
