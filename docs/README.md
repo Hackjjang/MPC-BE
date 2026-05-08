@@ -1,45 +1,35 @@
 # Media Player Classic - Black Edition (MPC-BE)
 ---
 
-MPC-BE – универсальный проигрыватель аудио и видеофайлов для операционной системы Windows.
-Этот проект имеет свою независимую разработку на базе оригинального кода «Media Player Classic» (Gabest) и «Media Player Classic - Home Cinema» (Casimir666).
+MPC-BE는 윈도용 무료 오픈소스 음향/영상 재생기입니다.
+MPC-BE는 원래의 Guliverkli 프로젝트와 “Media Player Classic Home Cinema” 프로젝트를 기반으로 하며, 추가 기능과 버그 수정 사항이 포함되어 있습니다.
 
-## Системные требования:
-* Процессор с поддержкой SSE2
-* Видеокарта с поддержкой DirectX9.0c (PS 3.0)
-* Windows 7, 8, 8.1, 10, 11 32-bit/64-bit
+## 시스템 요구 사항 :
+* SSE2를 지원하는 CPU
+* DirectX 9.0c(PS 3.0)를 지원하는 그래픽 카드
+* 윈도 7, 8, 8.1, 10, 11 (32비트/64비트)
 
----
-
-MPC-BE is a free and open source audio and video player for Windows.
-MPC-BE is based on the original Guliverkli project and "Media Player Classic Home Cinema" project, contains additional features and bug fixes.
-
-## System requirements:
-* An SSE2 capable CPU
-* Video card supporting DirectX9.0c (PS 3.0)
-* Windows 7, 8, 8.1, 10, 11 32-bit/64-bit
-
-## Downloads
+## 내려받기
 - [Releases      ](https://github.com/Aleksoid1978/MPC-BE/releases)
 - [Nightly Builds](https://github.com/Aleksoid1978/MPC-BE/wiki/Nightly-builds)
 
-## Links
+## 링크
 - [Project Page  ](https://sourceforge.net/projects/mpcbe/)
 - [Wiki          ](https://github.com/Aleksoid1978/MPC-BE/wiki)
 - [Get code      ](https://github.com/Aleksoid1978/MPC-BE.git)
 
 ---
  
-For the people involved in the development, see Authors.txt.
-MPC-BE's code is licensed under GPL v3 (see LICENSE).
+개발에 참여한 분들은 Authors.txt를 참조하십시오.
+MPC-BE의 소스 코드는 GPL v3 라이선스 하에 배포됩니다(LICENSE 참조).
 
-Translations are done by various translators (see Authors.txt).
+번역은 여러 번역가들이 담당했습니다(Authors.txt 참조).
 
 ---
 
 MPC-BE makes use of the following 3rd party code:
 
-| Project           | License             | Website                                               |
+| 프로젝트           | 라이센스             | 웹사이트                                               |
 |-------------------|---------------------|-------------------------------------------------------|
 | Bento4            | GPLv2               | https://www.bento4.com/                               |
 | CFileVersionInfo  |                     |                                                       |
