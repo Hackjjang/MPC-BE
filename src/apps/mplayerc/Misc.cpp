@@ -134,7 +134,7 @@ CString GetLastErrorMsg(LPWSTR lpszFunction, DWORD dw/* = GetLastError()*/)
 	return ret;
 }
 
-HICON LoadIcon(const CString& fn, bool fSmall)
+HICON LoadFileIcon(const CStringW& fn, bool fSmall)
 {
 	if (fn.IsEmpty()) {
 		return nullptr;
@@ -156,17 +156,16 @@ HICON LoadIcon(const CString& fn, bool fSmall)
 		}
 	}
 
-	WCHAR buff[MAX_PATH] = {};
-	if (fn.GetLength() <= MAX_PATH && ::PathFileExistsW(fn)) {
-		wcscpy_s(buff, fn);
-
+	if (::PathFileExistsW(fn)) {
 		SHFILEINFO sfi = {};
-		if (SUCCEEDED(SHGetFileInfoW(buff, 0, &sfi, sizeof(sfi), (fSmall ? SHGFI_SMALLICON : SHGFI_LARGEICON) | SHGFI_ICON)) && sfi.hIcon) {
+		// SHGetFileInfoW supports long paths
+		if (SUCCEEDED(SHGetFileInfoW(fn, 0, &sfi, sizeof(sfi), (fSmall ? SHGFI_SMALLICON : SHGFI_LARGEICON) | SHGFI_ICON)) && sfi.hIcon) {
 			return sfi.hIcon;
 		}
 	}
 
 	do {
+		WCHAR buff[MAX_PATH] = {};
 		CRegKey key;
 		ULONG len;
 
@@ -378,7 +377,7 @@ static bool LongPathsEnabled()
 void ConvertLongPath(CStringW& path)
 {
 	static const bool bLongPathsEnabled = LongPathsEnabled();
-	if (bLongPathsEnabled && StartsWith(path, L"\\\\?\\") && !StartsWith(path, L"\\\\?\\UNC\\")) {
+	if (bLongPathsEnabled && StartsWith(path, L"\\\\?\\") && !StartsWith(path, L"UNC\\", 4)) {
 		path = path.Mid(4);
 	}
 }

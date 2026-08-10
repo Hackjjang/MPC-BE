@@ -39,7 +39,6 @@
 #include "opt.h"
 #include "samplefmt.h"
 #include "bprint.h"
-#include "version.h"
 
 #include <float.h>
 
@@ -75,8 +74,8 @@ static const struct {
     [AV_OPT_TYPE_DICT]          = { sizeof(AVDictionary *), "<dictionary>" },
     [AV_OPT_TYPE_IMAGE_SIZE]    = { sizeof(int[2]),         "<image_size>" },
     [AV_OPT_TYPE_VIDEO_RATE]    = { sizeof(AVRational),     "<video_rate>" },
-    [AV_OPT_TYPE_PIXEL_FMT]     = { sizeof(int),            "<pix_fmt>" },
-    [AV_OPT_TYPE_SAMPLE_FMT]    = { sizeof(int),            "<sample_fmt>" },
+    [AV_OPT_TYPE_PIXEL_FMT]     = { sizeof(enum AVPixelFormat),  "<pix_fmt>" },
+    [AV_OPT_TYPE_SAMPLE_FMT]    = { sizeof(enum AVSampleFormat), "<sample_fmt>" },
     [AV_OPT_TYPE_DURATION]      = { sizeof(int64_t),        "<duration>" },
     [AV_OPT_TYPE_COLOR]         = { sizeof(uint8_t[4]),     "<color>" },
     [AV_OPT_TYPE_CHLAYOUT]      = { sizeof(AVChannelLayout),"<channel_layout>" },
@@ -578,7 +577,8 @@ fail:
 }
 
 static int set_string_fmt(void *obj, const AVOption *o, const char *val, uint8_t *dst,
-                          int fmt_nb, int ((*get_fmt)(const char *)), const char *desc)
+                          int fmt_nb, int ((*get_fmt)(const char *)), const char *desc,
+                          enum AVOptionType type)
 {
     int fmt, min, max;
 
@@ -613,7 +613,11 @@ static int set_string_fmt(void *obj, const AVOption *o, const char *val, uint8_t
         return AVERROR(ERANGE);
     }
 
-    *(int *)dst = fmt;
+    switch (type) {
+    case AV_OPT_TYPE_PIXEL_FMT:  *(enum AVPixelFormat *)dst = fmt; break;
+    case AV_OPT_TYPE_SAMPLE_FMT: *(enum AVSampleFormat*)dst = fmt; break;
+    default: av_unreachable("set_string_fmt() is only called for pixel and sample formats");
+    }
     return 0;
 }
 
@@ -625,7 +629,8 @@ static int get_pix_fmt(const char *name)
 static int set_string_pixel_fmt(void *obj, const AVOption *o, const char *val, uint8_t *dst)
 {
     return set_string_fmt(obj, o, val, dst,
-                          AV_PIX_FMT_NB, get_pix_fmt, "pixel format");
+                          AV_PIX_FMT_NB, get_pix_fmt,
+                          "pixel format", AV_OPT_TYPE_PIXEL_FMT);
 }
 
 static int get_sample_fmt(const char *name)
@@ -636,7 +641,8 @@ static int get_sample_fmt(const char *name)
 static int set_string_sample_fmt(void *obj, const AVOption *o, const char *val, uint8_t *dst)
 {
     return set_string_fmt(obj, o, val, dst,
-                          AV_SAMPLE_FMT_NB, get_sample_fmt, "sample format");
+                          AV_SAMPLE_FMT_NB, get_sample_fmt,
+                          "sample format", AV_OPT_TYPE_SAMPLE_FMT);
 }
 
 static int set_string_dict(void *obj, const AVOption *o, const char *val, uint8_t **dst)
@@ -2047,18 +2053,6 @@ const AVClass *av_opt_child_class_iterate(const AVClass *parent, void **iter)
         return parent->child_class_iterate(iter);
     return NULL;
 }
-
-#if FF_API_OPT_PTR
-void *av_opt_ptr(const AVClass *class, void *obj, const char *name)
-{
-    const AVOption *opt= av_opt_find2(&class, name, NULL, 0, AV_OPT_SEARCH_FAKE_OBJ, NULL);
-
-    // no direct access to array-type options
-    if (!opt || (opt->type & AV_OPT_TYPE_FLAG_ARRAY))
-        return NULL;
-    return (uint8_t*)obj + opt->offset;
-}
-#endif
 
 static int opt_copy_elem(void *logctx, enum AVOptionType type,
                          void *dst, const void *src)

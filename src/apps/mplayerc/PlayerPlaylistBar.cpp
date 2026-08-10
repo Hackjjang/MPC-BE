@@ -35,6 +35,7 @@
 #include <ExtLib/ui/coolsb/coolscroll.h>
 #include "./Controls/MenuEx.h"
 #include "TorrentInfo.h"
+#include "PlayerYouTube.h"
 
 #define ID_PLSMENU_ADD_PLAYLIST    2001
 #define ID_PLSMENU_ADD_EXPLORER    2002
@@ -59,7 +60,7 @@ static CStringW MakePath(CStringW path)
 		return path;
 	}
 
-	if (::PathIsURLW(path) || Youtube::CheckURL(path)) { // skip URLs
+	if (::PathIsURLW(path) || YT_DLP::CheckVideoURL(path)) { // skip URLs
 		return path;
 	}
 
@@ -68,6 +69,32 @@ static CStringW MakePath(CStringW path)
 	CStringW c = GetFullCannonFilePath(path);
 
 	return c;
+}
+
+static void GetLabelFromURL(CStringW url, CStringW& outputLabel)
+{
+	int k = url.Find('#');
+	if (k >= 0) {
+		url.Truncate(k); // remove #fragment
+	}
+	k = url.Find('/', url.Find(L"://") + 3);
+	if (k < 0 || k + 1 == url.GetLength() || url[k + 1] == '?') {
+		outputLabel = url;
+	} else {
+		k = url.Find('?');
+		if (k >= 0) {
+			url.Truncate(k); // remove ?query
+		}
+		url.TrimRight('/');
+		k = url.ReverseFind('/');
+		if (k >= 0) {
+			url.Delete(0, k + 1);
+		}
+		if (url.GetLength()) {
+			Unescape(url);
+			outputLabel = url;
+		}
+	}
 }
 
 struct CUETrack {
@@ -266,7 +293,9 @@ CString CPlaylistItem::GetLabel(int i) const
 		}
 		if (m_fi.Valid()) {
 			if (::PathIsURLW(m_fi)) {
-				return m_fi.GetPath();
+				CStringW label = m_fi.GetPath();
+				GetLabelFromURL(m_fi, label);
+				return label;
 			} else {
 				return GetFileName(m_fi);
 			}
@@ -286,7 +315,7 @@ CString CPlaylistItem::GetLabel(int i) const
 		}
 	}
 
-	return CString();
+	return {};
 }
 
 template<class T>
@@ -487,11 +516,13 @@ POSITION CPlaylist::Append(CPlaylistItem& item, const bool bParseDuration)
 	if (bParseDuration && !item.m_duration && item.m_fi.Valid()) {
 		const auto& fn = item.m_fi.GetPath();
 		if (!::PathIsURLW(item.m_fi) && ::PathFileExistsW(item.m_fi)) {
-			MediaInfo MI;
+			MediaInfoLib::MediaInfo MI;
 			MI.Option(L"ParseSpeed", L"0");
 			if (MI.Open(fn.GetString())) {
-				CString duration = MI.Get(Stream_General, 0, L"Duration", Info_Text, Info_Name).c_str();
-				if (!duration.IsEmpty() && StrToInt64(duration.GetString(), item.m_duration)) {
+				using namespace MediaInfoLib;
+
+				String duration = MI.Get(Stream_General, 0, L"Duration", Info_Text, Info_Name);
+				if (!duration.empty() && StrToInt64(duration.c_str(), item.m_duration)) {
 					item.m_duration *= 10000LL;
 				}
 			}
@@ -785,15 +816,16 @@ BOOL CPlayerPlaylistBar::Create(CWnd* pParentWnd, UINT defDockBarID)
 	m_list.InsertColumn(COL_NAME, L"Name", LVCFMT_LEFT);
 	m_list.InsertColumn(COL_TIME, L"Time", LVCFMT_RIGHT);
 
-	m_REdit.Create(WS_CHILD | WS_VISIBLE | ES_AUTOHSCROLL | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_TABSTOP, CRect(10, 10, 100, 10), this, IDC_FINDINPLAYLIST);
+	m_FilterEdit.Create(WS_CHILD | WS_VISIBLE | ES_AUTOHSCROLL | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_TABSTOP, CRect(10, 10, 100, 10), this, IDC_FINDINPLAYLIST);
 	if (AfxGetAppSettings().bUseDarkTheme) {
-		m_REdit.SetBkColor(m_crBND);
-		m_REdit.SetTextColor(m_crTH);
+		m_FilterEdit.SetBkColor(m_crBND);
+		m_FilterEdit.SetTextColor(m_crTH);
 	} else {
-		m_REdit.SetBkColor(::GetSysColor(COLOR_WINDOW));
-		m_REdit.SetTextColor(::GetSysColor(COLOR_WINDOWTEXT));
+		m_FilterEdit.SetBkColor(::GetSysColor(COLOR_WINDOW));
+		m_FilterEdit.SetTextColor(::GetSysColor(COLOR_WINDOWTEXT));
 	}
-	m_REdit.SetSel(0, 0);
+	m_FilterEdit.SetSel(0, 0);
+	SHAutoComplete(m_FilterEdit, SHACF_AUTOAPPEND_FORCE_OFF | SHACF_AUTOSUGGEST_FORCE_OFF);
 
 	ScaleFontInternal();
 
@@ -834,7 +866,7 @@ void CPlayerPlaylistBar::ScaleFontInternal()
 	m_font.DeleteObject();
 	if (m_font.CreateFontIndirectW(&lf)) {
 		m_list.SetFont(&m_font);
-		m_REdit.SetFont(&m_font);
+		m_FilterEdit.SetFont(&m_font);
 	}
 
 	CDC* pDC = m_list.GetDC();
@@ -940,7 +972,7 @@ BOOL CPlayerPlaylistBar::PreTranslateMessage(MSG* pMsg)
 	}
 
 	if (IsWindow(pMsg->hwnd) && IsVisible() && pMsg->message >= WM_KEYFIRST && pMsg->message <= WM_KEYLAST) {
-		if (pMsg->hwnd == m_REdit.GetSafeHwnd()) {
+		if (pMsg->hwnd == m_FilterEdit.GetSafeHwnd()) {
 			IsDialogMessageW(pMsg);
 
 			auto& playlist = GetCurPlayList();
@@ -949,7 +981,7 @@ BOOL CPlayerPlaylistBar::PreTranslateMessage(MSG* pMsg)
 			if (playlist.GetCount() > 1
 					&& (pMsg->message == WM_CHAR
 						|| (pMsg->message == WM_KEYDOWN && (pMsg->wParam == VK_RETURN || pMsg->wParam == VK_F3 || pMsg->wParam == VK_DELETE || pMsg->wParam == VK_BACK)))) {
-				CString text; m_REdit.GetWindowTextW(text);
+				CString text; m_FilterEdit.GetWindowTextW(text);
 				if (!text.IsEmpty()) {
 					::CharLowerBuffW(text.GetBuffer(), text.GetLength());
 
@@ -993,9 +1025,9 @@ BOOL CPlayerPlaylistBar::PreTranslateMessage(MSG* pMsg)
 			}
 
 			if (pMsg->message == WM_KEYDOWN && pMsg->wParam == VK_ESCAPE) {
-				m_REdit.SetSel(0, -1);
-				m_REdit.Clear();
-				m_REdit.SetSel(0, 0);
+				m_FilterEdit.SetSel(0, -1);
+				m_FilterEdit.Clear();
+				m_FilterEdit.SetSel(0, 0);
 
 				m_list.SetFocus();
 			}
@@ -1183,43 +1215,22 @@ void CPlayerPlaylistBar::AddItem(std::list<CString>& fns, CSubtitleItemList* sub
 		}
 	}
 
+	const CAppSettings& s = AfxGetAppSettings();
+
 	pli.AutoLoadFiles();
-	if (pli.m_auds.empty()) {
-		if (!Youtube::Parse_URL(pli.m_fi, pli.m_label, pli.m_duration)) {
-			Youtube::YoutubeFields y_fields;
-			if (Youtube::Parse_URL(pli.m_fi, y_fields)) {
-				pli.m_label = y_fields.title;
-				pli.m_duration = y_fields.duration;
-			}
+	if (pli.m_auds.empty() && s.bPlaylistDetermineDuration) {
+		// Get the title and duration of a YouTube video.
+		// If you have network problems, the player may freeze for 10 seconds.
+		Youtube::YoutubeFields y_fields;
+		if (Youtube::ParseMetadata(pli.m_fi, y_fields)) {
+			pli.m_label = y_fields.title;
+			pli.m_duration = y_fields.duration;
 		}
 	}
 
 	if (pli.m_label.IsEmpty()) {
 		if (::PathIsURLW(pli.m_fi)) {
-			CStringW label = pli.m_fi;
-			int k = label.Find('#');
-			if (k >= 0) {
-				label.Truncate(k); // remove #fragment
-			}
-			k = label.Find('/', label.Find(L"://") + 3);
-			if (k < 0 || k + 1 == label.GetLength() || label[k+1] == '?') {
-				pli.m_label = label;
-			}
-			else {
-				k = label.Find('?');
-				if (k >= 0) {
-					label.Truncate(k); // remove ?query
-				}
-				label.TrimRight('/');
-				k = label.ReverseFind('/');
-				if (k >= 0) {
-					label.Delete(0, k + 1);
-				}
-				if (label.GetLength()) {
-					Unescape(label);
-					pli.m_label = label;
-				}
-			}
+			GetLabelFromURL(pli.m_fi, pli.m_label);
 		}
 		else {
 			pli.m_label = GetFileName(pli.m_fi);
@@ -1228,7 +1239,7 @@ void CPlayerPlaylistBar::AddItem(std::list<CString>& fns, CSubtitleItemList* sub
 		pli.m_autolabel = true;
 	}
 
-	curPlayList.Append(pli, AfxGetAppSettings().bPlaylistDetermineDuration);
+	curPlayList.Append(pli, s.bPlaylistDetermineDuration);
 }
 
 static bool SearchFiles(CString path, std::list<CString>& sl, bool bSingleElement)
@@ -1361,7 +1372,7 @@ void CPlayerPlaylistBar::ParsePlayList(std::list<CString>& fns, CSubtitleItemLis
 
 	ResolveLinkFiles(fns);
 
-	if (bCheck && !Youtube::CheckURL(fns.front())) {
+	if (bCheck && !YT_DLP::CheckVideoURL(fns.front())) {
 		std::list<CString> sl;
 		if (SearchFiles(fns.front(), sl, m_bSingleElement)) {
 			bool bDVD_BD = false;
@@ -1424,6 +1435,10 @@ void CPlayerPlaylistBar::ParsePlayList(std::list<CString>& fns, CSubtitleItemLis
 			}
 		} else if (ct == Content::kASXPlaylistType) {
 			if (ParseASXPlayList(fn)) {
+				return;
+			}
+		} else if (ct == Content::kDPLPlaylistType) {
+			if (ParseDplPlayList(fn)) {
 				return;
 			}
 		}
@@ -2037,6 +2052,75 @@ bool CPlayerPlaylistBar::ParseASXPlayList(CString fn)
 	return (curPlayList.GetCount() > c);
 }
 
+bool CPlayerPlaylistBar::ParseDplPlayList(CString fn)
+{
+	CTextFile f(CP_UTF8, CP_ACP, false);
+	if (!f.Open(fn)) {
+		return false;
+	}
+
+	CStringW str;
+	if (!f.ReadString(str) || str != "DAUMPLAYLIST") {
+		return false;
+	}
+
+	CStringW base = GetFolderPath(fn);
+	INT_PTR c = curPlayList.GetCount();
+
+	auto submatch_compare = [](const std::wcsub_match submatch, const wchar_t* str)
+		{
+			const size_t len = std::char_traits<wchar_t>::length(str);
+			if (len == (size_t)submatch.length() && wcsncmp(submatch.first, str, len) == 0) {
+				return true;
+			}
+			return false;
+		};
+
+	const std::wregex entrylineRegex(L"(\\d+)\\*([a-z]+)\\*(.+)");
+	UINT cur_idx = 0;
+	CStringW path;
+	CStringW title;
+
+	while (f.ReadString(str)) {
+		FastTrim(str);
+		if (str.IsEmpty()) {
+			continue;
+		}
+
+		std::wcmatch match;
+		if (std::regex_match(str.GetString(), match, entrylineRegex) && match.size() == 4) {
+			UINT idx;
+			if (StrToUInt32(match[1].first, idx)) {
+				if (idx != cur_idx) {
+					if (path.GetLength()) {
+						CPlaylistItem pli;
+						pli.m_fi = path;
+						pli.m_label = title;
+						curPlayList.Append(pli, false);
+					}
+					path.Empty();
+					title.Empty();
+					cur_idx = idx;
+				}
+				if (submatch_compare(match[2], L"file")) {
+					path.SetString(match[3].first, match[3].length());
+				}
+				else if (submatch_compare(match[2], L"title")) {
+					title.SetString(match[3].first, match[3].length());
+				}
+			}
+		}
+	}
+	if (path.GetLength()) {
+		CPlaylistItem pli;
+		pli.m_fi = path;
+		pli.m_label = title;
+		curPlayList.Append(pli, false);
+	}
+
+	return (curPlayList.GetCount() > c);
+}
+
 void CPlayerPlaylistBar::Refresh()
 {
 	SetupList();
@@ -2553,6 +2637,8 @@ void CPlayerPlaylistBar::SetCurLabel(const CString& label)
 			if (pos) {
 				auto& pli = m_pls[i]->GetAt(pos);
 				pli.m_label = label;
+				pli.m_autolabel = false;
+
 				if (i == m_nCurPlayListIndex) {
 					auto index = FindItem(pos);
 					if (index >= 0) {
@@ -4078,14 +4164,14 @@ void CPlayerPlaylistBar::TCalcLayout()
 
 void CPlayerPlaylistBar::TCalcREdit()
 {
-	if (IsWindow(m_REdit.GetSafeHwnd()) && AfxGetAppSettings().bShowPlaylistSearchBar) {
+	if (IsWindow(m_FilterEdit.GetSafeHwnd()) && AfxGetAppSettings().bShowPlaylistSearchBar) {
 		CRect rcTabBar;
 		GetClientRect(&rcTabBar);
 
 		CRect rc(rcTabBar);
 		rc.DeflateRect(3, 1);
 		rc.top = rc.bottom - m_nSearchBarHeight + 2;
-		m_REdit.MoveWindow(rc.left, rc.top, rc.Width(), rc.Height());
+		m_FilterEdit.MoveWindow(rc.left, rc.top, rc.Width(), rc.Height());
 	}
 }
 
@@ -5023,13 +5109,13 @@ void CPlayerPlaylistBar::SetColor()
 		m_crBackground = RGB(255, 255, 255);      // background
 	}
 
-	if (IsWindow(m_REdit.GetSafeHwnd())) {
+	if (IsWindow(m_FilterEdit.GetSafeHwnd())) {
 		if (AfxGetAppSettings().bUseDarkTheme) {
-			m_REdit.SetBkColor(m_crBND);
-			m_REdit.SetTextColor(m_crTH);
+			m_FilterEdit.SetBkColor(m_crBND);
+			m_FilterEdit.SetTextColor(m_crTH);
 		} else {
-			m_REdit.SetBkColor(::GetSysColor(COLOR_WINDOW));
-			m_REdit.SetTextColor(::GetSysColor(COLOR_WINDOWTEXT));
+			m_FilterEdit.SetBkColor(::GetSysColor(COLOR_WINDOW));
+			m_FilterEdit.SetTextColor(::GetSysColor(COLOR_WINDOWTEXT));
 		}
 	}
 }

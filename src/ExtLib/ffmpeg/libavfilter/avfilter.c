@@ -1078,7 +1078,8 @@ int ff_filter_frame(AVFilterLink *link, AVFrame *frame)
             strcmp(link->dst->filter->name, "idet") &&
             strcmp(link->dst->filter->name, "null") &&
             strcmp(link->dst->filter->name, "scale") &&
-            strcmp(link->dst->filter->name, "libplacebo")) {
+            strcmp(link->dst->filter->name, "libplacebo") &&
+            strcmp(link->dst->filter->name, "hqdn3d")) {
             av_assert1(frame->format        == link->format);
             av_assert1(frame->width         == link->w);
             av_assert1(frame->height        == link->h);
@@ -1109,6 +1110,9 @@ int ff_filter_frame(AVFilterLink *link, AVFrame *frame)
     filter_unblock(link->dst);
     ret = ff_framequeue_add(&li->fifo, frame);
     if (ret < 0) {
+        const FFFrameQueueGlobal *global = li->fifo.global;
+        if (ret == AVERROR(ENOMEM) && global->queued >= global->max_queued)
+            av_log(link->dst, AV_LOG_ERROR, "Exhausted frame queue capacity (%zu frames)\n", global->max_queued);
         av_frame_free(&frame);
         return ret;
     }

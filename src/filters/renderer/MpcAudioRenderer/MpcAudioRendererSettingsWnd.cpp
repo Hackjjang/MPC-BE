@@ -1,5 +1,5 @@
 /*
- * (C) 2010-2025 see Authors.txt
+ * (C) 2010-2026 see Authors.txt
  *
  * This file is part of MPC-BE.
  *
@@ -97,6 +97,8 @@ bool CMpcAudioRendererSettingsWnd::OnActivate()
 	p.y += h20;
 	m_cbDummyChannels.Create(ResStr(IDS_ARS_DUMMY_CHANNELS), dwStyle | BS_AUTOCHECKBOX | BS_LEFTTEXT, CRect(p, CSize(ScaleX(320), m_fontheight)), this, IDC_PP_DUMMY_CHANNELS);
 	p.y += h20;
+	m_cbPauseKeepActive.Create(ResStr(IDS_ARS_PAUSE_KEEP_ACTIVE), dwStyle | BS_AUTOCHECKBOX | BS_LEFTTEXT, CRect(p, CSize(ScaleX(320), m_fontheight)), this, IDC_PP_PAUSE_KEEP_ACTIVE);
+	p.y += h20;
 	p.x += ScaleX(240);
 	m_btnReset.Create(ResStr(IDS_FILTER_RESET_SETTINGS), dwStyle | BS_MULTILINE, CRect(p, CSize(ScaleX(80), ScaleX(32))), this, IDC_PP_RESET);
 
@@ -139,6 +141,7 @@ bool CMpcAudioRendererSettingsWnd::OnActivate()
 		m_cbReleaseDeviceIdle.SetCheck(m_pMAR->GetReleaseDeviceIdle());
 		m_cbUseCrossFeed.SetCheck(m_pMAR->GetCrossFeed());
 		m_cbDummyChannels.SetCheck(m_pMAR->GetDummyChannels());
+		m_cbPauseKeepActive.SetCheck(m_pMAR->GetPauseKeepActive());
 	}
 
 	for (CWnd* pWnd = GetWindow(GW_CHILD); pWnd; pWnd = pWnd->GetNextWindow()) {
@@ -151,6 +154,9 @@ bool CMpcAudioRendererSettingsWnd::OnActivate()
 	SetCursor(m_hWnd, IDC_PP_SOUND_DEVICE, IDC_HAND);
 
 	OnClickedWasapiMode();
+
+	OnClickedFreeDeviceInactive();
+	OnClickedPauseWhiteNoice();
 
 	EnableToolTips(TRUE);
 
@@ -175,6 +181,7 @@ bool CMpcAudioRendererSettingsWnd::OnApply()
 		m_pMAR->SetReleaseDeviceIdle(m_cbReleaseDeviceIdle.GetCheck());
 		m_pMAR->SetCrossFeed(m_cbUseCrossFeed.GetCheck());
 		m_pMAR->SetDummyChannels(m_cbDummyChannels.GetCheck());
+		m_pMAR->SetPauseKeepActive(m_cbPauseKeepActive.GetCheck());
 		int idx = m_cbSoundDevice.GetCurSel();
 		if (idx >= 0) {
 			m_pMAR->SetDeviceId(m_deviceList[idx].deviceId, m_deviceList[idx].deviceName);
@@ -188,6 +195,8 @@ bool CMpcAudioRendererSettingsWnd::OnApply()
 BEGIN_MESSAGE_MAP(CMpcAudioRendererSettingsWnd, CInternalPropertyPageWnd)
 	ON_CBN_SELCHANGE(IDC_PP_WASAPI_MODE, OnClickedWasapiMode)
 	ON_BN_CLICKED(IDC_PP_USE_BITEXACT_OUTPUT, OnClickedBitExact)
+	ON_BN_CLICKED(IDC_PP_FREE_DEVICE_INACTIVE, OnClickedFreeDeviceInactive)
+	ON_BN_CLICKED(IDC_PP_PAUSE_KEEP_ACTIVE, OnClickedPauseWhiteNoice)
 	ON_BN_CLICKED(IDC_PP_RESET, OnBnClickedReset)
 	ON_NOTIFY_EX(TTN_NEEDTEXTW, 0, OnToolTipNotify)
 END_MESSAGE_MAP()
@@ -206,6 +215,16 @@ void CMpcAudioRendererSettingsWnd::OnClickedBitExact()
 	m_cbAltCheckFormat.EnableWindow(m_cbUseBitExactOutput.GetCheck() && m_cbUseBitExactOutput.IsWindowEnabled());
 }
 
+void CMpcAudioRendererSettingsWnd::OnClickedFreeDeviceInactive()
+{
+	m_cbPauseKeepActive.EnableWindow(!m_cbReleaseDeviceIdle.GetCheck());
+}
+
+void CMpcAudioRendererSettingsWnd::OnClickedPauseWhiteNoice()
+{
+	m_cbReleaseDeviceIdle.EnableWindow(!m_cbPauseKeepActive.GetCheck());
+}
+
 void CMpcAudioRendererSettingsWnd::OnBnClickedReset()
 {
 	m_cbWasapiMode.SetCurSel(MODE_WASAPI_SHARED);
@@ -218,8 +237,12 @@ void CMpcAudioRendererSettingsWnd::OnBnClickedReset()
 	m_cbReleaseDeviceIdle.SetCheck(BST_CHECKED);
 	m_cbUseCrossFeed.SetCheck(BST_UNCHECKED);
 	m_cbDummyChannels.SetCheck(BST_UNCHECKED);
+	m_cbPauseKeepActive.SetCheck(BST_UNCHECKED);
 
 	OnClickedWasapiMode();
+
+	OnClickedFreeDeviceInactive();
+	OnClickedPauseWhiteNoice();
 }
 
 BOOL CMpcAudioRendererSettingsWnd::OnToolTipNotify(UINT id, NMHDR * pNMHDR, LRESULT * pResult)
@@ -242,6 +265,9 @@ BOOL CMpcAudioRendererSettingsWnd::OnToolTipNotify(UINT id, NMHDR * pNMHDR, LRES
 			break;
 		case IDC_PP_ALT_FORMAT_CHECK:
 			strTipText = ResStr(IDS_ARS_TIP_ALT_CHECK_FORMAT);
+			break;
+		case IDC_PP_PAUSE_KEEP_ACTIVE:
+			strTipText = ResStr(IDS_ARS_TIP_PAUSE_KEEP_ACTIVE);
 			break;
 		default:
 			return FALSE;

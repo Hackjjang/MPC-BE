@@ -20,7 +20,7 @@
 
 #include "stdafx.h"
 #include "PPageYoutube.h"
-#include "PlayerYouTubeDL.h"
+#include "PlayerYtDlp.h"
 #include "DSUtil/Filehandle.h"
 #include "DSUtil/HTTPAsync.h"
 
@@ -36,11 +36,25 @@ CPPageYoutube::~CPPageYoutube()
 {
 }
 
+CStringW CPPageYoutube::GetDefaultLanguageCode()
+{
+	auto defaultUIlcid = MAKELCID(GetUserDefaultUILanguage(), SORT_DEFAULT);
+	for (auto code : m_langcodes) {
+		auto lcid = LocaleNameToLCID(code, 0);
+		if (lcid == defaultUIlcid) {
+			return code;
+		}
+	}
+
+	// default language
+	return L"en";
+}
+
 void CPPageYoutube::DoDataExchange(CDataExchange* pDX)
 {
 	__super::DoDataExchange(pDX);
 
-	DDX_Control(pDX, IDC_CHECK6, m_chkYDLEnable);
+	DDX_Control(pDX, IDC_CHECK1, m_chkYDLEnable);
 	DDX_Control(pDX, IDC_COMBO5, m_cbYDLExePath);
 
 	DDX_Control(pDX, IDC_COMBO1, m_cbVideoCodec);
@@ -49,9 +63,10 @@ void CPPageYoutube::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_CHECK4, m_chkHdr);
 	DDX_Control(pDX, IDC_COMBO3, m_cbAudioCodec);
 	DDX_Control(pDX, IDC_COMBO4, m_cbAudioLang);
-	DDX_Control(pDX, IDC_CHECK1, m_chkLoadPlaylist);
-
 	DDX_Control(pDX, IDC_CHECK5, m_chkHighBitrate);
+	DDX_Control(pDX, IDC_CHECK6, m_chkLoadPlaylist);
+	DDX_Control(pDX, IDC_CHECK7, m_chkIntYtPlaylistParser);
+
 	DDX_Control(pDX, IDC_EDIT1,  m_edAceStreamAddress);
 	DDX_Control(pDX, IDC_EDIT2,  m_edTorrServerAddress);
 	DDX_Control(pDX, IDC_EDIT3,  m_edUserAgent);
@@ -59,7 +74,9 @@ void CPPageYoutube::DoDataExchange(CDataExchange* pDX)
 
 BEGIN_MESSAGE_MAP(CPPageYoutube, CPPageBase)
 	ON_COMMAND(IDC_CHECK3, OnCheck60fps)
-	ON_COMMAND(IDC_CHECK6, OnCheckYDLEnable)
+	ON_COMMAND(IDC_CHECK6, OnCheckLoadPlaylist)
+	ON_COMMAND(IDC_CHECK1, OnCheckYDLEnable)
+	ON_BN_CLICKED(IDC_BUTTON3, OnBnClickedDefault)
 END_MESSAGE_MAP()
 
 // CPPageYoutube message handlers
@@ -69,7 +86,6 @@ BOOL CPPageYoutube::OnInitDialog()
 	__super::OnInitDialog();
 
 	SetCursor(m_hWnd, IDC_COMBO1, IDC_HAND);
-	m_chkYDLEnable.SetWindowTextW(L"yt-dlp. IN DEVELOPMENT, use MPC-BE 1.8.9.136 or older"); // TODO
 	CorrectCWndWidth(&m_chkYDLEnable);
 
 	const CAppSettings& s = AfxGetAppSettings();
@@ -79,12 +95,13 @@ BOOL CPPageYoutube::OnInitDialog()
 	m_cbVideoCodec.AddString(L"AV1");
 	m_cbVideoCodec.SetCurSel(s.iYdlVcodec);
 
-	for (const auto& h : s_CommonVideoHeights) {
-		if (h == 0) {
-			continue; // TODO use ResStr(IDS_AUDIO_ONLY)
-		}
+	for (const auto& h : g_CommonVideoHeights) {
 		CString str;
-		str.Format(L"%d", h);
+		if (h == 0) {
+			str = ResStr(IDS_AUDIO_ONLY);
+		} else {
+			str.Format(L"%d", h);
+		}
 		AddStringData(m_cbMaxHeight, str, h);
 	}
 	SelectByItemData(m_cbMaxHeight, s.iYdlMaxHeight);
@@ -129,9 +146,10 @@ BOOL CPPageYoutube::OnInitDialog()
 		m_cbAudioLang.SetCurSel(0);
 	}
 
-	m_chkLoadPlaylist.SetCheck(s.bYoutubeLoadPlaylist);
+	m_chkLoadPlaylist.SetCheck(s.bYdlLoadPlaylist);
+	m_chkIntYtPlaylistParser.SetCheck(s.bYoutubePlaylistParser);
 
-	CorrectCWndWidth(GetDlgItem(IDC_CHECK2));
+	CorrectCWndWidth(GetDlgItem(IDC_CHECK1));
 
 	OnCheck60fps();
 
@@ -139,8 +157,7 @@ BOOL CPPageYoutube::OnInitDialog()
 
 	was_added = false;
 	LPCWSTR ydl_filenames[] = {
-			L"yt-dlp.exe",
-			L"yt-dlp_min.exe",
+		DEFAULT_YTDLP_EXE,
 	};
 	for (auto& ydl_filename : ydl_filenames) {
 		m_cbYDLExePath.AddString(ydl_filename);
@@ -161,10 +178,10 @@ BOOL CPPageYoutube::OnInitDialog()
 
 	OnCheckYDLEnable();
 
-	// TODO
-	m_cbVideoCodec.EnableWindow(FALSE);
-	m_chkHighFps.EnableWindow(FALSE);
-	m_cbAudioCodec.EnableWindow(FALSE);
+#if 1 // TODO yt-dlp
+	GetDlgItem(IDC_STATIC4)->ShowWindow(SW_HIDE);
+	m_cbAudioLang.ShowWindow(SW_HIDE);
+#endif
 
 	UpdateData(FALSE);
 
@@ -190,9 +207,9 @@ BOOL CPPageYoutube::OnApply()
 	} else {
 		s.strYdlAudioLang.Empty();
 	}
-	s.bYdlHighBitrate = !!m_chkHighBitrate.GetCheck();
-
-	s.bYoutubeLoadPlaylist	= !!m_chkLoadPlaylist.GetCheck();
+	s.bYdlHighBitrate       = !!m_chkHighBitrate.GetCheck();
+	s.bYdlLoadPlaylist      = !!m_chkLoadPlaylist.GetCheck();
+	s.bYoutubePlaylistParser = !!m_chkIntYtPlaylistParser.GetCheck();
 
 	CleanPath(s.strYdlExePath);
 
@@ -226,6 +243,17 @@ void CPPageYoutube::OnCheck60fps()
 	SetModified();
 }
 
+void CPPageYoutube::OnCheckLoadPlaylist()
+{
+	if (m_chkLoadPlaylist.GetCheck()) {
+		m_chkIntYtPlaylistParser.EnableWindow(TRUE);
+	}  else {
+		m_chkIntYtPlaylistParser.EnableWindow(FALSE);
+	}
+
+	SetModified();
+}
+
 void CPPageYoutube::OnCheckYDLEnable()
 {
 	const BOOL bEnable = m_chkYDLEnable.GetCheck();
@@ -235,30 +263,52 @@ void CPPageYoutube::OnCheckYDLEnable()
 	m_cbMaxHeight.EnableWindow(bEnable);
 	m_chkHighFps.EnableWindow(bEnable);
 	m_chkHdr.EnableWindow(bEnable);
-
-	if (bEnable) {
-		OnCheck60fps();
-	}
 	GetDlgItem(IDC_STATIC3)->EnableWindow(bEnable);
 	m_cbAudioCodec.EnableWindow(bEnable);
 	GetDlgItem(IDC_STATIC4)->EnableWindow(bEnable);
 	m_cbAudioLang.EnableWindow(bEnable);
-
 	m_chkHighBitrate.EnableWindow(bEnable);
+	m_chkLoadPlaylist.EnableWindow(bEnable);
+	m_chkIntYtPlaylistParser.EnableWindow(bEnable);
+
+	if (bEnable) {
+		OnCheck60fps();
+		OnCheckLoadPlaylist();
+	}
 
 	SetModified();
 }
 
-CStringW CPPageYoutube::GetDefaultLanguageCode()
+void CPPageYoutube::OnBnClickedDefault()
 {
-	auto defaultUIlcid = MAKELCID(GetUserDefaultUILanguage(), SORT_DEFAULT);
-	for (auto code : m_langcodes) {
-		auto lcid = LocaleNameToLCID(code, 0);
-		if (lcid == defaultUIlcid) {
-			return code;
+	m_chkYDLEnable.SetCheck(BST_UNCHECKED);
+
+	m_cbVideoCodec.SetCurSel(YT_DLP::vcodec_vp9);
+	SelectByItemData(m_cbMaxHeight, 720);
+	m_chkHighFps.SetCheck(BST_UNCHECKED);
+	m_chkHdr.SetCheck(BST_UNCHECKED);;
+	m_cbAudioCodec.SetCurSel(YT_DLP::acodec_opus);
+	m_cbAudioLang.SetCurSel(0);
+	m_chkHighBitrate.SetCheck(BST_UNCHECKED);
+	m_chkLoadPlaylist.SetCheck(BST_UNCHECKED);
+	m_chkIntYtPlaylistParser.SetCheck(BST_UNCHECKED);
+
+	m_edAceStreamAddress.SetWindowTextW(L"http://127.0.0.1:6878/ace/getstream?id=%s");
+	m_edTorrServerAddress.SetWindowTextW(L"http://127.0.0.1:8090/stream/fname?link=%s&index=1&m3u");
+	m_edUserAgent.SetWindowTextW(L"Mozilla/5.0");
+
+	CStringW ydl_path;
+	m_cbYDLExePath.GetWindowTextW(ydl_path);
+	if (ydl_path != DEFAULT_YTDLP_EXE) {
+		// reset m_cbYDLExePath only if the path is not found
+		ydl_path = GetFullExePath(ydl_path, true);
+		if (ydl_path.IsEmpty()) {
+			m_cbYDLExePath.SelectString(0, DEFAULT_YTDLP_EXE);
 		}
 	}
 
-	// default language
-	return L"en";
+	OnCheckYDLEnable();
+
+	Invalidate();
+	SetModified();
 }

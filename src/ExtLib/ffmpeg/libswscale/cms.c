@@ -109,15 +109,15 @@ typedef struct Gamut {
     ICh peak; /* updated as needed in loop body when hue changes */
 } Gamut;
 
-static Gamut gamut_from_colorspace(SwsColor fmt)
+static Gamut gamut_from_colorspace(const SwsColor *fmt)
 {
-    const AVColorPrimariesDesc *encoding = av_csp_primaries_desc_from_id(fmt.prim);
+    const AVColorPrimariesDesc *encoding = av_csp_primaries_desc_from_id(fmt->prim);
     const AVColorPrimariesDesc content = {
-        .prim = fmt.gamut,
+        .prim = fmt->gamut,
         .wp   = encoding->wp,
     };
 
-    const float Lw = av_q2d(fmt.max_luma), Lb = av_q2d(fmt.min_luma);
+    const float Lw = av_q2d(fmt->max_luma), Lb = av_q2d(fmt->min_luma);
     const float Imax = pq_oetf(Lw);
 
     return (Gamut) {
@@ -125,13 +125,13 @@ static Gamut gamut_from_colorspace(SwsColor fmt)
         .lms2encoding = ff_sws_ipt_lms2rgb(encoding),
         .lms2content  = ff_sws_ipt_lms2rgb(&content),
         .content2lms  = ff_sws_ipt_rgb2lms(&content),
-        .eotf         = av_csp_itu_eotf(fmt.trc),
-        .eotf_inv     = av_csp_itu_eotf_inv(fmt.trc),
+        .eotf         = av_csp_itu_eotf(fmt->trc),
+        .eotf_inv     = av_csp_itu_eotf_inv(fmt->trc),
         .wp           = encoding->wp,
         .Imin         = pq_oetf(Lb),
         .Imax         = Imax,
-        .Imax_frame   = fmt.frame_peak.den ? pq_oetf(av_q2d(fmt.frame_peak)) : Imax,
-        .Iavg_frame   = fmt.frame_avg.den  ? pq_oetf(av_q2d(fmt.frame_avg))  : 0.0f,
+        .Imax_frame   = fmt->frame_peak.den ? pq_oetf(av_q2d(fmt->frame_peak)) : Imax,
+        .Iavg_frame   = fmt->frame_avg.den  ? pq_oetf(av_q2d(fmt->frame_avg))  : 0.0f,
         .Lb           = Lb,
         .Lw           = Lw,
     };
@@ -562,9 +562,14 @@ static IPT saturation(const CmsCtx * ctx, IPT ipt)
     return rgb2ipt(rgb, ctx->dst.content2lms);
 }
 
-static av_always_inline av_const uint16_t av_round16f(float x)
+static av_always_inline av_const uint16_t round_unorm16(float x)
 {
-    return av_clip_uint16(x * (UINT16_MAX - 1) + 0.5f);
+    return av_clip_uint16(x * UINT16_MAX + 0.5f);
+}
+
+static av_always_inline av_const uint16_t round_pt16(float x)
+{
+    return av_clip_uint16(x * (1 << 16) + 0.5f);
 }
 
 /* Call this whenever the hue changes inside the loop body */
@@ -602,7 +607,6 @@ static void generate_slice(void *priv, int jobnr, int threadnr, int nb_jobs,
 
     const float I_scale   = 1.0f / (ctx.src.Imax - ctx.src.Imin);
     const float I_offset  = -ctx.src.Imin * I_scale;
-    const float PT_offset = (float) (1 << 15) / (UINT16_MAX - 1);
 
     const float input_scale     = 1.0f / (ctx.size_input - 1);
     const float output_scale_PT = 1.0f / (ctx.size_output_PT - 1);
@@ -625,9 +629,9 @@ static void generate_slice(void *priv, int jobnr, int threadnr, int nb_jobs,
                 if (output) {
                     /* Save intermediate value to 3DLUT */
                     *input++ = (v3u16_t) {
-                        av_round16f(I_scale * ipt.I + I_offset),
-                        av_round16f(ipt.P + PT_offset),
-                        av_round16f(ipt.T + PT_offset),
+                        round_unorm16(I_scale * ipt.I + I_offset),
+                        round_pt16(ipt.P + 0.5f),
+                        round_pt16(ipt.T + 0.5f),
                     };
                 } else {
                     update_hue_peaks(&ctx, ipt.P, ipt.T);
@@ -641,9 +645,9 @@ static void generate_slice(void *priv, int jobnr, int threadnr, int nb_jobs,
                     c[2] = rgb.B;
                     ctx.dst.eotf_inv(ctx.dst.Lw, ctx.dst.Lb, c);
                     *input++ = (v3u16_t) {
-                        av_round16f(c[0]),
-                        av_round16f(c[1]),
-                        av_round16f(c[2]),
+                        round_unorm16(c[0]),
+                        round_unorm16(c[1]),
+                        round_unorm16(c[2]),
                     };
                 }
             }
@@ -655,9 +659,9 @@ static void generate_slice(void *priv, int jobnr, int threadnr, int nb_jobs,
 
     /* Generate split gamut mapping LUT */
     for (int Tx = output_start; Tx < output_end; Tx++) {
-        const float T = output_scale_PT * Tx - PT_offset;
+        const float T = output_scale_PT * Tx - 0.5f;
         for (int Px = 0; Px < ctx.size_output_PT; Px++) {
-            const float P = output_scale_PT * Px - PT_offset;
+            const float P = output_scale_PT * Px - 0.5f;
             update_hue_peaks(&ctx, P, T);
 
             for (int Ix = 0; Ix < ctx.size_output_I; Ix++) {
@@ -667,9 +671,9 @@ static void generate_slice(void *priv, int jobnr, int threadnr, int nb_jobs,
                 double c[3] = { rgb.R, rgb.G, rgb.B };
                 ctx.dst.eotf_inv(ctx.dst.Lw, ctx.dst.Lb, c);
                 *output++ = (v3u16_t) {
-                    av_round16f(c[0]),
-                    av_round16f(c[1]),
-                    av_round16f(c[2]),
+                    round_unorm16(c[0]),
+                    round_unorm16(c[1]),
+                    round_unorm16(c[2]),
                 };
             }
         }
@@ -695,8 +699,8 @@ int ff_sws_color_map_generate_dynamic(v3u16_t *input, v3u16_t *output,
         .size_input     = size_input,
         .size_output_I  = size_I,
         .size_output_PT = size_PT,
-        .src            = gamut_from_colorspace(map->src),
-        .dst            = gamut_from_colorspace(map->dst),
+        .src            = gamut_from_colorspace(&map->src),
+        .dst            = gamut_from_colorspace(&map->dst),
     };
 
     switch (ctx.map.intent) {
@@ -744,8 +748,8 @@ void ff_sws_tone_map_generate(v2u16_t *lut, int size, const SwsColorMap *map)
 {
     CmsCtx ctx = {
         .map = *map,
-        .src = gamut_from_colorspace(map->src),
-        .dst = gamut_from_colorspace(map->dst),
+        .src = gamut_from_colorspace(&map->src),
+        .dst = gamut_from_colorspace(&map->dst),
     };
 
     const float src_scale  = (ctx.src.Imax - ctx.src.Imin) / (size - 1);
@@ -759,7 +763,7 @@ void ff_sws_tone_map_generate(v2u16_t *lut, int size, const SwsColorMap *map)
         const float I = src_scale * i + src_offset;
         IPT ipt = tone_map_apply(&ctx, (IPT) { I, 1.0f });
         lut[i] = (v2u16_t) {
-            av_round16f(dst_scale * ipt.I + dst_offset),
+            round_unorm16(dst_scale * ipt.I + dst_offset),
             av_clip_uint16(ipt.P * (1 << 15) + 0.5f),
         };
     }

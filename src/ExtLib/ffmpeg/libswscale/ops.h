@@ -29,19 +29,9 @@
 
 #include "graph.h"
 #include "filters.h"
-
-typedef enum SwsPixelType {
-    SWS_PIXEL_NONE = 0,
-    SWS_PIXEL_U8,
-    SWS_PIXEL_U16,
-    SWS_PIXEL_U32,
-    SWS_PIXEL_F32,
-    SWS_PIXEL_TYPE_NB
-} SwsPixelType;
-
-const char *ff_sws_pixel_type_name(SwsPixelType type);
-int ff_sws_pixel_type_size(SwsPixelType type) av_const;
-bool ff_sws_pixel_type_is_int(SwsPixelType type) av_const;
+#include "lut3d.h"
+#include "rational64.h"
+#include "uops.h"
 
 typedef enum SwsOpType {
     SWS_OP_INVALID = 0,
@@ -69,41 +59,28 @@ typedef enum SwsOpType {
     SWS_OP_LINEAR,          /* generalized linear affine transform */
     SWS_OP_DITHER,          /* add dithering noise */
 
-    /* Filtering operations. Always output floating point. */
+    /* Filtering operations. */
     SWS_OP_FILTER_H,        /* horizontal filtering */
     SWS_OP_FILTER_V,        /* vertical filtering */
+
+    /* Table-based operations. Defined for floating point types only. */
+    SWS_OP_LUT_3D,          /* apply a SwsLut3D */
 
     SWS_OP_TYPE_NB,
 } SwsOpType;
 
 const char *ff_sws_op_type_name(SwsOpType op);
 
-/**
- * Bit-mask of components. Exact meaning depends on the usage context.
- */
-typedef uint8_t SwsCompMask;
-enum {
-    SWS_COMP_NONE = 0,
-    SWS_COMP_ALL  = 0xF,
-#define SWS_COMP(X) (1 << (X))
-#define SWS_COMP_TEST(mask, X) (!!((mask) & SWS_COMP(X)))
-#define SWS_COMP_INV(mask) ((mask) ^ SWS_COMP_ALL)
-#define SWS_COMP_ELEMS(N) ((1 << (N)) - 1)
-#define SWS_COMP_MASK(X, Y, Z, W)   \
-    (((X) ? SWS_COMP(0) : 0) |      \
-     ((Y) ? SWS_COMP(1) : 0) |      \
-     ((Z) ? SWS_COMP(2) : 0) |      \
-     ((W) ? SWS_COMP(3) : 0))
-};
-
 /* Compute SwsCompMask from values with denominator != 0 */
-SwsCompMask ff_sws_comp_mask_q4(const AVRational q[4]);
+SwsCompMask ff_sws_comp_mask_q4(const AVRational64 q[4]);
 
 typedef enum SwsCompFlags {
     SWS_COMP_GARBAGE = 1 << 0, /* contents are undefined / garbage data */
     SWS_COMP_EXACT   = 1 << 1, /* value is an exact integer */
     SWS_COMP_ZERO    = 1 << 2, /* known to be a constant zero */
     SWS_COMP_SWAPPED = 1 << 3, /* byte order is swapped */
+    SWS_COMP_COPY    = 1 << 4, /* value is unmodified from the source plane */
+    SWS_COMP_CONST   = 1 << 5, /* value is a fixed constant */
 } SwsCompFlags;
 
 typedef struct SwsComps {
@@ -111,8 +88,26 @@ typedef struct SwsComps {
 
     /* Keeps track of the known possible value range, or {0, 0} for undefined
      * or (unknown range) floating point inputs */
-    AVRational min[4], max[4];
+    AVRational64 min[4], max[4];
+
+    /* Keeps track of input (forward) and output (reverse) dependencies */
+    SwsCompMask dep_in[4], dep_out[4];
 } SwsComps;
+
+typedef enum SwsReadWriteMode {
+    /**
+     * Note: 1-component reads are either SWS_RW_PLANAR or SWS_RW_PACKED,
+     * depending on the underlying interpretation. If multiple components are
+     * packed into one element (e.g. rgb10a2 -> u16), they are marked as
+     * SWS_RW_PACKED. Otherwise (e.g. gray16le), they are SWS_RW_PLANAR.
+     *
+     * This is a purely semantic/informative difference; the underlying code
+     * treats 1-components reads/writes the same regardless of mode.
+     */
+    SWS_RW_PLANAR,  /* one plane per component */
+    SWS_RW_PACKED,  /* all components on a single plane */
+    SWS_RW_PALETTE, /* plane 0 is 8-bit index, plane 1 is packed palette */
+} SwsReadWriteMode;
 
 typedef struct SwsReadWriteOp {
     /**
@@ -122,10 +117,11 @@ typedef struct SwsReadWriteOp {
      *   rgb565    = 1x u16   <- use SWS_OP_UNPACK to unpack
      *   monow     = 1x u8 (frac 3)
      *   rgb4      = 1x u8 (frac 1)
+     *   pal8      = 4x u8 (palette)
      */
+    SwsReadWriteMode mode; /* how data is laid out in memory */
     uint8_t elems; /* number of elements (of type `op.type`) to read/write */
     uint8_t frac;  /* fractional pixel step factor (log2) */
-    bool packed;   /* read multiple elements from a single plane */
 
     /**
      * Filter kernel to apply to each plane while sampling. Currently, only
@@ -134,8 +130,11 @@ typedef struct SwsReadWriteOp {
      * Note: As with SWS_OP_FILTER_*, if a filter kernel is in use, the read
      * operation will always output floating point values.
      */
-    SwsOpType filter;         /* some value of SWS_OP_FILTER_* */
-    SwsFilterWeights *kernel; /* (refstruct) */
+    struct {
+        SwsOpType op;               /* some value of SWS_OP_FILTER_* */
+        SwsFilterWeights *kernel;   /* (refstruct) */
+        SwsPixelType type;          /* pixel type to store result as */
+    } filter;
 } SwsReadWriteOp;
 
 typedef struct SwsPackOp {
@@ -159,7 +158,7 @@ typedef struct SwsSwizzleOp {
 } SwsSwizzleOp;
 
 #define SWS_SWIZZLE(X,Y,Z,W) ((SwsSwizzleOp) { .in = {X, Y, Z, W} })
-SwsCompMask ff_sws_comp_mask_swizzle(SwsCompMask mask, SwsSwizzleOp swiz);
+void ff_sws_comp_mask_swizzle(SwsCompMask *mask, const SwsSwizzleOp *swiz);
 
 typedef struct SwsShiftOp {
     uint8_t amount; /* number of bits to shift */
@@ -167,7 +166,7 @@ typedef struct SwsShiftOp {
 
 typedef struct SwsClearOp {
     SwsCompMask mask;    /* mask of components to clear */
-    AVRational value[4]; /* value to set */
+    AVRational64 value[4]; /* value to set */
 } SwsClearOp;
 
 typedef struct SwsConvertOp {
@@ -176,16 +175,16 @@ typedef struct SwsConvertOp {
 } SwsConvertOp;
 
 typedef struct SwsClampOp {
-    AVRational limit[4]; /* per-component min/max value */
+    AVRational64 limit[4]; /* per-component min/max value */
 } SwsClampOp;
 
 typedef struct SwsScaleOp {
-    AVRational factor; /* scalar multiplication factor */
+    AVRational64 factor; /* scalar multiplication factor */
 } SwsScaleOp;
 
 typedef struct SwsDitherOp {
-    AVRational *matrix; /* tightly packed dither matrix (refstruct) */
-    AVRational min, max; /* minimum/maximum value in `matrix` */
+    AVRational64 *matrix; /* tightly packed dither matrix (refstruct) */
+    AVRational64 min, max; /* minimum/maximum value in `matrix` */
     int size_log2; /* size (in bits) of the dither matrix */
     int8_t y_offset[4]; /* row offset for each component, or -1 for ignored */
 } SwsDitherOp;
@@ -197,43 +196,43 @@ typedef struct SwsLinearOp {
      *   [ Out.y ] = [ F G H I J ] * [ x y z w 1 ]
      *   [ Out.z ] = [ K L M N O ]
      *   [ Out.w ] = [ P Q R S T ]
-     *
-     * The mask keeps track of which components differ from an identity matrix.
-     * There may be more efficient implementations of particular subsets, for
-     * example the common subset of {A, E, G, J, M, O} can be implemented with
-     * just three fused multiply-add operations.
      */
-    AVRational m[4][5];
-    uint32_t mask; /* m[i][j] <-> 1 << (5 * i + j) */
+    AVRational64 m[4][5];
 } SwsLinearOp;
 
-#define SWS_MASK(I, J)  (1 << (5 * (I) + (J)))
-#define SWS_MASK_OFF(I) SWS_MASK(I, 4)
-#define SWS_MASK_ROW(I) (0x1F << (5 * (I)))
-#define SWS_MASK_COL(J) (0x8421 << J)
-
-enum {
-    SWS_MASK_ALL   = (1 << 20) - 1,
-    SWS_MASK_LUMA  = SWS_MASK(0, 0) | SWS_MASK_OFF(0),
-    SWS_MASK_ALPHA = SWS_MASK(3, 3),
-
-    SWS_MASK_DIAG3 = SWS_MASK(0, 0)  | SWS_MASK(1, 1)  | SWS_MASK(2, 2),
-    SWS_MASK_OFF3  = SWS_MASK_OFF(0) | SWS_MASK_OFF(1) | SWS_MASK_OFF(2),
-    SWS_MASK_MAT3  = SWS_MASK(0, 0)  | SWS_MASK(0, 1)  | SWS_MASK(0, 2) |
-                     SWS_MASK(1, 0)  | SWS_MASK(1, 1)  | SWS_MASK(1, 2) |
-                     SWS_MASK(2, 0)  | SWS_MASK(2, 1)  | SWS_MASK(2, 2),
-
-    SWS_MASK_DIAG4 = SWS_MASK_DIAG3  | SWS_MASK(3, 3),
-    SWS_MASK_OFF4  = SWS_MASK_OFF3   | SWS_MASK_OFF(3),
-    SWS_MASK_MAT4  = SWS_MASK_ALL & ~SWS_MASK_OFF4,
-};
-
-/* Helper function to compute the correct mask */
-uint32_t ff_sws_linear_mask(SwsLinearOp);
+/* m[i][j] <-> 1 << (5 * i + j) */
+uint32_t ff_sws_linear_mask(const SwsLinearOp *c);
 
 typedef struct SwsFilterOp {
     SwsFilterWeights *kernel; /* filter kernel (refstruct) */
+    SwsPixelType type;        /* pixel type to store result as */
 } SwsFilterOp;
+
+typedef struct SwsLut3dOp {
+    /**
+     * Reference to the external LUT3D to apply. This is managed by the caller,
+     * and must remain valid for the lifetime of the SwsOp and any compiled
+     * functions derived from it.
+     *
+     * *lut is never dereferenced by the SwsOp code itself, only at runtime by
+     * the actual dispatched implementation, and may be freely modified even
+     * after op compilation to place new values for dynamic tone-mapping.
+     *
+     * The reference algorithm for this operation lives in lut3d.c, and
+     * includes a tetrahedral interpolation component for the input LUT, and
+     * then an optional linear tone mapping LUT plus trilinear output LUT
+     * (when lut->dynamic is true).
+     *
+     * All linear interpolations are performed in the pixel value's native
+     * representation, even though the LUTs themselves are stored as unsigned
+     * packed 16-bit integers. The input value range is assumed to be scaled
+     * and clamped to the LUT's domain (i.e. [0, INPUT_LUT_SIZE - 1]), and the
+     * output value range will be [0, 2^16-1], except for the alpha channel,
+     * which is passed through untouched.
+     */
+    const SwsLut3D *lut; /* refstruct */
+    bool dynamic;
+} SwsLut3dOp;
 
 typedef struct SwsOp {
     SwsOpType op;      /* operation to perform */
@@ -250,6 +249,7 @@ typedef struct SwsOp {
         SwsScaleOp      scale;
         SwsDitherOp     dither;
         SwsFilterOp     filter;
+        SwsLut3dOp      lut3d;
     };
 
     /**
@@ -268,6 +268,11 @@ typedef struct SwsOp {
 SwsCompMask ff_sws_comp_mask_needed(const SwsOp *op);
 
 /**
+ * Return the number of planes involved in a read/write operation.
+ */
+int ff_sws_rw_op_planes(const SwsOp *op);
+
+/**
  * Describe an operation in human-readable form.
  */
 void ff_sws_op_desc(AVBPrint *bp, const SwsOp *op);
@@ -278,9 +283,9 @@ void ff_sws_op_desc(AVBPrint *bp, const SwsOp *op);
 void ff_sws_op_uninit(SwsOp *op);
 
 /**
- * Apply an operation to an AVRational. No-op for read/write operations.
+ * Apply an operation to an AVRational64. No-op for read/write operations.
  */
-void ff_sws_apply_op_q(const SwsOp *op, AVRational x[4]);
+void ff_sws_apply_op_q(const SwsOp *op, AVRational64 x[4]);
 
 /**
  * Helper struct for representing a list of operations.
@@ -366,42 +371,5 @@ void ff_sws_op_list_update_comps(SwsOpList *ops);
  * some operations with more efficient alternatives.
  */
 int ff_sws_op_list_optimize(SwsOpList *ops);
-
-enum SwsOpCompileFlags {
-    /* Automatically optimize the operations when compiling */
-    SWS_OP_FLAG_OPTIMIZE = 1 << 0,
-};
-
-/**
- * Helper function to enumerate over all possible (optimized) operation lists,
- * under the current set of options in `ctx`, and run the given callback on
- * each list.
- *
- * @param src_fmt If set (not AV_PIX_FMT_NONE), constrain the source format
- * @param dst_fmt If set (not AV_PIX_FMT_NONE), constrain the destination format
- * @return 0 on success, the return value if cb() < 0, or a negative error code
- *
- * @note `ops` belongs to ff_sws_enum_op_lists(), but may be mutated by `cb`.
- * @see ff_sws_enum_ops()
- */
-int ff_sws_enum_op_lists(SwsContext *ctx, void *opaque,
-                         enum AVPixelFormat src_fmt, enum AVPixelFormat dst_fmt,
-                         int (*cb)(SwsContext *ctx, void *opaque, SwsOpList *ops));
-
-/**
- * Helper function to enumerate over all possible operations, under the current
- * set of options in `ctx`, and run the given callback on each operation.
- *
- * @param src_fmt If set (not AV_PIX_FMT_NONE), constrain the source format
- * @param dst_fmt If set (not AV_PIX_FMT_NONE), constrain the destination format
- * @return 0 on success, the return value if cb() < 0, or a negative error code
- *
- * @note May contain duplicates. `op` belongs to ff_sws_enum_ops(), but may be
- *       mutated by `cb`.
- * @see ff_sws_num_op_lists()
- */
-int ff_sws_enum_ops(SwsContext *ctx, void *opaque,
-                    enum AVPixelFormat src_fmt, enum AVPixelFormat dst_fmt,
-                    int (*cb)(SwsContext *ctx, void *opaque, SwsOp *op));
 
 #endif

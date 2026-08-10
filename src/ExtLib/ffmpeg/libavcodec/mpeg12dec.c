@@ -32,7 +32,6 @@
 #include <stdatomic.h>
 
 #include "libavutil/attributes.h"
-#include "libavutil/emms.h"
 #include "libavutil/imgutils.h"
 #include "libavutil/internal.h"
 #include "libavutil/mem_internal.h"
@@ -822,6 +821,9 @@ static const enum AVPixelFormat mpeg1_hwaccel_pixfmt_list_420[] = {
 #if CONFIG_MPEG1_NVDEC_HWACCEL
     AV_PIX_FMT_CUDA,
 #endif
+#if CONFIG_MPEG1_NVDEC_CUARRAY_HWACCEL
+    AV_PIX_FMT_CUARRAY,
+#endif
 #if CONFIG_MPEG1_VDPAU_HWACCEL
     AV_PIX_FMT_VDPAU,
 #endif
@@ -832,6 +834,9 @@ static const enum AVPixelFormat mpeg1_hwaccel_pixfmt_list_420[] = {
 static const enum AVPixelFormat mpeg2_hwaccel_pixfmt_list_420[] = {
 #if CONFIG_MPEG2_NVDEC_HWACCEL
     AV_PIX_FMT_CUDA,
+#endif
+#if CONFIG_MPEG2_NVDEC_CUARRAY_HWACCEL
+    AV_PIX_FMT_CUARRAY,
 #endif
 #if CONFIG_MPEG2_VDPAU_HWACCEL
     AV_PIX_FMT_VDPAU,
@@ -1681,7 +1686,6 @@ static int slice_decode_thread(AVCodecContext *c, void *arg)
         int ret;
 
         ret = mpeg_decode_slice(s, mb_y, &buf, end - buf);
-        emms_c();
         ff_dlog(c, "ret:%d resync:%d/%d mb:%d/%d ts:%d/%d ec:%d\n",
                 ret, s->c.resync_mb_x, s->c.resync_mb_y, s->c.mb_x, s->c.mb_y,
                 s->c.start_mb_y, s->c.end_mb_y, s->c.er.error_count);
@@ -1922,12 +1926,6 @@ static void mpeg_set_cc_format(AVCodecContext *avctx, enum Mpeg2ClosedCaptionsFo
 
         av_log(avctx, AV_LOG_DEBUG, "CC: first seen substream is %s format\n", label);
     }
-
-#if FF_API_CODEC_PROPS
-FF_DISABLE_DEPRECATION_WARNINGS
-    avctx->properties |= FF_CODEC_PROPERTY_CLOSED_CAPTIONS;
-FF_ENABLE_DEPRECATION_WARNINGS
-#endif
 }
 
 static int mpeg_decode_a53_cc(AVCodecContext *avctx,
@@ -2564,7 +2562,6 @@ static void mpeg12_execute_slice_threads(AVCodecContext *avctx,
                     buf_ptr += 2; // FIXME add minimum number of bytes per slice
                 } else {
                     ret = mpeg_decode_slice(&s->slice, mb_y, &buf_ptr, input_size);
-                    emms_c();
 
                     if (ret < 0) {
                         if (avctx->err_recognition & AV_EF_EXPLODE)
@@ -2689,6 +2686,9 @@ const FFCodec ff_mpeg1video_decoder = {
 #if CONFIG_MPEG1_NVDEC_HWACCEL
                                HWACCEL_NVDEC(mpeg1),
 #endif
+#if CONFIG_MPEG1_NVDEC_CUARRAY_HWACCEL
+                               HWACCEL_NVDEC_CUARRAY(mpeg1),
+#endif
 #if CONFIG_MPEG1_VDPAU_HWACCEL
                                HWACCEL_VDPAU(mpeg1),
 #endif
@@ -2759,6 +2759,9 @@ const FFCodec ff_mpeg2video_decoder = {
 #endif
 #if CONFIG_MPEG2_NVDEC_HWACCEL
                         HWACCEL_NVDEC(mpeg2),
+#endif
+#if CONFIG_MPEG2_NVDEC_CUARRAY_HWACCEL
+                        HWACCEL_NVDEC_CUARRAY(mpeg2),
 #endif
 #if CONFIG_MPEG2_VAAPI_HWACCEL
                         HWACCEL_VAAPI(mpeg2),

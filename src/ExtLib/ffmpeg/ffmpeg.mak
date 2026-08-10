@@ -147,6 +147,7 @@ SRCS_LC = \
 	libavcodec/atrac3plusdsp.c \
 	libavcodec/atrac9dec.c \
 	libavcodec/atsc_a53.c \
+	libavcodec/audio_frame_queue.c \
 	libavcodec/audiodsp.c \
 	libavcodec/av1_parse.c \
 	libavcodec/av1_parser.c \
@@ -320,6 +321,7 @@ SRCS_LC = \
 	libavcodec/intrax8.c \
 	libavcodec/intrax8dsp.c \
 	libavcodec/ituh263dec.c \
+	libavcodec/itut35.c \
 	libavcodec/ivi.c \
 	libavcodec/ivi_dsp.c \
 	libavcodec/jpeg2000.c \
@@ -523,7 +525,6 @@ SRCS_LC_B = \
 	libavcodec/utvideodsp.c \
 	libavcodec/utils.c \
 	libavcodec/v210dec.c \
-	libavcodec/v410dec.c \
 	libavcodec/vc1.c \
 	libavcodec/vc1_block.c \
 	libavcodec/vc1_loopfilter.c \
@@ -833,6 +834,7 @@ SRCS_LS = \
 	libswscale/hscale.c \
 	libswscale/hscale_fast_bilinear.c \
 	libswscale/input.c \
+	libswscale/jit.c \
 	libswscale/lut3d.c \
 	libswscale/options.c \
 	libswscale/output.c \
@@ -906,6 +908,7 @@ SRCS_ASM_LC = \
 	libavcodec/x86/ttadsp.asm \
 	libavcodec/x86/utvideodsp.asm \
 	libavcodec/x86/v210.asm \
+	libavcodec/x86/vc1dsp_inv_trans.asm \
 	libavcodec/x86/vc1dsp_loopfilter.asm \
 	libavcodec/x86/vc1dsp_mc.asm \
 	libavcodec/x86/videodsp.asm \

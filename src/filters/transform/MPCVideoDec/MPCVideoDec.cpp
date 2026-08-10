@@ -536,6 +536,7 @@ FFMPEG_CODECS ffCodecs[] = {
 	// AV1
 	{ &MEDIASUBTYPE_AV01, AV_CODEC_ID_AV1, VDEC_AV1, HWCodec_AV1 },
 	{ &MEDIASUBTYPE_av01, AV_CODEC_ID_AV1, VDEC_AV1, HWCodec_AV1 },
+	{ &MEDIASUBTYPE_dav1, AV_CODEC_ID_AV1, VDEC_AV1, HWCodec_AV1 },
 
 	// SpeedHQ
 	{ &MEDIASUBTYPE_SHQ0, AV_CODEC_ID_SPEEDHQ, VDEC_SHQ, HWCodec_None },
@@ -555,7 +556,6 @@ FFMPEG_CODECS ffCodecs[] = {
 
 	// uncompressed video
 	{ &MEDIASUBTYPE_v210, AV_CODEC_ID_V210, VDEC_UNCOMPRESSED, HWCodec_None },
-	{ &MEDIASUBTYPE_V410, AV_CODEC_ID_V410, VDEC_UNCOMPRESSED, HWCodec_None },
 	{ &MEDIASUBTYPE_r210, AV_CODEC_ID_R210, VDEC_UNCOMPRESSED, HWCodec_None },
 	{ &MEDIASUBTYPE_R10g, AV_CODEC_ID_R10K, VDEC_UNCOMPRESSED, HWCodec_None },
 	{ &MEDIASUBTYPE_R10k, AV_CODEC_ID_R10K, VDEC_UNCOMPRESSED, HWCodec_None },
@@ -923,6 +923,7 @@ const AMOVIESETUP_MEDIATYPE sudPinTypesIn[] = {
 	// AV1
 	{ &MEDIATYPE_Video, &MEDIASUBTYPE_AV01 },
 	{ &MEDIATYPE_Video, &MEDIASUBTYPE_av01 },
+	{ &MEDIATYPE_Video, &MEDIASUBTYPE_dav1 },
 
 	// SpeedHQ
 	{ &MEDIATYPE_Video, &MEDIASUBTYPE_SHQ0 },
@@ -944,7 +945,6 @@ const AMOVIESETUP_MEDIATYPE sudPinTypesIn[] = {
 const AMOVIESETUP_MEDIATYPE sudPinTypesInUncompressed[] = {
 	// uncompressed video
 	{ &MEDIATYPE_Video, &MEDIASUBTYPE_v210 }, // YUV 4:2:2 10-bit
-	{ &MEDIATYPE_Video, &MEDIASUBTYPE_V410 }, // YUV 4:4:4 10-bit
 	{ &MEDIATYPE_Video, &MEDIASUBTYPE_r210 }, // RGB30
 	{ &MEDIATYPE_Video, &MEDIASUBTYPE_R10g }, // RGB30
 	{ &MEDIATYPE_Video, &MEDIASUBTYPE_R10k }, // RGB30
@@ -1261,6 +1261,12 @@ CMPCVideoDecFilter::~CMPCVideoDecFilter()
 {
 	Cleanup();
 	m_pD3D11Decoder.reset();
+
+	// Release the process-wide DXGI factory singleton here, while dxgi.dll is
+	// still guaranteed to be loaded. Leaving it to its static destructor means
+	// it can run during DLL_PROCESS_DETACH, after dxgi.dll's own resources may
+	// already be torn down, which crashes on process exit.
+	CDXGIFactory1::ReleaseInstance();
 }
 
 void CMPCVideoDecFilter::DetectVideoCard(HWND hWnd)
@@ -1489,10 +1495,6 @@ bool CMPCVideoDecFilter::AddFrameSideData(IMediaSample* pSample, AVFrame* pFrame
 #undef RPU_HDR
 #undef RPU_MAP
 #undef RPU_COLOR
-
-			hr = pMediaSideData->SetSideData(IID_MediaSideDataDOVIMetadata,
-											 reinterpret_cast<const BYTE*>(&hdr),
-											 offsetof(MediaSideDataDOVIMetadata, Extensions));
 
 			int LAVExtIdx = 0;
 			for (int i = 0; i < metadata->num_ext_blocks; i++)
@@ -1774,7 +1776,6 @@ int CMPCVideoDecFilter::FindCodec(const CMediaType* mtIn, BOOL bForced/* = FALSE
 					m_bUseFFmpeg = (m_nActiveCodecs & CODEC_CINEFORM) != 0;
 					break;
 				case AV_CODEC_ID_V210:
-				case AV_CODEC_ID_V410:
 				case AV_CODEC_ID_R210:
 				case AV_CODEC_ID_R10K:
 				case AV_CODEC_ID_RAWVIDEO:
@@ -2027,7 +2028,7 @@ HRESULT CMPCVideoDecFilter::FindDecoderConfiguration()
 
 					if (DXVA2_H264_VLD_Intel == guid) {
 						const int width_mbs  = m_nSurfaceWidth / 16;
-						const int height_mbs = m_nSurfaceWidth / 16;
+						const int height_mbs = m_nSurfaceHeight / 16;
 						const int max_ref_frames_dpb41 = std::min(11, 32768 / (width_mbs * height_mbs));
 						if (m_pAVCtx->refs > max_ref_frames_dpb41) {
 							DLog(L"    => Too many reference frames for Intel H.264 ClearVideo decoder, skip");
@@ -3606,7 +3607,7 @@ static inline BOOL GOPFound(BYTE *buf, int len)
 	return FALSE;
 }
 
-HRESULT CMPCVideoDecFilter::FillAVPacket(const BYTE *buffer, int buflen)
+HRESULT CMPCVideoDecFilter::FillAVPacket(const BYTE* buffer, int buflen)
 {
 	av_packet_unref(m_pPacket);
 
@@ -3616,15 +3617,17 @@ HRESULT CMPCVideoDecFilter::FillAVPacket(const BYTE *buffer, int buflen)
 		size = (buflen + AV_INPUT_BUFFER_PADDING_SIZE) + (buflen + AV_INPUT_BUFFER_PADDING_SIZE) / 16 + 32;
 	}
 
-	if (size > buflen) {
+	if (!m_pParser && size == buflen) {
+		m_pPacket->data = const_cast<uint8_t*>(buffer);
+		m_pPacket->size = buflen;
+	} else {
 		if (av_new_packet(m_pPacket, size) < 0) {
 			return E_OUTOFMEMORY;
 		}
 		memcpy(m_pPacket->data, buffer, buflen);
-		memset(m_pPacket->data + buflen, 0, size - buflen);
-	} else {
-		m_pPacket->data = const_cast<uint8_t*>(buffer);
-		m_pPacket->size = buflen;
+		if (size > buflen) {
+			memset(m_pPacket->data + buflen, 0, size - buflen);
+		}
 	}
 
 	return S_OK;

@@ -1293,6 +1293,9 @@ STDMETHODIMP CFGManager::RenderFile(LPCWSTR lpcwstrFileName, LPCWSTR lpcwstrPlay
 				deadends.emplace_back(std::move(de));
 			}
 		} else if (hr == E_ABORT) {
+			// After calling Abort(), m_bOpeningAborted is true and AddSourceFilterInternal returns E_ABORT.
+			// m_deadends is no longer needed and must be cleared, otherwise CMediaTypesDlg will freeze the player interface.
+			m_deadends.clear(); 
 			m_bOpeningAborted = false;
 			return hr;
 		}
@@ -1338,6 +1341,8 @@ STDMETHODIMP CFGManager::SetLogFile(DWORD_PTR hFile)
 
 STDMETHODIMP CFGManager::Abort()
 {
+	DLog("CFGManager::Abort()");
+
 	if (!m_pUnkInner) {
 		return E_UNEXPECTED;
 	}
@@ -2457,6 +2462,8 @@ CFGManagerCustom::CFGManagerCustom(LPCWSTR pName, LPUNKNOWN pUnk, HWND hWnd, boo
 		pFGF->AddType(MEDIATYPE_Audio, MEDIASUBTYPE_ALAW);
 		pFGF->AddType(MEDIATYPE_Audio, MEDIASUBTYPE_MULAW);
 		/* todo: this should not depend on PCM */
+		pFGF->AddType(MEDIATYPE_Audio, MEDIASUBTYPE_MS_ADPCM);
+		pFGF->AddType(MEDIATYPE_Audio, MEDIASUBTYPE_IMA_ADPCM);
 		pFGF->AddType(MEDIATYPE_Audio, MEDIASUBTYPE_IMA4);
 		pFGF->AddType(MEDIATYPE_Audio, MEDIASUBTYPE_ADPCM_SWF);
 		pFGF->AddType(MEDIATYPE_Audio, MEDIASUBTYPE_IMA_AMV);
@@ -2639,7 +2646,6 @@ CFGManagerCustom::CFGManagerCustom(LPCWSTR pName, LPUNKNOWN pUnk, HWND hWnd, boo
 				(video[VDEC_UNCOMPRESSED] || IsPreview) ? MPCVideoConvName : LowMerit(MPCVideoConvName),
 				(video[VDEC_UNCOMPRESSED] || IsPreview) ? (MERIT64_PREFERRED - 0x100) : MERIT64_DO_USE); // merit of video converter must be lower than merit of video renderers
 	pFGF->AddType(MEDIATYPE_Video, MEDIASUBTYPE_v210);
-	pFGF->AddType(MEDIATYPE_Video, MEDIASUBTYPE_V410);
 	pFGF->AddType(MEDIATYPE_Video, MEDIASUBTYPE_r210);
 	pFGF->AddType(MEDIATYPE_Video, MEDIASUBTYPE_R10g);
 	pFGF->AddType(MEDIATYPE_Video, MEDIASUBTYPE_R10k);

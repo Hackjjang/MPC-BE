@@ -313,14 +313,14 @@ BEGIN DIALOGEX IDD_PPAGEINTERFACE LINES 44
 21		"Habilitar Menú Oscuro"
 22		"Usar efecto Desenfoque Trasero (Windows 10 y superior)"
 24		"Habilitar Título Oscuro (Windows 10 y superior)"
-27		"Usar herramienta informativa de tiempo:"
-29		"Usar vista previa en la búsqueda"
-30		"Tamaño relativo al ancho de pantalla:"
-34		"En línea"
-35		"Usar marcador de capítulos"
-36		"Usar barra flotante"
-37		"Tamaño de fuente de Lista de Reproducción:"
-40		"Tamaño de controles:"
+26		"Tamaño de controles:"
+29		"Usar herramienta informativa de tiempo:"
+31		"Usar vista previa en la búsqueda"
+32		"Tamaño relativo al ancho de pantalla:"
+36		"En línea"
+37		"Usar marcador de capítulos"
+38		"Usar barra flotante"
+39		"Tamaño de fuente de Lista de Reproducción:"
 42		"Usar características de la Barra de tareas de Windows 7 (y superior)"
 END
 
@@ -366,14 +366,17 @@ BEGIN DIALOGEX IDD_PPAGEMISC LINES 36
 35		"Exportar"
 END
 
-BEGIN DIALOGEX IDD_PPAGEMOUSE LINES 17
+BEGIN DIALOGEX IDD_PPAGEMOUSE LINES 22
 5		"Botón izquierdo"
 6		"Clic"
 8		"Si nada es cargado, abrir archivo reciente"
 10		"Doble clic"
 12		"Mover ventana por el área de video"
-13		"Clic derecho"
-16		"Predeterminado"
+13		"Enable long press speed-up"
+14		"Long press speed"
+16		"Long press delay"
+18		"Clic derecho"
+21		"Predeterminado"
 END
 
 BEGIN DIALOGEX IDD_PPAGEOSD LINES 26
@@ -603,19 +606,21 @@ BEGIN DIALOGEX IDD_PPAGEWINDOWSIZE LINES 28
 27		"Ajustar a los bordes del escritorio"
 END
 
-BEGIN DIALOGEX IDD_PPAGEYOUTUBE LINES 27
+BEGIN DIALOGEX IDD_PPAGEYOUTUBE LINES 30
 5		"Formato de video preferido:"
 8		"50/60 fps"
 9		"HDR"
 10		"Formato de audio preferido:"
 12		"Idioma preferido de pista de audio:"
 14		"Cargar Lista de Reproducción"
-16		"yt-dlp"
-17		"Archivo ejecutable:"
-19		"Select max bitrate"
-20		"Dirección AceStream:"
-22		"Dirección MatriX (TorrServer):"
-25		"Agente de usuario:"
+16		"Use the built-in YouTube playlist parser"
+18		"yt-dlp"
+19		"Archivo ejecutable:"
+21		"Select max bitrate"
+22		"Dirección AceStream:"
+24		"Dirección MatriX (TorrServer):"
+27		"Agente de usuario:"
+29		"Predeterminado"
 END
 
 BEGIN DIALOGEX IDD_SAVEIMAGEDIALOGTEMPL LINES 9
@@ -1327,6 +1332,7 @@ STRING IDS_ARS_FORMAT		"Formato:"
 STRING IDS_ARS_INPUT		"Entrada"
 STRING IDS_ARS_MODE		"Modo:"
 STRING IDS_ARS_OUTPUT		"Salida"
+STRING IDS_ARS_PAUSE_KEEP_ACTIVE		"Keep audio device active when paused"
 STRING IDS_ARS_RELEASE_DEVICE_IDLE		"Libera dispositivo cuando está inactivo"
 STRING IDS_ARS_SAMPLERATE		"Frecuencia de muestreo:"
 STRING IDS_ARS_SHARED		"Compartido"
@@ -1335,6 +1341,7 @@ STRING IDS_ARS_STATUS		"Estado"
 STRING IDS_ARS_SYSTEM_LAYOUT_CHANNELS		"Usar canales de distribución de sistema"
 STRING IDS_ARS_TIP_ALT_CHECK_FORMAT		"El renderizador intentará inicializar el dispositivo omitiendo algunas comprobaciones."
 STRING IDS_ARS_TIP_BITEXACT_OUTPUT		"Si es posible, el audio se enviará en su formato original.\nDe lo contrario, se usará el formato especificado en la configuración del sistema."
+STRING IDS_ARS_TIP_PAUSE_KEEP_ACTIVE		"The renderer will send inaudible noise to the audio device."
 STRING IDS_ARS_WASAPI_METHOD		"Método WASAPI:"
 STRING IDS_ARS_WASAPI_MODE		"Modo WASAPI:"
 STRING IDS_AUDIOWINDOW_COVER		"Mostrar carátulas/imágenes de portada"
@@ -1628,6 +1635,7 @@ STRING IDS_MAINFRM_DIR_CHECK		"Incluir subcarpetas"
 STRING IDS_MAINFRM_DIR_TITLE		"Seleccione Carpeta"
 STRING IDS_MENU_VIDEO_ANGLE		"Ángu&lo de Video"
 STRING IDS_MENU_VIDEO_STREAM		"&Transmisión de Video"
+STRING IDS_MERGE_USING_FFMPEG		"Merge files using FFmpeg"
 STRING IDS_MERGING_FILES		"Uniendo archivos..."
 STRING IDS_MFMT_3G2		"3G2"
 STRING IDS_MFMT_3GP		"3GP"

@@ -31,6 +31,8 @@
 #include <afxsock.h>
 #include "FileItem.h"
 
+#include "DSUtil/std_helper.h"
+
 constexpr auto EXTENDED_PATH_PREFIX = LR"(\\?\)";
 
 // flags for CAppSettings::nCS
@@ -174,6 +176,12 @@ enum MCE_RAW_INPUT {
 #define DEFAULT_JUMPDISTANCE_2  5000
 #define DEFAULT_JUMPDISTANCE_3 20000
 
+#ifdef _WIN64
+	#define DEFAULT_YTDLP_EXE L"yt-dlp.exe"
+#else
+	#define DEFAULT_YTDLP_EXE L"yt-dlp_x86.exe"
+#endif
+
 enum dvstype {
 	DVS_HALF,
 	DVS_NORMAL,
@@ -219,8 +227,6 @@ enum : int {
 	PLAYBACKWND_FITSCREEN,
 	PLAYBACKWND_FITSCREENLARGER,
 };
-
-inline static const std::vector<int> s_CommonVideoHeights = { 0, 240, 360, 480, 720, 1080, 1440, 2160, 2880, 4320 };
 
 struct ShaderC {
 	CString   label;
@@ -437,6 +443,11 @@ struct fullScreenRes {
 	CString monitorId;
 };
 
+inline constexpr auto g_SpeedSteps         = make_array(1, 5, 10, 20, 25, 50, 100);
+inline constexpr auto g_AutoScaleFactors   = make_array(50, 100, 200);
+inline constexpr auto g_LongPressDelays    = make_array(300, 400, 500);
+inline constexpr auto g_CommonVideoHeights = make_array(4320, 2880, 2160, 1440, 1080, 720, 480, 360, 0);
+
 class CAppSettings
 {
 	bool bInitialized;
@@ -518,6 +529,9 @@ public:
 	bool			bMouseLeftClickOpenRecent;
 	UINT			nMouseLeftDblClick;
 	bool			bMouseEasyMove;
+	bool			bMouseLeftLongPressSpeed;
+	int				nMouseLeftLongPressSpeedRate;
+	int				nMouseLeftLongPressSpeedDelay;
 	UINT			nMouseRightClick;
 	struct MOUSE_ASSIGNMENT {
 		UINT normal;
@@ -756,6 +770,7 @@ public:
 	int				nUpdaterDelay;
 	time_t			tUpdaterLastCheck;
 	CStringW		strFFmpegExePath;
+	bool			bFFmpegMerge;
 
 	// MENUS
 	// View
@@ -836,10 +851,7 @@ public:
 
 	CString			strLastOpenFilterDir;
 
-	// youtube
-	bool			bYoutubeLoadPlaylist;
-	int				iYoutubeTagSelected = 0; // not saved
-
+	// yt-dlp
 	bool			bYdlEnable;
 	CStringW		strYdlExePath;
 	int				iYdlVcodec;
@@ -849,6 +861,8 @@ public:
 	bool			bYdlHDR;
 	bool			bYdlHighBitrate;
 	CStringW		strYdlAudioLang;
+	bool			bYdlLoadPlaylist;
+	bool			bYoutubePlaylistParser;
 
 	CStringW		strAceStreamAddress;
 	CStringW		strTorrServerAddress;

@@ -101,6 +101,9 @@
 #define IDS_RS_MOUSE_BTN_LEFT_OPENRECENT	L"ButtonLeftOpenRecent"
 #define IDS_RS_MOUSE_BTN_LEFT_DBLCLICK		L"ButtonLeftDblClick"
 #define IDS_RS_MOUSE_EASYMOVE				L"EasyMove"
+#define IDS_RS_MOUSE_LONGPRESS_LEFT_SPEED	L"LongPressLeftSpeed"
+#define IDS_RS_MOUSE_LONGPRESS_LEFT_SPEED_RATE	L"LongPressLeftSpeedRate"
+#define IDS_RS_MOUSE_LONGPRESS_LEFT_SPEED_DELAY	L"LongPressLeftSpeedDelay"
 #define IDS_RS_MOUSE_BTN_RIGHT				L"ButtonRight"
 #define IDS_RS_MOUSE_BTN_MIDDLE				L"ButtonMiddle"
 #define IDS_RS_MOUSE_BTN_X1					L"ButtonX1"
@@ -126,7 +129,6 @@
 // ÎnlineServices
 #define IDS_R_ONLINESERVICES				L"OnlineServices"
 #define IDS_R_YOUTUBECACHE					L"OnlineServices\\YoutubeCache"
-#define IDS_RS_YOUTUBE_LOAD_PLAYLIST		L"YoutubeLoadPlaylist"
 #define IDS_RS_YDL_ENABLE					L"YDLEnable"
 #define IDS_RS_YDL_EXEPATH					L"YDLExePath"
 #define IDS_RS_YDL_VCODEC					L"YDLVideoCodec"
@@ -136,6 +138,8 @@
 #define IDS_RS_YDL_HDR						L"YDLHDR"
 #define IDS_RS_YDL_HIGHBITRATE				L"YDLHighBitrate"
 #define IDS_RS_YDL_AUDIOLANGUAGE			L"YDLAudioLanguage"
+#define IDS_RS_YDL_PLAYLIST					L"YDLLoadPlaylist"
+#define IDS_RS_YOUTUBE_PLAYLIST_PARSER		L"YoutubePlaylistParser"
 #define IDS_RS_ACESTREAM_ADDRESS			L"AceStreamAddress"
 #define IDS_RS_TORRSERVER_ADDRESS			L"TorrServerAddress"
 
@@ -333,6 +337,7 @@
 #define IDS_RS_MIN_MPLS_DURATION			L"MinMPlsDuration"
 #define IDS_RS_MINI_DUMP					L"MiniDump"
 #define IDS_RS_FFMPEG_EXEPATH				L"FFmpegExePath"
+#define IDS_RS_FFMPEG_MERGE					L"FFmpegMerge"
 
 #define IDS_RS_LCD_SUPPORT					L"LcdSupport"
 #define IDS_RS_WINMEDIACONTROLS				L"WinMediaControls"

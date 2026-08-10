@@ -1,6 +1,6 @@
 /*
  * (C) 2003-2006 Gabest
- * (C) 2006-2025 see Authors.txt
+ * (C) 2006-2026 see Authors.txt
  *
  * This file is part of MPC-BE.
  *
@@ -156,7 +156,7 @@ BOOL CPPageFileInfoRes::OnInitDialog()
 {
 	__super::OnInitDialog();
 
-	m_hIcon = LoadIconW(m_fullfn, false);
+	m_hIcon = LoadFileIcon(m_fullfn, false);
 	if (m_hIcon) {
 		m_icon.SetIcon(m_hIcon);
 	}
@@ -277,7 +277,7 @@ void CPPageFileInfoRes::OnSaveAs()
 	CStringA mime(resource->mime);
 	mime.MakeLower();
 	CStringW ext_list;
-	
+
 	if (StartsWith(mime, "image/")) {
 		for (const auto& mime_info : s_image_mime_info) {
 			if (mime == mime_info.mime) {

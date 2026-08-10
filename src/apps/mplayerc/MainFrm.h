@@ -1,6 +1,6 @@
 /*
  * (C) 2003-2006 Gabest
- * (C) 2006-2025 see Authors.txt
+ * (C) 2006-2026 see Authors.txt
  *
  * This file is part of MPC-BE.
  *
@@ -39,7 +39,7 @@
 #include "OpenMediaData.h"
 #include "FileDropTarget.h"
 #include "KeyProvider.h"
-#include "PlayerYouTube.h"
+#include "PlayerYtDlp.h"
 #include "SvgHelper.h"
 #include "HistoryDlg.h"
 
@@ -84,7 +84,6 @@
 
 #define USE_MEDIAINFO_STATIC
 #include <MediaInfo/MediaInfo.h>
-using namespace MediaInfoLib;
 
 #include <filesystem>
 
@@ -395,7 +394,8 @@ public:
 		TIMER_STATUSERASER,
 		TIMER_FLYBARWINDOWHIDER,
 		TIMER_DM_AUTOCHANGING,
-		TIMER_PAUSE
+		TIMER_PAUSE,
+		TIMER_MOUSE_LEFT_LONGPRESS_SPEED
 	};
 
 	void SetColorMenu();
@@ -526,6 +526,9 @@ private:
 
 	bool m_bOpening = false;
 
+	void CheckMediaInfoFps(const OpenFileData* pFileData, const OpenDVDData* pDVDData);
+	CStringW CheckOpenYtDlp(OpenFileData& ofd);
+
 	// Operations
 	bool OpenMediaPrivate(std::unique_ptr<OpenMediaData>& pOMD);
 	void CloseMediaPrivate();
@@ -534,7 +537,7 @@ private:
 	CWnd *GetModalParent() { return this; }
 
 	CString OpenCreateGraphObject(OpenMediaData* pOMD);
-	CString OpenFile(OpenFileData* pOFD);
+	CString OpenFile(OpenFileData* pOFD, const CStringW& youtubeUrl);
 	CString OpenDVD(OpenDVDData* pODD);
 	CString OpenCapture(OpenDeviceData* pODD);
 	HRESULT OpenBDAGraph();
@@ -689,7 +692,7 @@ public:
 
 	bool m_bTrayIcon;
 	void ShowTrayIcon(bool fShow);
-	void SetTrayTip(CString str);
+	void SetTrayTip(const CStringW& str);
 
 	CSize GetVideoSize();
 
@@ -1202,14 +1205,9 @@ public:
 	long		m_lSubtitleShift;
 	__int64		m_rtCurSubPos;
 
-	Youtube::YoutubeFields m_youtubeFields;
-	Youtube::YoutubeUrllist m_youtubeUrllist;
-	Youtube::YoutubeUrllist m_youtubeAudioUrllist;
-	std::vector<uint8_t> m_youtubeThumbnailData;
+	YT_DLP		m_YtDlp;
 	bool m_bYoutubeOpened = false;
 	std::atomic_bool m_bYoutubeOpening = false;
-
-	const CString GetAltFileName();
 
 	bool		m_bInOptions;
 	bool		m_bStopTunerScan;
@@ -1331,8 +1329,17 @@ public:
 private:
 	int			GetStreamCount(DWORD dwSelGroup);
 
+	bool		IsLeftLongPressSpeedAvailable(UINT nFlags) const;
+	void		BeginLeftLongPressSpeed(UINT nFlags, CPoint point);
+	bool		CancelLeftLongPressSpeed(bool bRestoreRate);
+
 	BOOL		m_bLeftMouseDown			= FALSE;
 	BOOL		m_bLeftMouseDownFullScreen	= FALSE;
+	bool		m_bLeftLongPressSpeedCandidate = false;
+	bool		m_bLeftLongPressSpeedActive = false;
+	bool		m_bLeftLongPressSpeedDelayedClick = false;
+	CPoint		m_leftLongPressSpeedPoint;
+	double		m_leftLongPressSpeedPreviousRate = 1.0;
 	bool		m_bWaitingRButtonUp = false;
 
 	int			m_nAudioTrackStored    = -1;

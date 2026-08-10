@@ -1,5 +1,5 @@
 /*
- * (C) 2010-2023 see Authors.txt
+ * (C) 2010-2026 see Authors.txt
  *
  * This file is part of MPC-BE.
  *
@@ -47,6 +47,7 @@ private :
 	CButton		m_cbReleaseDeviceIdle;
 	CButton		m_cbUseCrossFeed;
 	CButton		m_cbDummyChannels;
+	CButton		m_cbPauseKeepActive;
 	CButton		m_btnReset;
 
 	CStatic		m_txtSoundDevice;
@@ -63,6 +64,7 @@ private :
 		IDC_PP_FREE_DEVICE_INACTIVE,
 		IDC_PP_USE_CROSSFEED,
 		IDC_PP_DUMMY_CHANNELS,
+		IDC_PP_PAUSE_KEEP_ACTIVE,
 		IDC_PP_RESET,
 	};
 
@@ -76,12 +78,14 @@ public:
 	bool OnApply();
 
 	static LPCWSTR GetWindowTitle() { return MAKEINTRESOURCEW(IDS_FILTER_SETTINGS_CAPTION); }
-	static CSize GetWindowSize() { return CSize(340, 211); }
+	static CSize GetWindowSize() { return CSize(340, 231); }
 
 	DECLARE_MESSAGE_MAP()
 
 	afx_msg void OnClickedWasapiMode();
 	afx_msg void OnClickedBitExact();
+	afx_msg void OnClickedFreeDeviceInactive();
+	afx_msg void OnClickedPauseWhiteNoice();
 	afx_msg void OnBnClickedReset();
 	afx_msg BOOL OnToolTipNotify(UINT id, NMHDR * pNMHDR, LRESULT * pResult);
 };

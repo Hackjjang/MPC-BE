@@ -313,14 +313,14 @@ BEGIN DIALOGEX IDD_PPAGEINTERFACE LINES 44
 21		"Utiliser le menu sombre"
 22		"Use Blur Behind effect (Windows 10 and above)"
 24		"Utiliser la barre de titre sombre (Windows 10 and above)"
-27		"Utiliser l'info-bulle temporelle :"
-29		"Utiliser l'aperçu dans la recherche"
-30		"Taille par rapport à la largeur de l'écran :"
-34		"Online"
-35		"Utiliser le marqueur de chapitres"
-36		"Utiliser la barre volante"
-37		"Taille de la police de la Playlist:"
-40		"Controls size:"
+26		"Controls size:"
+29		"Utiliser l'info-bulle temporelle :"
+31		"Utiliser l'aperçu dans la recherche"
+32		"Taille par rapport à la largeur de l'écran :"
+36		"Online"
+37		"Utiliser le marqueur de chapitres"
+38		"Utiliser la barre volante"
+39		"Taille de la police de la Playlist:"
 42		"Utiliser les fonctionnalités de la barre des tâches de Windows 7 (et supérieur)"
 END
 
@@ -366,14 +366,17 @@ BEGIN DIALOGEX IDD_PPAGEMISC LINES 36
 35		"Exporter"
 END
 
-BEGIN DIALOGEX IDD_PPAGEMOUSE LINES 17
+BEGIN DIALOGEX IDD_PPAGEMOUSE LINES 22
 5		"Bouton de gauche"
 6		"Clic"
 8		"Si rien n'est chargé, ouvrir le fichier récent"
 10		"Double clic"
 12		"Déplacer la fenêtre par la zone vidéo"
-13		"Clic droit"
-16		"Par défaut"
+13		"Enable long press speed-up"
+14		"Long press speed"
+16		"Long press delay"
+18		"Clic droit"
+21		"Par défaut"
 END
 
 BEGIN DIALOGEX IDD_PPAGEOSD LINES 26
@@ -603,19 +606,21 @@ BEGIN DIALOGEX IDD_PPAGEWINDOWSIZE LINES 28
 27		"Ancrer aux bords du bureau"
 END
 
-BEGIN DIALOGEX IDD_PPAGEYOUTUBE LINES 27
+BEGIN DIALOGEX IDD_PPAGEYOUTUBE LINES 30
 5		"Preferred video format:"
 8		"50/60 fps"
 9		"HDR"
 10		"Preferred audio format:"
 12		"Langue préférée de la piste audio:"
 14		"Charger la Playlist"
-16		"yt-dlp"
-17		"Fichier exécutable :"
-19		"Select max bitrate"
-20		"Adresse AceStream :"
-22		"Adresse MatriX (TorrServer) :"
-25		"Agent utilisateur :"
+16		"Use the built-in YouTube playlist parser"
+18		"yt-dlp"
+19		"Fichier exécutable :"
+21		"Select max bitrate"
+22		"Adresse AceStream :"
+24		"Adresse MatriX (TorrServer) :"
+27		"Agent utilisateur :"
+29		"Par défaut"
 END
 
 BEGIN DIALOGEX IDD_SAVEIMAGEDIALOGTEMPL LINES 9
@@ -1327,6 +1332,7 @@ STRING IDS_ARS_FORMAT		"Format :"
 STRING IDS_ARS_INPUT		"Entrée"
 STRING IDS_ARS_MODE		"Mode :"
 STRING IDS_ARS_OUTPUT		"Sortie"
+STRING IDS_ARS_PAUSE_KEEP_ACTIVE		"Keep audio device active when paused"
 STRING IDS_ARS_RELEASE_DEVICE_IDLE		"Libérer l'appareil lorsqu'il est inactif"
 STRING IDS_ARS_SAMPLERATE		"Taux d'échantillonnage :"
 STRING IDS_ARS_SHARED		"Partagé"
@@ -1335,6 +1341,7 @@ STRING IDS_ARS_STATUS		"Statut"
 STRING IDS_ARS_SYSTEM_LAYOUT_CHANNELS		"Utiliser les canaux de présentation du système"
 STRING IDS_ARS_TIP_ALT_CHECK_FORMAT		"Le moteur de rendu tentera d'initialiser le périphérique en ignorant certaines vérifications."
 STRING IDS_ARS_TIP_BITEXACT_OUTPUT		"Si possible, l'audio sera envoyé dans son format d'origine.\nSinon, le format spécifié dans les paramètres système sera utilisé."
+STRING IDS_ARS_TIP_PAUSE_KEEP_ACTIVE		"The renderer will send inaudible noise to the audio device."
 STRING IDS_ARS_WASAPI_METHOD		"WASAPI méthode :"
 STRING IDS_ARS_WASAPI_MODE		"WASAPI mode :"
 STRING IDS_AUDIOWINDOW_COVER		"afficher les pochettes d'album/photos de couverture"
@@ -1628,6 +1635,7 @@ STRING IDS_MAINFRM_DIR_CHECK		"Inclure les sous-répertoires"
 STRING IDS_MAINFRM_DIR_TITLE		"Sélectionnez le répertoire"
 STRING IDS_MENU_VIDEO_ANGLE		"Ang&le de la vidéo"
 STRING IDS_MENU_VIDEO_STREAM		"Piste &vidéo"
+STRING IDS_MERGE_USING_FFMPEG		"Merge files using FFmpeg"
 STRING IDS_MERGING_FILES		"Fusion de fichiers..."
 STRING IDS_MFMT_3G2		"3G2"
 STRING IDS_MFMT_3GP		"3GP"

@@ -1,5 +1,5 @@
 /*
- * (C) 2023-2025 see Authors.txt
+ * (C) 2023-2026 see Authors.txt
  *
  * This file is part of MPC-BE.
  *
@@ -50,46 +50,97 @@ enum {
 // CSaveTaskDlg dialog
 
 IMPLEMENT_DYNAMIC(CSaveTaskDlg, CTaskDialog)
-CSaveTaskDlg::CSaveTaskDlg(const std::list<SaveItem_t>& saveItems, const CStringW& dstPath, HRESULT& hr)
+CSaveTaskDlg::CSaveTaskDlg(const CStringW& srcPath, const CStringW& dstPath, const YT_DLP& ytdlp, HRESULT& hr)
 	: CTaskDialog(L"", L"", ResStr(IDS_SAVE_FILE), TDCBF_CANCEL_BUTTON, TDF_CALLBACK_TIMER | TDF_POSITION_RELATIVE_TO_WINDOW)
-	, m_saveItems(saveItems.cbegin(), saveItems.cend())
 {
-	if (m_saveItems.empty() || dstPath.IsEmpty()) {
+	if (dstPath.IsEmpty()) {
+		hr = E_INVALIDARG;
+		return;
+	}
+
+	if (ytdlp.GetFilesCount()) {
+		m_title = ytdlp.mTitle;
+		CStringW mergedFileExt = GetFileExt(dstPath).MakeLower();
+
+		if (auto pVFormat = ytdlp.GetVFormat()) {
+			m_saveItems.emplace_back('v', pVFormat->url, pVFormat->language, pVFormat->ext, dstPath);
+		}
+
+		if (auto pAFormat = ytdlp.GetAFormat()) {
+			if (m_saveItems.empty()) {
+				m_saveItems.emplace_back('a', pAFormat->url, pAFormat->language, pAFormat->ext, dstPath);
+			}
+			else {
+				CStringW savePath = GetRemoveFileExt(dstPath);
+				savePath.Append(L".audio");
+				if (pAFormat->language.GetLength()) {
+					savePath.AppendFormat(L".%hs", pAFormat->language.GetString());
+				}
+				if (pAFormat->ext.GetLength()) {
+					savePath.AppendFormat(L".%hs", pAFormat->ext.GetString());
+				}
+				m_saveItems.emplace_back('a', pAFormat->url, pAFormat->language, pAFormat->ext, savePath);
+
+				if (pAFormat->codec != YT_DLP::acodec_opus && mergedFileExt == L".webm") {
+					mergedFileExt = L".mkv";
+				}
+			}
+		}
+
+		if (m_saveItems.size()) {
+			switch (m_saveItems.front().type) {
+			case 'v': {
+				auto subtitles = ytdlp.GetSubtitles();
+
+				for (size_t i = 0; i < subtitles.size(); i++) {
+					auto& sub = subtitles[i];
+
+					CStringW savePath = GetRemoveFileExt(dstPath);
+					savePath.AppendFormat(L".sub%d", i + 1);
+					if (sub.language.GetLength()) {
+						savePath.AppendFormat(L".%hs", sub.language.GetString());
+					}
+					if (sub.ext.GetLength()) {
+						savePath.AppendFormat(L".%hs", sub.ext.GetString());
+					}
+					m_saveItems.emplace_back('s', sub.url, sub.language, sub.ext, savePath);
+				}
+				break;
+			}
+			case 'a':
+				if (auto pThumb = ytdlp.GetThumbnail()) {
+					CStringW savePath = GetRemoveFileExt(dstPath);
+					savePath.AppendFormat(L".%hs", pThumb->ext.GetString());
+					m_saveItems.emplace_back('t', pThumb->url, "", pThumb->ext, savePath);
+				}
+				break;
+			}
+		}
+
+		if (m_saveItems.size() >= 2) {
+			m_mergedFile = GetRemoveFileExt(dstPath) + mergedFileExt;
+		}
+	}
+	else {
+		m_saveItems.emplace_back(0, srcPath, "", "", "");
+		m_saveItems.back().dstPath = dstPath;
+	}
+
+	if (m_saveItems.empty()) {
 		hr = E_INVALIDARG;
 		return;
 	}
 
 	SetLangDefault("en");
 
-	const CStringW finalext = GetFileExt(dstPath).MakeLower();
-
-	m_dstPaths.resize(m_saveItems.size());
-	m_dstPaths[0] = dstPath;
-	for (unsigned i = 1; i < m_saveItems.size(); ++i) {
-		const auto& item = m_saveItems[i];
-		switch (item.type) {
-		case 'a':
-			m_dstPaths[i] = GetRenameFileExt(dstPath, (finalext == L".mp4") ? L".audio.m4a" : L".audio.mka");
-			break;
-		case 's': {
-			CStringW subext = L"." + item.title + L".vtt";
-			FixFilename(subext);
-			m_dstPaths[i] = GetRenameFileExt(dstPath, subext);
-			break;
-		}
-		case 't': {
-			GetTemporaryFilePath(item.title, m_dstPaths[i]);
-			break;
-		}
-		}
-	}
-
 	m_hIcon = (HICON)LoadImageW(AfxGetInstanceHandle(), MAKEINTRESOURCEW(IDR_MAINFRAME), IMAGE_ICON, 0, 0, LR_DEFAULTSIZE);
 	if (m_hIcon != nullptr) {
 		SetMainIcon(m_hIcon);
 	}
 
-	SetMainInstruction(m_dstPaths.front());
+	CStringW displayPath = dstPath;
+	EllipsisPath(displayPath, 100);
+	SetMainInstruction(displayPath);
 
 	SetProgressBarMarquee();
 	SetProgressBarRange(0, 1000);
@@ -135,6 +186,7 @@ HRESULT CSaveTaskDlg::InitFileCopy()
 		return S_FALSE;
 	}
 
+	m_bProtocolUDP = false;
 	HRESULT hr;
 
 	const CString fn = m_saveItems.front().path;
@@ -158,8 +210,7 @@ HRESULT CSaveTaskDlg::InitFileCopy()
 			}
 
 			if (!pReader) {
-				m_protocol = protocol::PROTOCOL_HTTP;
-				m_SaveThread = std::thread([this] { SaveHTTP(m_iSubLangDefault); });
+				m_SaveThread = std::thread([this] { SaveHTTP(); });
 
 				return S_OK;
 			}
@@ -210,7 +261,7 @@ HRESULT CSaveTaskDlg::InitFileCopy()
 			}
 
 			if (m_UdpSocket != INVALID_SOCKET) {
-				m_protocol = protocol::PROTOCOL_UDP;
+				m_bProtocolUDP = true;
 				m_SaveThread = std::thread([this] { SaveUDP(); });
 
 				return S_OK;
@@ -245,7 +296,7 @@ HRESULT CSaveTaskDlg::InitFileCopy()
 
 		if (!pReader) {
 			const DWORD fileOpflags = FOF_NOCONFIRMATION | FOF_NOERRORUI | FOF_NOCONFIRMMKDIR | FOFX_NOMINIMIZEBOX;
-			hr = FileOperation(m_saveItems.front().path, m_dstPaths.front(), FO_COPY, fileOpflags);
+			hr = FileOperation(m_saveItems.front().path, m_saveItems.front().dstPath, FO_COPY, fileOpflags);
 			DLogIf(FAILED(hr), L"CSaveTaskDlg : file copy was aborted with error %s", HR2Str(hr));
 
 			return E_ABORT;
@@ -278,7 +329,7 @@ fail:
 		return S_FALSE;
 	}
 	CComQIPtr<IFileSinkFilter2> pFSF = pDst.p;
-	pFSF->SetFileName(m_dstPaths.front(), nullptr);
+	pFSF->SetFileName(m_saveItems.front().dstPath, nullptr);
 	pFSF->SetMode(AM_FILE_OVERWRITE);
 
 	if (FAILED(m_pGB->AddFilter(pDst, L"File Writer"))) {
@@ -317,13 +368,13 @@ fail:
 
 void CSaveTaskDlg::SaveUDP()
 {
-	if (m_protocol != protocol::PROTOCOL_UDP) {
+	if (!m_bProtocolUDP) {
 		return;
 	}
 
 	m_iProgress = -1;
 
-	HANDLE hFile = CreateFileW(m_dstPaths.front(), GENERIC_WRITE, 0, nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
+	HANDLE hFile = CreateFileW(m_saveItems.front().dstPath, GENERIC_WRITE, 0, nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
 	if (hFile == INVALID_HANDLE_VALUE) {
 		return;
 	}
@@ -367,52 +418,51 @@ void CSaveTaskDlg::SaveUDP()
 	CloseHandle(hFile);
 }
 
-void CSaveTaskDlg::SaveHTTP(const int iSubLangDefault)
+void CSaveTaskDlg::SaveHTTP()
 {
-	if (m_protocol != protocol::PROTOCOL_HTTP) {
-		return;
-	}
-
 	m_iProgress = -1;
 
-	for (unsigned i = 0; i < m_saveItems.size(); ++i) {
-		HRESULT hr = DownloadHTTP(m_saveItems[i].path, m_dstPaths[i]);
+	for (const auto& item : m_saveItems) {
+		HRESULT hr = DownloadHTTP(item.path, item.dstPath);
 		if (FAILED(hr)) {
 			m_bAbort = true;
 			return;
 		}
 	}
 
-	if (m_saveItems.size() >= 2 && m_ffmpegPath.GetLength()) {
+	if (m_ffmpegPath.GetLength() && m_mergedFile.GetLength()) {
 		m_iProgress = PROGRESS_MERGING;
 
-		const CStringW finalfile(m_dstPaths.front());
-		const CStringW finalext = GetFileExt(finalfile).Mid(1).MakeLower();
-		const CStringW tmpfile  = finalfile + L".tmp";
+		const CStringW finalext = GetFileExt(m_mergedFile).Mid(1);
+		const CStringW tmpfile  = m_mergedFile + L".tmp";
 		const CStringW format =
 			(finalext == L"m4a")                       ? L"mp4" :
 			(finalext == L"mka" || finalext == L"mkv") ? L"matroska" :
-			finalext;
+			finalext.GetString();
 
 		CStringW strArgs = L"-y";
 		CStringW mapping;
 		CStringW metadata;
 		unsigned isub = 0;
 
+		if (m_title.GetLength()) {
+			metadata.AppendFormat(LR"( -metadata title="%s")", m_title);
+		}
+
 		for (unsigned i = 0; i < m_saveItems.size(); ++i) {
 			const auto& item = m_saveItems[i];
 
 			if (item.type == 't' && finalext == L"mka") {
-				strArgs.AppendFormat(LR"( -attach "%s")", m_dstPaths[i]);
-				if (item.title == L".jpg") {
+				strArgs.AppendFormat(LR"( -attach "%s")", m_saveItems[i].dstPath);
+				if (item.ext == "jpg") {
 					metadata.Append(L" -metadata:s:t mimetype=image/jpeg -metadata:s:t:0 filename=cover.jpg");
 				}
-				else if (item.title == L".webp") {
+				else if (item.ext == "webp") {
 					metadata.Append(L" -metadata:s:t mimetype=image/webp -metadata:s:t:0 filename=cover.webp");
 				}
 			}
 			else {
-				strArgs.AppendFormat(LR"( -i "%s")", m_dstPaths[i]);
+				strArgs.AppendFormat(LR"( -i "%s")", m_saveItems[i].dstPath);
 				mapping.AppendFormat(L" -map %u", i);
 			}
 
@@ -420,11 +470,6 @@ void CSaveTaskDlg::SaveHTTP(const int iSubLangDefault)
 				LPCSTR lang = ISO6391To6392(item.lang);
 				if (lang[0]) {
 					metadata.AppendFormat(LR"( -metadata:s:s:%u language="%hs")", isub, lang);
-				}
-				if (item.title.GetLength()) {
-					if (item.title != ISO6391ToLanguage(item.lang)) {
-						metadata.AppendFormat(LR"( -metadata:s:s:%u title="%s")", isub, item.title);
-					}
 				}
 				isub++;
 			}
@@ -435,11 +480,11 @@ void CSaveTaskDlg::SaveHTTP(const int iSubLangDefault)
 		}
 		strArgs.Append(mapping);
 		strArgs.Append(metadata);
-		if (iSubLangDefault >= 0) {
-			strArgs.AppendFormat(L" -disposition:s:%d default", iSubLangDefault);
+		if (m_iSubLangDefault >= 0) {
+			strArgs.AppendFormat(L" -disposition:s:%d default", m_iSubLangDefault);
 		}
 		if (m_saveItems.back().type == 't' && finalext == L"m4a") {
-			if (EndsWith(m_dstPaths.back(), L".webp")) {
+			if (EndsWith(m_saveItems.back().dstPath, L".webp")) {
 				strArgs.Append(L" -c:v:0 mjpeg");
 			}
 			strArgs.Append(L" -disposition:v:0 attached_pic");
@@ -457,14 +502,19 @@ void CSaveTaskDlg::SaveHTTP(const int iSubLangDefault)
 
 		if (ShellExecuteExW(&execinfo)) {
 			WaitForSingleObject(execinfo.hProcess, INFINITE);
+#ifdef _DEBUG
+			DWORD exitcode;
+			GetExitCodeProcess(execinfo.hProcess, &exitcode);
+			DLogIf(exitcode, L"CSaveTaskDlg::SaveHTTP : Merging files failed!");
+#endif
 			CloseHandle(execinfo.hProcess);
 		}
 
 		if (PathFileExistsW(tmpfile)) {
-			for (const auto& dstpath : m_dstPaths) {
-				DeleteFileW(dstpath);
+			for (const auto& item : m_saveItems) {
+				DeleteFileW(item.dstPath);
 			}
-			MoveFileW(tmpfile, finalfile);
+			MoveFileW(tmpfile, m_mergedFile);
 		}
 	}
 
@@ -542,7 +592,7 @@ HRESULT CSaveTaskDlg::OnDestroy()
 		m_SaveThread.join();
 	}
 
-	if (m_protocol == protocol::PROTOCOL_UDP) {
+	if (m_bProtocolUDP) {
 		if (m_WSAEvent != nullptr) {
 			WSACloseEvent(m_WSAEvent);
 		}
@@ -573,13 +623,15 @@ HRESULT CSaveTaskDlg::OnTimer(_In_ long lTime)
 
 	if (iProgress != m_iPrevState) {
 		if (iProgress >= 0 && iProgress < (int)m_saveItems.size()) {
-			CStringW path = m_dstPaths[iProgress];
-			EllipsisPath(path, 100);
-			SetMainInstruction(path);
+			CStringW displayPath = m_saveItems[iProgress].dstPath;
+			EllipsisPath(displayPath, 100);
+			SetMainInstruction(displayPath);
 			m_SaveStats.Reset();
 		}
 		else if (iProgress == PROGRESS_MERGING) {
-			SetMainInstruction(m_saveItems.front().title);
+			CStringW displayPath = m_mergedFile;
+			EllipsisPath(displayPath, 100);
+			SetMainInstruction(displayPath);
 			SetContent(ResStr(IDS_MERGING_FILES));
 		}
 		m_iPrevState = iProgress;

@@ -313,14 +313,14 @@ BEGIN DIALOGEX IDD_PPAGEINTERFACE LINES 44
 21		"استخدام القائمة الداكنة"
 22		"استخدام تأثير Blur Behind (Windows 10 والإصدارات الأحدث)"
 24		"استخدام شريط العنوان الداكن (Windows 10 والإصدارات الأحدث)"
-27		"استخدام تلميح الوقت:"
-29		"استخدام المعاينة في البحث"
-30		"الحجم بالنسبة لعرض الشاشة:"
-34		"متصل"
-35		"استخدام علامة الفصول"
-36		"استخدام الشريط الطائر"
-37		"حجم خط قائمة التشغيل:"
-40		"حجم عناصر التحكم:"
+26		"حجم عناصر التحكم:"
+29		"استخدام تلميح الوقت:"
+31		"استخدام المعاينة في البحث"
+32		"الحجم بالنسبة لعرض الشاشة:"
+36		"متصل"
+37		"استخدام علامة الفصول"
+38		"استخدام الشريط الطائر"
+39		"حجم خط قائمة التشغيل:"
 42		"استخدام ميزات شريط مهام Windows 7 (والإصدارات الأحدث)"
 END
 
@@ -366,14 +366,17 @@ BEGIN DIALOGEX IDD_PPAGEMISC LINES 36
 35		"تصدير"
 END
 
-BEGIN DIALOGEX IDD_PPAGEMOUSE LINES 17
+BEGIN DIALOGEX IDD_PPAGEMOUSE LINES 22
 5		"زر الفأرة الأيسر"
 6		"نقرة"
 8		"إذا لم يتم تحميل أي شيء، افتح الملف الأخير"
 10		"نقرة مزدوجة"
 12		"تحريك النافذة عبر منطقة الفيديو"
-13		"زر الفأرة الأيمن"
-16		"افتراضي"
+13		"Enable long press speed-up"
+14		"Long press speed"
+16		"Long press delay"
+18		"زر الفأرة الأيمن"
+21		"افتراضي"
 END
 
 BEGIN DIALOGEX IDD_PPAGEOSD LINES 26
@@ -603,19 +606,21 @@ BEGIN DIALOGEX IDD_PPAGEWINDOWSIZE LINES 28
 27		"الربط بحواف سطح المكتب"
 END
 
-BEGIN DIALOGEX IDD_PPAGEYOUTUBE LINES 27
+BEGIN DIALOGEX IDD_PPAGEYOUTUBE LINES 30
 5		"تنسيق الفيديو المفضل:"
 8		"50/60 fps"
 9		"HDR"
 10		"تنسيق الصوت المفضل:"
 12		"اللغة المفضلة لمسار الصوت:"
 14		"تحميل قائمة التشغيل"
-16		"yt-dlp"
-17		"الملف التنفيذي:"
-19		"Select max bitrate"
-20		"عنوان AceStream:"
-22		"عنوان MatriX (TorrServer):"
-25		"وكيل المستخدم:"
+16		"Use the built-in YouTube playlist parser"
+18		"yt-dlp"
+19		"الملف التنفيذي:"
+21		"Select max bitrate"
+22		"عنوان AceStream:"
+24		"عنوان MatriX (TorrServer):"
+27		"وكيل المستخدم:"
+29		"افتراضي"
 END
 
 BEGIN DIALOGEX IDD_SAVEIMAGEDIALOGTEMPL LINES 9
@@ -1327,6 +1332,7 @@ STRING IDS_ARS_FORMAT		"التنسيق:"
 STRING IDS_ARS_INPUT		"إدخال"
 STRING IDS_ARS_MODE		"الوضع:"
 STRING IDS_ARS_OUTPUT		"إخراج"
+STRING IDS_ARS_PAUSE_KEEP_ACTIVE		"Keep audio device active when paused"
 STRING IDS_ARS_RELEASE_DEVICE_IDLE		"تحرير الجهاز عندما يكون خاملاً"
 STRING IDS_ARS_SAMPLERATE		"معدل العينة:"
 STRING IDS_ARS_SHARED		"مشترك"
@@ -1335,6 +1341,7 @@ STRING IDS_ARS_STATUS		"الحالة"
 STRING IDS_ARS_SYSTEM_LAYOUT_CHANNELS		"استخدام قنوات عرض النظام"
 STRING IDS_ARS_TIP_ALT_CHECK_FORMAT		"سيحاول محرك التقديم تهيئة الجهاز مع تخطي بعض الفحوصات."
 STRING IDS_ARS_TIP_BITEXACT_OUTPUT		"إذا أمكن، سيتم إرسال الصوت بتنسيقه الأصلي.\nوإلا، سيتم استخدام التنسيق المحدد في إعدادات النظام."
+STRING IDS_ARS_TIP_PAUSE_KEEP_ACTIVE		"The renderer will send inaudible noise to the audio device."
 STRING IDS_ARS_WASAPI_METHOD		"طريقة WASAPI:"
 STRING IDS_ARS_WASAPI_MODE		"وضع WASAPI:"
 STRING IDS_AUDIOWINDOW_COVER		"إظهار أغلفة الألبومات/الصور"
@@ -1628,6 +1635,7 @@ STRING IDS_MAINFRM_DIR_CHECK		"تضمين المجلدات الفرعية"
 STRING IDS_MAINFRM_DIR_TITLE		"حدد الدليل"
 STRING IDS_MENU_VIDEO_ANGLE		"زاوية ال&فيديو"
 STRING IDS_MENU_VIDEO_STREAM		"مسار &الفيديو"
+STRING IDS_MERGE_USING_FFMPEG		"Merge files using FFmpeg"
 STRING IDS_MERGING_FILES		"دمج الملفات..."
 STRING IDS_MFMT_3G2		"3G2"
 STRING IDS_MFMT_3GP		"3GP"

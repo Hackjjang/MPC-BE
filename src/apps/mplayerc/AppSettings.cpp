@@ -23,7 +23,7 @@
 #include <d3d9types.h>
 #include "MiniDump.h"
 #include "Misc.h"
-#include "PlayerYouTubeDL.h"
+#include "PlayerYtDlp.h"
 #include "PPageYoutube.h"
 #include "PPageFormats.h"
 #include "DSUtil/FileHandle.h"
@@ -656,6 +656,9 @@ void CAppSettings::ResetSettings()
 	MouseWheelRight     = { 0, 0, 0, 0 };
 	bMouseLeftClickOpenRecent = false;
 	bMouseEasyMove      = true;
+	bMouseLeftLongPressSpeed      = false;
+	nMouseLeftLongPressSpeedRate  = 2;
+	nMouseLeftLongPressSpeedDelay = 300;
 
 	bUseDarkTheme = true;
 	nThemeBrightness = 15;
@@ -757,6 +760,7 @@ void CAppSettings::ResetSettings()
 	fMiniDump = false;
 	CMiniDump::SetState(fMiniDump);
 	strFFmpegExePath = L"ffmpeg.exe";
+	bFFmpegMerge = false;
 
 	fLCDSupport = false;
 	bWinMediaControls = false;
@@ -798,17 +802,17 @@ void CAppSettings::ResetSettings()
 
 	strLastOpenFilterDir.Empty();
 
-	bYoutubeLoadPlaylist = false;
-
-	bYdlEnable      = false;
-	strYdlExePath   = L"yt-dlp.exe";
-	iYdlVcodec      = Youtube::y_webm_vp9;
-	iYdlAcodec      = Youtube::y_webm_opus;
-	iYdlMaxHeight   = 720;
-	bYdlHighFps     = false;
-	bYdlHDR         = false;
-	bYdlHighBitrate = false;
-	strYdlAudioLang = CPPageYoutube::GetDefaultLanguageCode();
+	bYdlEnable       = false;
+	strYdlExePath    = DEFAULT_YTDLP_EXE;
+	iYdlVcodec       = YT_DLP::vcodec_vp9;
+	iYdlAcodec       = YT_DLP::acodec_opus;
+	iYdlMaxHeight    = 720;
+	bYdlHighFps      = false;
+	bYdlHDR          = false;
+	bYdlHighBitrate  = false;
+	strYdlAudioLang  = CPPageYoutube::GetDefaultLanguageCode();
+	bYdlLoadPlaylist = false;
+	bYoutubePlaylistParser = false;
 
 	strAceStreamAddress = L"http://127.0.0.1:6878/ace/getstream?id=%s";
 	strTorrServerAddress = L"http://127.0.0.1:8090/stream/fname?link=%s&index=1&m3u";
@@ -867,7 +871,7 @@ void CAppSettings::LoadSettings(bool bForce/* = false*/)
 	profile.ReadBool(IDS_R_SETTINGS, IDS_RS_REWIND, fRewind);
 	profile.ReadInt(IDS_R_SETTINGS, IDS_RS_VOLUME_STEP, nVolumeStep, 1, 10);
 	profile.ReadInt(IDS_R_SETTINGS, IDS_RS_SPEED_STEP, nSpeedStep);
-	nSpeedStep = discard(nSpeedStep, 0, { 1, 5, 10, 20, 25, 50, 100 });
+	nSpeedStep = discard(nSpeedStep, 0, g_SpeedSteps);
 	profile.ReadBool(IDS_R_SETTINGS, IDS_RS_SPEED_NOTRESET, bSpeedNotReset);
 
 	m_VRSettings.Load();
@@ -957,7 +961,7 @@ void CAppSettings::LoadSettings(bool bForce/* = false*/)
 	profile.ReadBool(IDS_R_SETTINGS, IDS_RS_SNAPTODESKTOPEDGES, bSnapToDesktopEdges);
 	profile.ReadInt(IDS_R_SETTINGS, IDS_RS_WINDOWMODEPLAYBACK, nPlaybackWindowMode, PLAYBACKWND_NONE, PLAYBACKWND_FITSCREENLARGER);
 	profile.ReadInt(IDS_R_SETTINGS, IDS_RS_AUTOSCALEFACTOR, nAutoScaleFactor);
-	nAutoScaleFactor = discard(nAutoScaleFactor, 100, { 50, 100, 200 });
+	nAutoScaleFactor = discard(nAutoScaleFactor, 100, g_AutoScaleFactors);
 	profile.ReadInt(IDS_R_SETTINGS, IDS_RS_AUTOFITFACTOR, nAutoFitFactor, 20, 80);
 	profile.ReadBool(IDS_R_SETTINGS, IDS_RS_RESETWINDOWAFTERCLOSINGFILE, bResetWindowAfterClosingFile);
 
@@ -1245,6 +1249,11 @@ void CAppSettings::LoadSettings(bool bForce/* = false*/)
 	}
 	profile.ReadBool(IDS_R_MOUSE, IDS_RS_MOUSE_BTN_LEFT_OPENRECENT, bMouseLeftClickOpenRecent);
 	profile.ReadBool(IDS_R_MOUSE, IDS_RS_MOUSE_EASYMOVE, bMouseEasyMove);
+	profile.ReadBool(IDS_R_MOUSE, IDS_RS_MOUSE_LONGPRESS_LEFT_SPEED, bMouseLeftLongPressSpeed);
+	profile.ReadInt(IDS_R_MOUSE, IDS_RS_MOUSE_LONGPRESS_LEFT_SPEED_RATE, nMouseLeftLongPressSpeedRate);
+	nMouseLeftLongPressSpeedRate = discard(nMouseLeftLongPressSpeedRate, 2, 2, 8);
+	profile.ReadInt(IDS_R_MOUSE, IDS_RS_MOUSE_LONGPRESS_LEFT_SPEED_DELAY, nMouseLeftLongPressSpeedDelay);
+	nMouseLeftLongPressSpeedDelay = discard(nMouseLeftLongPressSpeedDelay, 300, g_LongPressDelays);
 
 	// OSD
 	profile.ReadUInt(IDS_R_OSD, IDS_RS_SHOWOSD, ShowOSD.value);
@@ -1273,7 +1282,7 @@ void CAppSettings::LoadSettings(bool bForce/* = false*/)
 	profile.ReadHex32(IDS_R_THEME, IDS_RS_TOOLBARCOLORFACE, *(unsigned*)&clrFaceABGR);
 	profile.ReadHex32(IDS_R_THEME, IDS_RS_TOOLBARCOLOROUTLINE, *(unsigned*)&clrOutlineABGR);
 	profile.ReadBool(IDS_R_THEME, IDS_RS_DARKMENU, bDarkMenu);
-	profile.ReadBool(IDS_R_THEME, IDS_RS_DARKMENU_BLURBEHIND, bDarkMenuBlurBehind);
+	//profile.ReadBool(IDS_R_THEME, IDS_RS_DARKMENU_BLURBEHIND, bDarkMenuBlurBehind);
 	profile.ReadBool(IDS_R_THEME, IDS_RS_DARKTITLE, bDarkTitle);
 
 	// FullScreen
@@ -1428,6 +1437,7 @@ void CAppSettings::LoadSettings(bool bForce/* = false*/)
 
 	profile.ReadString(IDS_R_SETTINGS, IDS_RS_FFMPEG_EXEPATH, strFFmpegExePath);
 	strFFmpegExePath.Trim();
+	profile.ReadBool(IDS_R_SETTINGS, IDS_RS_FFMPEG_MERGE, bFFmpegMerge);
 
 	profile.ReadBool(IDS_R_SETTINGS, IDS_RS_LCD_SUPPORT, fLCDSupport);
 	profile.ReadBool(IDS_R_SETTINGS, IDS_RS_WINMEDIACONTROLS, bWinMediaControls);
@@ -1483,8 +1493,6 @@ void CAppSettings::LoadSettings(bool bForce/* = false*/)
 	profile.ReadString(IDS_R_SETTINGS, IDS_RS_LAST_OPEN_FILTER_DIR, strLastOpenFilterDir);
 
 	// OnlineServices
-	profile.ReadBool(IDS_R_ONLINESERVICES, IDS_RS_YOUTUBE_LOAD_PLAYLIST, bYoutubeLoadPlaylist);
-
 	profile.ReadBool(IDS_R_ONLINESERVICES, IDS_RS_YDL_ENABLE, bYdlEnable);
 	profile.ReadString(IDS_R_ONLINESERVICES, IDS_RS_YDL_EXEPATH, strYdlExePath);
 	strYdlExePath.Trim();
@@ -1500,12 +1508,14 @@ void CAppSettings::LoadSettings(bool bForce/* = false*/)
 			: YT_DLP::acodec_opus;
 	}
 	profile.ReadInt(IDS_R_ONLINESERVICES, IDS_RS_YDL_MAXHEIGHT, iYdlMaxHeight);
-	iYdlMaxHeight = discard(iYdlMaxHeight, 720, s_CommonVideoHeights);
+	iYdlMaxHeight = discard(iYdlMaxHeight, 720, g_CommonVideoHeights);
 	profile.ReadBool(IDS_R_ONLINESERVICES, IDS_RS_YDL_HIGHFPS, bYdlHighFps);
 	profile.ReadBool(IDS_R_ONLINESERVICES, IDS_RS_YDL_HDR, bYdlHDR);
 	profile.ReadBool(IDS_R_ONLINESERVICES, IDS_RS_YDL_HIGHBITRATE, bYdlHighBitrate);
 	profile.ReadString(IDS_R_ONLINESERVICES, IDS_RS_YDL_AUDIOLANGUAGE, strYdlAudioLang);
 	strYdlAudioLang.Trim();
+	profile.ReadBool(IDS_R_ONLINESERVICES, IDS_RS_YDL_PLAYLIST, bYdlLoadPlaylist);
+	profile.ReadBool(IDS_R_ONLINESERVICES, IDS_RS_YOUTUBE_PLAYLIST_PARSER, bYoutubePlaylistParser);
 
 	profile.ReadString(IDS_R_ONLINESERVICES, IDS_RS_ACESTREAM_ADDRESS, strAceStreamAddress);
 	profile.ReadString(IDS_R_ONLINESERVICES, IDS_RS_TORRSERVER_ADDRESS, strTorrServerAddress);
@@ -1779,6 +1789,7 @@ void CAppSettings::SaveSettings()
 	profile.WriteBool(IDS_R_SETTINGS, IDS_RS_MINI_DUMP, fMiniDump);
 
 	profile.WriteString(IDS_R_SETTINGS, IDS_RS_FFMPEG_EXEPATH, strFFmpegExePath);
+	profile.WriteBool(IDS_R_SETTINGS, IDS_RS_FFMPEG_MERGE, bFFmpegMerge);
 
 	profile.WriteBool(IDS_R_SETTINGS, IDS_RS_LCD_SUPPORT, fLCDSupport);
 	profile.WriteBool(IDS_R_SETTINGS, IDS_RS_WINMEDIACONTROLS, bWinMediaControls);
@@ -1873,6 +1884,9 @@ void CAppSettings::SaveSettings()
 	profile.WriteString(IDS_R_MOUSE, IDS_RS_MOUSE_WHEEL_RIGHT, str);
 	profile.WriteBool(IDS_R_MOUSE, IDS_RS_MOUSE_BTN_LEFT_OPENRECENT, bMouseLeftClickOpenRecent);
 	profile.WriteBool(IDS_R_MOUSE, IDS_RS_MOUSE_EASYMOVE, bMouseEasyMove);
+	profile.WriteBool(IDS_R_MOUSE, IDS_RS_MOUSE_LONGPRESS_LEFT_SPEED, bMouseLeftLongPressSpeed);
+	profile.WriteInt(IDS_R_MOUSE, IDS_RS_MOUSE_LONGPRESS_LEFT_SPEED_RATE, nMouseLeftLongPressSpeedRate);
+	profile.WriteInt(IDS_R_MOUSE, IDS_RS_MOUSE_LONGPRESS_LEFT_SPEED_DELAY, nMouseLeftLongPressSpeedDelay);
 
 	// OSD
 	profile.WriteUInt(IDS_R_OSD, IDS_RS_SHOWOSD, ShowOSD.value);
@@ -1897,7 +1911,7 @@ void CAppSettings::SaveSettings()
 	profile.WriteHex32(IDS_R_THEME, IDS_RS_TOOLBARCOLORFACE, clrFaceABGR);
 	profile.WriteHex32(IDS_R_THEME, IDS_RS_TOOLBARCOLOROUTLINE, clrOutlineABGR);
 	profile.WriteBool(IDS_R_THEME, IDS_RS_DARKMENU, bDarkMenu);
-	profile.WriteBool(IDS_R_THEME, IDS_RS_DARKMENU_BLURBEHIND, bDarkMenuBlurBehind);
+	//profile.WriteBool(IDS_R_THEME, IDS_RS_DARKMENU_BLURBEHIND, bDarkMenuBlurBehind);
 	profile.WriteBool(IDS_R_THEME, IDS_RS_DARKTITLE, bDarkTitle);
 
 	// FullScreen
@@ -1986,22 +2000,22 @@ void CAppSettings::SaveSettings()
 	profile.WriteString(IDS_R_SETTINGS, IDS_RS_LAST_OPEN_FILTER_DIR, strLastOpenFilterDir);
 
 	// OnlineServices
-	profile.WriteBool(IDS_R_ONLINESERVICES, IDS_RS_YOUTUBE_LOAD_PLAYLIST, bYoutubeLoadPlaylist);
-
 	profile.WriteBool  (IDS_R_ONLINESERVICES, IDS_RS_YDL_ENABLE,      bYdlEnable);
 	profile.WriteString(IDS_R_ONLINESERVICES, IDS_RS_YDL_EXEPATH,     strYdlExePath);
 	profile.WriteString(IDS_R_ONLINESERVICES, IDS_RS_YDL_VCODEC,
-		(iYdlVcodec == Youtube::y_webm_vp9) ? L"VP9"
-		: (iYdlVcodec == Youtube::y_mp4_av1) ? L"AV1"
-		: L"H264");
+		(iYdlVcodec == YT_DLP::vcodec_h264) ? L"H264"
+		: (iYdlVcodec == YT_DLP::vcodec_av1) ? L"AV1"
+		: L"VP9");
 	profile.WriteString(IDS_R_ONLINESERVICES, IDS_RS_YDL_ACODEC,
-		(iYdlAcodec == Youtube::y_webm_opus) ? L"OPUS"
-		: L"AAC");
+		(iYdlAcodec == YT_DLP::acodec_aac) ? L"AAC"
+		: L"OPUS");
 	profile.WriteInt   (IDS_R_ONLINESERVICES, IDS_RS_YDL_MAXHEIGHT,   iYdlMaxHeight);
 	profile.WriteBool  (IDS_R_ONLINESERVICES, IDS_RS_YDL_HIGHFPS,     bYdlHighFps);
 	profile.WriteBool  (IDS_R_ONLINESERVICES, IDS_RS_YDL_HDR,         bYdlHDR);
 	profile.WriteBool  (IDS_R_ONLINESERVICES, IDS_RS_YDL_HIGHBITRATE, bYdlHighBitrate);
 	profile.WriteString(IDS_R_ONLINESERVICES, IDS_RS_YDL_AUDIOLANGUAGE, strYdlAudioLang);
+	profile.WriteBool  (IDS_R_ONLINESERVICES, IDS_RS_YDL_PLAYLIST, bYdlLoadPlaylist);
+	profile.WriteBool  (IDS_R_ONLINESERVICES, IDS_RS_YOUTUBE_PLAYLIST_PARSER, bYoutubePlaylistParser);
 
 	profile.WriteString(IDS_R_ONLINESERVICES, IDS_RS_ACESTREAM_ADDRESS, strAceStreamAddress);
 	profile.WriteString(IDS_R_ONLINESERVICES, IDS_RS_TORRSERVER_ADDRESS, strTorrServerAddress);

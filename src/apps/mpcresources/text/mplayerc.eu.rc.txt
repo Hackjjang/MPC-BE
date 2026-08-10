@@ -313,14 +313,14 @@ BEGIN DIALOGEX IDD_PPAGEINTERFACE LINES 44
 21		"Enable dark menu"
 22		"Use Blur Behind effect (Windows 10 and above)"
 24		"Enable dark title (Windows 10 and above)"
-27		"Erabili denbora oharra:"
-29		"Erabili aurrekoa bilaketan"
-30		"Neurria ikusleiho zabaleraren arabera:"
-34		"Online"
-35		"Erabili atal markatzailea"
-36		"Erabili gainbarra"
-37		"Playlist font size:"
-40		"Controls size:"
+26		"Controls size:"
+29		"Erabili denbora oharra:"
+31		"Erabili aurrekoa bilaketan"
+32		"Neurria ikusleiho zabaleraren arabera:"
+36		"Online"
+37		"Erabili atal markatzailea"
+38		"Erabili gainbarra"
+39		"Playlist font size:"
 42		"Erabili Windows 7 (eta berriagoa) Eginkizun-barra ezaugarriak"
 END
 
@@ -366,14 +366,17 @@ BEGIN DIALOGEX IDD_PPAGEMISC LINES 36
 35		"Esportatu"
 END
 
-BEGIN DIALOGEX IDD_PPAGEMOUSE LINES 17
+BEGIN DIALOGEX IDD_PPAGEMOUSE LINES 22
 5		"Left button"
 6		"Click"
 8		"If nothing is loaded, open recent file"
 10		"Double click"
 12		"Move window by the video area"
-13		"Right click"
-16		"Default"
+13		"Enable long press speed-up"
+14		"Long press speed"
+16		"Long press delay"
+18		"Right click"
+21		"Default"
 END
 
 BEGIN DIALOGEX IDD_PPAGEOSD LINES 26
@@ -603,19 +606,21 @@ BEGIN DIALOGEX IDD_PPAGEWINDOWSIZE LINES 28
 27		"Snap to desktop edges"
 END
 
-BEGIN DIALOGEX IDD_PPAGEYOUTUBE LINES 27
+BEGIN DIALOGEX IDD_PPAGEYOUTUBE LINES 30
 5		"Preferred video format:"
 8		"50/60 fps"
 9		"HDR"
 10		"Preferred audio format:"
 12		"Preferred audio track language:"
 14		"Gertatu irakur-zerrenda"
-16		"yt-dlp"
-17		"Executable file:"
-19		"Select max bitrate"
-20		"AceStream address:"
-22		"MatriX (TorrServer) address:"
-25		"User agent:"
+16		"Use the built-in YouTube playlist parser"
+18		"yt-dlp"
+19		"Executable file:"
+21		"Select max bitrate"
+22		"AceStream address:"
+24		"MatriX (TorrServer) address:"
+27		"User agent:"
+29		"Default"
 END
 
 BEGIN DIALOGEX IDD_SAVEIMAGEDIALOGTEMPL LINES 9
@@ -1327,6 +1332,7 @@ STRING IDS_ARS_FORMAT		"Format:"
 STRING IDS_ARS_INPUT		"Input"
 STRING IDS_ARS_MODE		"Mode:"
 STRING IDS_ARS_OUTPUT		"Output"
+STRING IDS_ARS_PAUSE_KEEP_ACTIVE		"Keep audio device active when paused"
 STRING IDS_ARS_RELEASE_DEVICE_IDLE		"Release device when idle"
 STRING IDS_ARS_SAMPLERATE		"Sample rate:"
 STRING IDS_ARS_SHARED		"Elkarbanatua"
@@ -1335,6 +1341,7 @@ STRING IDS_ARS_STATUS		"Egoera"
 STRING IDS_ARS_SYSTEM_LAYOUT_CHANNELS		"Erabili sistemako antolakuntza bideak"
 STRING IDS_ARS_TIP_ALT_CHECK_FORMAT		"The renderer will try to initialize the device skipping some checks."
 STRING IDS_ARS_TIP_BITEXACT_OUTPUT		"If possible, the audio will be sent out in its original format.\nOtherwise, the format specified in the system settings will be used."
+STRING IDS_ARS_TIP_PAUSE_KEEP_ACTIVE		"The renderer will send inaudible noise to the audio device."
 STRING IDS_ARS_WASAPI_METHOD		"WASAPI method:"
 STRING IDS_ARS_WASAPI_MODE		"WASAPI modua:"
 STRING IDS_AUDIOWINDOW_COVER		"erakutsi bilduma argazki/azal irudiak"
@@ -1628,6 +1635,7 @@ STRING IDS_MAINFRM_DIR_CHECK		"Azpizuzenbideak barne"
 STRING IDS_MAINFRM_DIR_TITLE		"Hautatu Zuzenbidea"
 STRING IDS_MENU_VIDEO_ANGLE		"Bideo &Angelua"
 STRING IDS_MENU_VIDEO_STREAM		"Bideo &Jarioa"
+STRING IDS_MERGE_USING_FFMPEG		"Merge files using FFmpeg"
 STRING IDS_MERGING_FILES		"Merging files..."
 STRING IDS_MFMT_3G2		"3G2"
 STRING IDS_MFMT_3GP		"3GP"
