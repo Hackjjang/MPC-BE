@@ -452,6 +452,7 @@ void CPPageMouse::OnBnClickedReset()
 	m_table_values[ROW_WHL_R][COL_RBTN]   = 0;
 
 	SyncList();
+	OnLongPressLeftSpeedChange();
 
 	SetModified();
 }
