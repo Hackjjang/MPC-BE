@@ -322,13 +322,8 @@ void CPropPageFrameDefault::DrawCaption(CDC *pDc, CRect rect, LPCTSTR lpszCaptio
 	CFont			*pFont = (CFont*)pDc->SelectStockObject(SYSTEM_FONT);
 
 	// <MPC-BE Custom Code>
-	auto GetNonClientMetrics = [](NONCLIENTMETRICSW* ncm) {
-		ncm->cbSize = sizeof(NONCLIENTMETRICSW);
-		VERIFY(SystemParametersInfoW(SPI_GETNONCLIENTMETRICS, ncm->cbSize, ncm, 0));
-	};
-
-	NONCLIENTMETRICSW ncm{};
-	GetNonClientMetrics(&ncm);
+	NONCLIENTMETRICSW ncm = { sizeof(NONCLIENTMETRICSW) };
+	VERIFY(SystemParametersInfoW(SPI_GETNONCLIENTMETRICS, ncm.cbSize, &ncm, 0));
 	auto& lf = ncm.lfMessageFont;
 	lf.lfHeight = static_cast<long>(-.8f * rect.Height());
 	lf.lfWeight = FW_BOLD;
