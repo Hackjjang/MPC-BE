@@ -318,10 +318,10 @@ void CPropPageFrameDefault::DrawCaption(CDC *pDc, CRect rect, LPCTSTR lpszCaptio
 	rect.left += 2;
 
 	COLORREF	clrPrev = pDc->SetTextColor(GetSysColor(COLOR_CAPTIONTEXT));
-	int				nBkStyle = pDc->SetBkMode(TRANSPARENT);
-	CFont			*pFont = (CFont*)pDc->SelectStockObject(SYSTEM_FONT);
+	int			nBkStyle = pDc->SetBkMode(TRANSPARENT);
+	//CFont*	pFont = (CFont*)pDc->SelectStockObject(SYSTEM_FONT);
 
-	// <MPC-BE Custom Code>
+	// MPC-BE custom code start
 	NONCLIENTMETRICSW ncm = { sizeof(NONCLIENTMETRICSW) };
 	VERIFY(SystemParametersInfoW(SPI_GETNONCLIENTMETRICS, ncm.cbSize, &ncm, 0));
 	auto& lf = ncm.lfMessageFont;
@@ -330,7 +330,7 @@ void CPropPageFrameDefault::DrawCaption(CDC *pDc, CRect rect, LPCTSTR lpszCaptio
 
 	CFont f;
 	f.CreateFontIndirectW(&lf);
-	pFont = pDc->SelectObject(&f);
+	CFont* pFont = pDc->SelectObject(&f);
 
 	TEXTMETRICW GDIMetrics;
 	GetTextMetricsW(pDc->GetSafeHdc(), &GDIMetrics);
@@ -343,7 +343,7 @@ void CPropPageFrameDefault::DrawCaption(CDC *pDc, CRect rect, LPCTSTR lpszCaptio
 		GetTextMetricsW(pDc->GetSafeHdc(), &GDIMetrics);
 	}
 	rect.top -= GDIMetrics.tmDescent - 1;
-	// <MPC-BE Custom Code>
+	// MPC-BE custom code end
 
 	pDc->DrawTextW(lpszCaption, rect, DT_LEFT | DT_SINGLELINE | DT_END_ELLIPSIS);
 
